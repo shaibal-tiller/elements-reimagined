@@ -1,6 +1,5 @@
 import { Play, ChevronDown, Mouse } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
-
 import ProfileCard from "./ProfileCard";
 
 const stats = [

@@ -1,21 +1,24 @@
+import Divider from "./ui/Divider";
+
 const StorySection = () => {
   return (
-    <section id="about" className="py-24 bg-background">
+    <section id="about" className="py-24 bg-[#02162C]">
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto">
           {/* Section Header */}
           <div className="flex items-center justify-between mb-12">
-            <h2 className="text-2xl font-bold text-foreground">My story</h2>
-            <span className="text-muted-foreground">1</span>
+            <h2 className="text-2xl font-bold text-foreground w-[20%]">My story </h2>
+
+            <Divider  />
           </div>
 
           {/* Quote */}
           <div className="card-dark p-12 relative">
             <span className="quote-mark absolute top-6 left-8">"</span>
             <blockquote className="text-lg md:text-xl text-foreground leading-relaxed pl-12 pr-12 italic">
-              Consectetur adipisicing elit. Rem minima maiores, praesentium, 
-              aperiam eveniet tenetur consequatur beatae id est. Creating beautiful 
-              digital experiences is my passion, and I bring creativity and precision 
+              Consectetur adipisicing elit. Rem minima maiores, praesentium,
+              aperiam eveniet tenetur consequatur beatae id est. Creating beautiful
+              digital experiences is my passion, and I bring creativity and precision
               to every project I undertake.
             </blockquote>
             <span className="quote-mark absolute bottom-6 right-8 rotate-180">"</span>

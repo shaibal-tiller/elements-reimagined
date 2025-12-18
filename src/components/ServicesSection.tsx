@@ -1,36 +1,61 @@
-import { Palette, Layout, Home, Gamepad2, ArrowRight } from "lucide-react";
+import {
+  Code2,
+  LayoutDashboard,
+  Server,
+  Database,
+  Wrench,
+  LifeBuoy,
+  ArrowRight,
+} from "lucide-react";
+import Divider from "./ui/Divider";
 
 const services = [
   {
-    icon: Palette,
-    title: "Architecture",
-    description: "Creating stunning architectural designs that blend form and function seamlessly.",
+    icon: Code2,
+    title: "Full-Stack Web Development",
+    description:
+      "Building scalable, production-ready web applications using React, Next.js, Node.js, and modern web standards—from frontend to backend.",
   },
   {
-    icon: Layout,
-    title: "UI/UX Design",
-    description: "Crafting intuitive user experiences and beautiful interfaces that users love.",
+    icon: LayoutDashboard,
+    title: "Frontend Engineering",
+    description:
+      "Crafting responsive, accessible, and high-performance user interfaces with React, Next.js, HTML, CSS, and Tailwind for exceptional UX.",
   },
   {
-    icon: Home,
-    title: "Interior Design",
-    description: "Transforming spaces into inspiring environments that reflect your personality.",
+    icon: Server,
+    title: "Backend & API Development",
+    description:
+      "Developing secure backend systems with Node.js and Next.js APIs, including authentication, role-based access control, and REST integrations.",
   },
   {
-    icon: Gamepad2,
-    title: "Game Design",
-    description: "Building immersive gaming experiences with engaging mechanics and visuals.",
+    icon: Database,
+    title: "Database & Server Management",
+    description:
+      "Managing PostgreSQL, MySQL, and Firebase databases along with deploying and maintaining applications on local servers and cloud infrastructure.",
+  },
+  {
+    icon: Wrench,
+    title: "CI/CD, Testing & Deployment",
+    description:
+      "Implementing automated testing, Docker-based CI/CD pipelines, and smooth deployment workflows for reliable and maintainable systems.",
+  },
+  {
+    icon: LifeBuoy,
+    title: "Technical Support & Event Facilitation",
+    description:
+      "Providing on-ground technical support as a backstopper—ensuring system stability, rapid issue resolution, and smooth project or event execution.",
   },
 ];
 
 const ServicesSection = () => {
   return (
-    <section id="services" className="py-24 bg-background">
+    <section id="services" className="py-24 bg-[#02162C]">
       <div className="container mx-auto px-6">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-12">
-          <h2 className="text-2xl font-bold text-foreground">My Services</h2>
-          <span className="text-muted-foreground">2</span>
+         <h2 className="text-2xl font-bold text-foreground w-[30%]">My Services</h2>
+            <Divider  />
         </div>
 
         {/* Services Grid */}

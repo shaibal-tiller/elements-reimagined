@@ -26,15 +26,14 @@ const ContactSection = () => {
   };
 
   return (
-    <section id="contact" className="py-24 bg-secondary">
+    <section id="contact" className="py-24 bg-[#02162C]">
       <div className="container mx-auto px-6">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-12">
           <h2 className="text-2xl font-bold text-foreground">Write me a message</h2>
-          <span className="text-muted-foreground">5</span>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto bg-[#00283A] rounded-3xl">
           {/* Contact Form */}
           <div className="card-dark p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -47,7 +46,7 @@ const ContactSection = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
-                  className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-foreground 
+                  className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-foreground !bg-[#02162C]
                              placeholder:text-muted-foreground focus:outline-none focus:border-primary 
                              transition-colors duration-300"
                   placeholder="John Doe"
@@ -62,7 +61,7 @@ const ContactSection = () => {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
-                  className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-foreground 
+                  className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-foreground !bg-[#02162C]
                              placeholder:text-muted-foreground focus:outline-none focus:border-primary 
                              transition-colors duration-300"
                   placeholder="john@example.com"
@@ -77,7 +76,7 @@ const ContactSection = () => {
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   required
                   rows={5}
-                  className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-foreground 
+                  className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-foreground !bg-[#02162C]
                              placeholder:text-muted-foreground focus:outline-none focus:border-primary 
                              transition-colors duration-300 resize-none"
                   placeholder="Tell me about your project..."

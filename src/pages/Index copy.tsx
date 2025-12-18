@@ -6,14 +6,24 @@ import PricingSection from "@/components/PricingSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
-import Parallax from "@/components/parallax_layout";
 
 const Index = () => {
   return (
-    <Parallax />
-  )
-  // <Footer />
+    <main className=" bg-[#02162C] relative">
 
+      <div className="shadow-lg fixed top-0 left-0 right-0 bg-[#02162C]  p-3 pb-0 z-[99]">
+        <Navbar />
+      </div>
+     
+      <HeroSection />
+      <StorySection />
+      <ServicesSection />
+      <PricingSection />
+      <TestimonialsSection />
+      <ContactSection />
+      <Footer />
+    </main>
+  );
 };
 
 export default Index;

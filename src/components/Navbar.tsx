@@ -2,24 +2,25 @@ import { useState } from "react";
 import { Menu, X, Download } from "lucide-react";
 
 const navLinks = [
-  { name: "Home", href: "#home" },
-  { name: "Portfolio", href: "#portfolio" },
-  { name: "Resume", href: "#resume" },
-  { name: "Contact", href: "#contact" },
-  { name: "Blog", href: "#blog" },
+  { name: "Home", href: "/" },
+  { name: "Portfolio", href: "portfolio" },
+  { name: "Resume", href: "resume" },
+  { name: "Contact", href: "contact" },
+  { name: "Blog", href: "blog" },
 ];
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+    <nav style={{ boxShadow: "rgba(0, 0, 0, 0.6) 0px 2px 4px 0px" }}
+      className="sticky top-0 left-0 right-0 z-50 bg-[#00283a] backdrop-blur-lg   rounded-lg" >
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <a href="#home" className="text-2xl font-bold">
-            <span className="text-foreground">True</span>
-            <span className="text-primary">man</span>
+            <span className="text-foreground">Shaibal</span>
+            <span className="text-primary">Sharif</span>
           </a>
 
           {/* Desktop Navigation */}

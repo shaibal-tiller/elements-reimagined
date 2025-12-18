@@ -24,7 +24,6 @@ const PricingSection = () => {
         {/* Section Header */}
         <div className="flex items-center justify-between mb-12">
           <h2 className="text-2xl font-bold text-foreground">Price Plans</h2>
-          <span className="text-muted-foreground">3</span>
         </div>
 
         {/* Pricing Cards */}

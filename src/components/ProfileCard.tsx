@@ -1,5 +1,6 @@
 import { Linkedin, Twitter, Dribbble, Instagram, Mail } from "lucide-react";
 import avatarImg from "@/assets/avatar.jpg";
+import Divider from "./ui/Divider";
 
 const socialLinks = [
   { icon: Linkedin, href: "#" },
@@ -42,7 +43,7 @@ const ProfileCard = () => {
       </div>
 
       {/* Social Links */}
-      <div className="divider-dotted mb-6" />
+      <Divider />
       <div className="flex justify-center gap-3 mb-6">
         {socialLinks.map((social, index) => (
           <a
@@ -55,7 +56,7 @@ const ProfileCard = () => {
           </a>
         ))}
       </div>
-      <div className="divider-dotted mb-6" />
+      <Divider />
 
       {/* Profile Info */}
       <div className="space-y-3 mb-6">
