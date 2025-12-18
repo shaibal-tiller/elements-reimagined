@@ -34,7 +34,7 @@ const HeroSection = () => {
               Hi my new friend!
             </p>
             <h1 className="heading-xl text-foreground mb-8 animate-fadeUp" style={{ animationDelay: "0.1s" }}>
-              Discover my{" "}
+              Discover my
               <span className="block">art space!</span>
             </h1>
 
