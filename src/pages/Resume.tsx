@@ -1,6 +1,6 @@
 import React from 'react';
 import { Mail, Phone, MapPin, Linkedin, Github, Briefcase, GraduationCap, Award, Code, Database, Wrench } from 'lucide-react';
-import Divider from '@/components/ui/Divider';
+import Divider from '@/components/divider';
 
 const Resume: React.FC = () => {
   const tools = [

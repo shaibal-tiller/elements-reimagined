@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
-import Divider from "./ui/Divider";
+import Divider from "./divider";
 
 const testimonials = [
   {

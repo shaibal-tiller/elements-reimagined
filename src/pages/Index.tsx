@@ -4,7 +4,7 @@ import StorySection from '@/components/StorySection';
 import ServicesSection from '@/components/ServicesSection';
 import TestimonialsSection from '@/components/TestimonialsSection';
 import ContactSection from '@/components/ContactSection';
-import Divider from '@/components/ui/Divider';
+import Divider from '@/components/divider';
 
 const stats = [
   { number: "74+", label: "Completed Projects" },

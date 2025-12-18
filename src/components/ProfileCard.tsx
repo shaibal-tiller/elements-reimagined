@@ -1,6 +1,6 @@
 import { Linkedin, Twitter, Dribbble, Instagram, Mail } from "lucide-react";
 import avatarImg from "@/assets/avatar.jpg";
-import Divider from "./ui/Divider";
+import Divider from "./divider";
 
 const socialLinks = [
   { icon: Linkedin, href: "#" },

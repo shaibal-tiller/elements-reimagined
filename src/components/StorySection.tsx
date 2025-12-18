@@ -1,4 +1,4 @@
-import Divider from "./ui/Divider";
+import Divider from "./divider";
 
 const StorySection = () => {
   return (

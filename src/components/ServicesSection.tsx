@@ -7,7 +7,7 @@ import {
   LifeBuoy,
   ArrowRight,
 } from "lucide-react";
-import Divider from "./ui/Divider";
+import Divider from "./divider";
 
 const services = [
   {

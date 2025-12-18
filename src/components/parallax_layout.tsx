@@ -8,7 +8,7 @@ import Navbar from './Navbar';
 import ServicesSection from "@/components/ServicesSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import ContactSection from "@/components/ContactSection";
-import Divider from './ui/Divider';
+import Divider from './divider';
 import Footer from './Footer';
 
 
