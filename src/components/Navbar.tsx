@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Menu, X, Download } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -18,17 +19,17 @@ const Navbar = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <a href="#home" className="text-2xl font-bold">
+          <Link to="/" className="text-2xl font-bold">
             <span className="text-foreground">Shaibal</span>
             <span className="text-primary">Sharif</span>
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <a key={link.name} href={link.href} className="nav-link">
+              <Link key={link.name} to={link.href} className="nav-link">
                 {link.name}
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -54,14 +55,14 @@ const Navbar = () => {
           <div className="md:hidden py-4 animate-fadeUp">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.name}
                   href={link.href}
                   className="nav-link py-2"
                   onClick={() => setIsOpen(false)}
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
               <button className="btn-lime flex items-center justify-center gap-2 mt-4">
                 Download CV

@@ -27,7 +27,7 @@ const Contact: React.FC = () => {
         <>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Contact Info */}
-                <div className="space-y-6 animate-fadeUp" style={{ animationDelay: "0.1s" }}>
+                <div className="space-y-6 animate-fadeUp" >
                     <div className="card-white p-6">
                         <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
                             <MessageSquare className="w-6 h-6 text-primary" />
@@ -89,7 +89,7 @@ const Contact: React.FC = () => {
                 </div>
 
                 {/* Contact Form */}
-                <div className="animate-fadeUp" style={{ animationDelay: "0.2s" }}>
+                <div className="animate-fadeUp" >
                     <div className="card-white p-6">
                         <h2 className="text-2xl font-bold text-foreground mb-6">Send a Message</h2>
 

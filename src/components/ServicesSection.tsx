@@ -64,7 +64,7 @@ const ServicesSection = () => {
             <div
               key={index}
               className="service-card group"
-              style={{ animationDelay: `${index * 0.1}s` }}
+             
             >
               <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-6 
                               group-hover:bg-primary transition-colors duration-500">

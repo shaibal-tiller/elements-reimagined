@@ -47,7 +47,7 @@ const Resume: React.FC = () => {
      
 
       {/* Contact Info */}
-      <div className="card-white p-6 mb-8 animate-fadeUp" style={{ animationDelay: "0.1s" }}>
+      <div className="card-white p-6 mb-8 animate-fadeUp" >
         <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
           <Mail className="w-6 h-6 text-primary" />
           Contact Information
@@ -82,7 +82,7 @@ const Resume: React.FC = () => {
       </div>
 
       {/* Profile */}
-      <div className="card-white p-6 mb-8 animate-fadeUp" style={{ animationDelay: "0.2s" }}>
+      <div className="card-white p-6 mb-8 animate-fadeUp" >
         <h2 className="text-2xl font-bold text-foreground mb-4">Profile</h2>
         <Divider color="#e5e7eb76" />
         <p className="text-foreground mt-4 leading-relaxed">
@@ -93,7 +93,7 @@ const Resume: React.FC = () => {
       </div>
 
       {/* Work Experience */}
-      <div className="card-white p-6 mb-8 animate-fadeUp" style={{ animationDelay: "0.3s" }}>
+      <div className="card-white p-6 mb-8 animate-fadeUp" >
         <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
           <Briefcase className="w-6 h-6 text-primary" />
           Work Experience
@@ -119,7 +119,7 @@ const Resume: React.FC = () => {
       </div>
 
       {/* Education */}
-      <div className="card-white p-6 mb-8 animate-fadeUp" style={{ animationDelay: "0.4s" }}>
+      <div className="card-white p-6 mb-8 animate-fadeUp" >
         <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
           <GraduationCap className="w-6 h-6 text-primary" />
           Education
@@ -137,7 +137,7 @@ const Resume: React.FC = () => {
       </div>
 
       {/* Technical Skills */}
-      <div className="card-white p-6 mb-8 animate-fadeUp" style={{ animationDelay: "0.5s" }}>
+      <div className="card-white p-6 mb-8 animate-fadeUp" >
         <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
           <Code className="w-6 h-6 text-primary" />
           Technical Skills
@@ -156,7 +156,7 @@ const Resume: React.FC = () => {
       </div>
 
       {/* Projects */}
-      <div className="card-white p-6 mb-8 animate-fadeUp" style={{ animationDelay: "0.6s" }}>
+      <div className="card-white p-6 mb-8 animate-fadeUp" >
         <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
           <Award className="w-6 h-6 text-primary" />
           Featured Projects
@@ -182,7 +182,7 @@ const Resume: React.FC = () => {
       </div>
 
       {/* Languages */}
-      <div className="card-white p-6 mb-8 animate-fadeUp" style={{ animationDelay: "0.7s" }}>
+      <div className="card-white p-6 mb-8 animate-fadeUp" >
         <h2 className="text-2xl font-bold text-foreground mb-4">Languages</h2>
         <Divider color="#e5e7eb76" />
         <div className="mt-6 grid grid-cols-2 gap-4">

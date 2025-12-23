@@ -3,9 +3,9 @@ import { Send, MapPin, Mail, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const contactInfo = [
-  { icon: MapPin, label: "Address", value: "Toronto, Canada" },
-  { icon: Mail, label: "Email", value: "hello@trueman.design" },
-  { icon: Phone, label: "Phone", value: "+1 (234) 567-8900" },
+  { icon: MapPin, label: "Address", value: "Mirpur, Dhaka, Bangladesh" },
+  { icon: Mail, label: "Email", value: "shaibalsharif@gmail.com" },
+  { icon: Phone, label: "Phone", value: "+88 01521330598" },
 ];
 
 const ContactSection = () => {

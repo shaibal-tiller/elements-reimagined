@@ -16,7 +16,7 @@ const Index: React.FC = () => {
   return (
     <>
       {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-4 md:gap-6 mt-8 animate-fadeUp" style={{ animationDelay: "0.3s" }}>
+      <div className="grid grid-cols-3 gap-4 md:gap-6 mt-8 animate-fadeUp" >
         {stats.map((stat, index) => (
           <div
             key={index}

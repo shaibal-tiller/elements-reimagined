@@ -63,7 +63,7 @@ const Blog: React.FC = () => {
           <article
             key={post.id}
             className="card-white p-6 hover:shadow-xl transition-all duration-300 animate-fadeUp"
-            style={{ animationDelay: `${0.1 * (index + 1)}s` }}
+            
           >
             {/* Tags */}
             <div className="flex flex-wrap gap-2 mb-4">
@@ -122,7 +122,7 @@ const Blog: React.FC = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="card-white p-8 text-center mt-12 animate-fadeUp" style={{ animationDelay: "0.7s" }}>
+      <div className="card-white p-8 text-center mt-12 animate-fadeUp" s>
         <h3 className="text-2xl font-bold text-foreground mb-4">
           Want to stay updated?
         </h3>

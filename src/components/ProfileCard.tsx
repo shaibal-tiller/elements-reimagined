@@ -1,6 +1,7 @@
 import { Linkedin, Twitter, Dribbble, Instagram, Mail } from "lucide-react";
 import avatarImg from "@/assets/avatar.jpg";
 import Divider from "./divider";
+import { getAge } from "@/lib/utils";
 
 const socialLinks = [
   { icon: Linkedin, href: "#" },
@@ -10,9 +11,9 @@ const socialLinks = [
 ];
 
 const profileInfo = [
-  { label: "Residence:", value: "Canada" },
-  { label: "City:", value: "Toronto" },
-  { label: "Age:", value: "26" },
+  { label: "Residence:", value: "Mirpur" },
+  { label: "City:", value: "Dhaka" },
+  { label: "Age:", value: `${getAge("1998-06-25").toString()} yrs` },
 ];
 
 const ProfileCard = () => {
@@ -36,9 +37,13 @@ const ProfileCard = () => {
 
       {/* Name & Title */}
       <div className="text-center mb-6">
-        <h3 className="text-xl font-bold text-card-foreground mb-1">Emma Trueman</h3>
+        <h3 className="text-xl font-bold text-card-foreground mb-1">Sharif Shaibal</h3>
         <p className="text-sm text-muted-foreground uppercase tracking-wider">
-          I'm UI/UX Designer
+          I'm Full Stack Web Developer
+        </p>
+        <p className="text-sm text-muted-foreground uppercase tracking-wider">& </p>
+        <p className="text-sm text-muted-foreground uppercase tracking-wider">
+          Software Engineer
         </p>
       </div>
 
