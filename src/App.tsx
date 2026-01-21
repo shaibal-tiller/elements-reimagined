@@ -12,7 +12,7 @@ import { Blog } from "./pages/Blog";
 import CustomScrollbar from "@/components/CustomScrollbar";
 import PortfolioDetail from "./pages/Detail1";
 import PortfolioDetail2 from "./pages/Detail2";
-
+import ProjectDetail from './pages/PortfolioDetailFrame'
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -20,22 +20,24 @@ const App = () => (
     <Toaster />
     <Sonner />
     <BrowserRouter>
-    <CustomScrollbar>
-      <Routes>
-        {/* All routes that use the main layout */}
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<Index />} />
-          <Route path="/portfolio" element={<Portfolio />} />
-          <Route path="/resume" element={<Resume />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/blog" element={<Blog />} /> 
-          <Route path="/portfolio/1" element={<PortfolioDetail />} />
-           <Route path="/portfolio/2" element={<PortfolioDetail2 />} />
-        </Route>
+      <CustomScrollbar>
+        <Routes>
+          {/* All routes that use the main layout */}
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Index />} />
+            <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/portfolio/:id" element={<ProjectDetail />} />
+            {/* <Route path="/portfolio/:id" element={< />} /> */}
+            <Route path="/resume" element={<Resume />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/blog" element={<Blog />} />
+            {/* <Route path="/portfolio/1" element={<PortfolioDetail />} />
+            <Route path="/portfolio/2" element={<PortfolioDetail2 />} /> */}
+          </Route>
 
-        {/* Routes without layout (like 404) */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          {/* Routes without layout (like 404) */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </CustomScrollbar>
     </BrowserRouter>
   </QueryClientProvider>

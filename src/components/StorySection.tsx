@@ -2,7 +2,7 @@ import Divider from "./divider";
 
 const StorySection = () => {
   return (
-    <section id="about" className="py-24 bg-[#02162C]">
+    <section id="about" className="pt-12 bg-[#02162C]">
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto">
           {/* Section Header */}

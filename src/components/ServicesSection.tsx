@@ -50,7 +50,7 @@ const services = [
 
 const ServicesSection = () => {
   return (
-    <section id="services" className="py-24 bg-[#02162C]">
+    <section id="services" className="pt-12 bg-[#02162C]">
       <div className="container mx-auto px-6">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-12">

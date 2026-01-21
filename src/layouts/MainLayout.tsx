@@ -19,11 +19,11 @@ const MainLayout: React.FC = () => {
     }, []);
 
     const parallaxOffset = scrollY * 0.5;
-    const stickyTop = '80px';
+    const stickyTop = '100px';
     const overlapMargin = '-27.5vh';
 
     return (
-        <div className="min-h-[250vh] bg-[#02162C] pb-16 font-sans">
+        <div className=" bg-[#02162C] pb-16 font-sans">
             {/* Fixed Header */}
             <div className="shadow-lg fixed top-0 left-0 right-0 bg-[#02162C] p-3 pb-0 z-[99]">
                 <Navbar />
