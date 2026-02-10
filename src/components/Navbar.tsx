@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Menu, X, Download } from "lucide-react";
 import { Link } from "react-router-dom";
+import cvFile from "@/assets/CV/Shaibal resume 2026.pdf";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -13,9 +14,19 @@ const navLinks = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const handleDownloadCV = () => {
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement('a');
+    link.href = cvFile;
+    link.download = 'Shaibal_Sharif_Resume_2026.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <nav style={{ boxShadow: "rgba(0, 0, 0, 0.6) 0px 2px 4px 0px" }}
-      className="sticky top-0 left-0 right-0 z-50 bg-[#00283a] backdrop-blur-lg   rounded-lg" >
+      className="sticky top-0 left-0 right-0 z-50 bg-[#00283a] backdrop-blur-lg rounded-lg" >
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -35,7 +46,10 @@ const Navbar = () => {
 
           {/* CTA Button */}
           <div className="hidden md:flex items-center gap-4">
-            <button className="btn-lime flex items-center gap-2">
+            <button 
+              onClick={handleDownloadCV}
+              className="btn-lime flex items-center gap-2"
+            >
               Download CV
               <Download className="w-4 h-4" />
             </button>
@@ -57,14 +71,17 @@ const Navbar = () => {
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
-                  href={link.href}
+                  to={link.href}
                   className="nav-link py-2"
                   onClick={() => setIsOpen(false)}
                 >
                   {link.name}
                 </Link>
               ))}
-              <button className="btn-lime flex items-center justify-center gap-2 mt-4">
+              <button 
+                onClick={handleDownloadCV}
+                className="btn-lime flex items-center justify-center gap-2 mt-4"
+              >
                 Download CV
                 <Download className="w-4 h-4" />
               </button>

@@ -13,6 +13,7 @@ import CustomScrollbar from "@/components/CustomScrollbar";
 import PortfolioDetail from "./pages/Detail1";
 import PortfolioDetail2 from "./pages/Detail2";
 import ProjectDetail from './pages/PortfolioDetailFrame'
+import Admin from './pages/admin/Admin'
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -34,6 +35,9 @@ const App = () => (
             {/* <Route path="/portfolio/1" element={<PortfolioDetail />} />
             <Route path="/portfolio/2" element={<PortfolioDetail2 />} /> */}
           </Route>
+
+          {/* Admin route without main layout */}
+          <Route path="/admin" element={<Admin />} />
 
           {/* Routes without layout (like 404) */}
           <Route path="*" element={<NotFound />} />

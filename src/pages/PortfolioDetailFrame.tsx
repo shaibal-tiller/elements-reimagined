@@ -9,8 +9,12 @@ import {
   Maximize2,
   ChevronUp,
   ChevronDown,
+  AlertTriangle,
+  RefreshCw,
+  FolderX,
 } from 'lucide-react';
-import { projects } from '../data/projectsData';
+import { useProject } from '../hooks/useProject';
+import { ProjectDetailSkeleton } from '../components/skeletons';
 
 // --- IMAGE VIEWER COMPONENT ---
 
@@ -164,18 +168,67 @@ const ProjectDetail = () => {
   const navigate = useNavigate();
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 
-  const project = projects.find(p => p.id === id);
+  const { data: project, isLoading, error, refetch } = useProject(id);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
 
+  // Loading State
+  if (isLoading) {
+    return <ProjectDetailSkeleton />;
+  }
+
+  // Error State
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center mt-[100px]">
+        <div className="text-center px-4">
+          <div className="bg-red-500/10 p-4 rounded-full mb-6 inline-block">
+            <AlertTriangle className="w-12 h-12 text-red-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">Failed to load project</h2>
+          <p className="text-slate-400 mb-8 max-w-md mx-auto">
+            {error.message || "We couldn't fetch this project. Please check your connection and try again."}
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <button
+              onClick={() => refetch()}
+              className="flex items-center gap-2 px-6 py-3 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors font-medium"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Try Again
+            </button>
+            <button
+              onClick={() => navigate('/portfolio')}
+              className="flex items-center gap-2 px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Portfolio
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Not Found State
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center mt-[200px]">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Project Not Found</h2>
-          <button onClick={() => navigate('/portfolio')} className="text-primary hover:underline">
+      <div className="min-h-screen flex items-center justify-center mt-[100px]">
+        <div className="text-center px-4">
+          <div className="bg-slate-700/50 p-4 rounded-full mb-6 inline-block">
+            <FolderX className="w-12 h-12 text-slate-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">Project Not Found</h2>
+          <p className="text-slate-400 mb-8 max-w-md mx-auto">
+            The project you're looking for doesn't exist or may have been removed.
+          </p>
+          <button
+            onClick={() => navigate('/portfolio')}
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors font-medium mx-auto"
+          >
+            <ArrowLeft className="w-4 h-4" />
             Back to Portfolio
           </button>
         </div>
@@ -198,13 +251,13 @@ const ProjectDetail = () => {
       <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20 animate-fadeUp mt-[100px]">
 
         {/* Hero Header */}
-        <div className={`relative ${theme.bgMain} text-white overflow-hidden rounded-xl`}>
+        <div className={`relative ${theme.bgMain} text-white overflow-hidden rounded-xl -translate-y-[10px]` }>
           <div className="absolute inset-0 opacity-10">
             <div className={`absolute right-0 top-0 w-[600px] h-[600px] ${theme.accentBlur} rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4`}></div>
             <div className={`absolute left-10 bottom-0 w-[400px] h-[400px] ${theme.accentBlur} rounded-full blur-[100px] translate-y-1/2`}></div>
           </div>
 
-          <div className="container mx-auto px-6 pt-6 pb-16 relative z-10">
+          <div className="container mx-auto px-6 pt-6 pb-16 relative z-10 ">
             <button onClick={() => navigate('/portfolio')} className="mb-8 flex items-center text-slate-300 hover:text-white transition-colors border hover:border-white rounded-lg pl-2 pr-4" >
               <ArrowLeft className="w-4 h-4 mr-2" /> Back to Projects
             </button>
@@ -324,7 +377,7 @@ const ProjectDetail = () => {
             </div>
 
             <div className="lg:col-span-4 space-y-6">
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 sticky top-24 overflow-hidden relative">
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 sticky top-24 overflow-hidden">
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none overflow-hidden bg-slate-50">
                   <style>{`
                       @keyframes marquee-left { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
