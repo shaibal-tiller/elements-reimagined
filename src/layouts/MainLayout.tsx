@@ -31,13 +31,12 @@ const MainLayout: React.FC = () => {
 
     const parallaxOffset = scrollY * 0.5;
     const stickyTop = '100px';
-    const overlapMargin = '-27.5vh';
 
     const collapsed = sidebarCollapsed && isDetailPage;
 
     return (
         <SidebarContext.Provider value={{ collapsed: sidebarCollapsed, setCollapsed: setSidebarCollapsed }}>
-            <div className=" bg-[#02162C] pb-16 font-sans">
+            <div className="bg-[#02162C] pb-16 font-sans">
                 {/* Fixed Header */}
                 <div className="shadow-lg fixed top-0 left-0 right-0 bg-[#02162C] p-3 pb-0 z-[99]">
                     <Navbar />
@@ -45,7 +44,7 @@ const MainLayout: React.FC = () => {
 
                 <div className="pt-[90px]">
                     {/* Parallax/Hero Section */}
-                    <section className="w-[90%] mx-auto h-[55vh] rounded-2xl overflow-hidden shadow-2xl relative">
+                    <section className="w-[90%] mx-auto h-[30vh] md:h-[55vh] rounded-2xl overflow-hidden shadow-2xl relative">
                         <div
                             className="absolute inset-0 bg-cover bg-center transition-transform duration-100"
                             style={{
@@ -58,11 +57,22 @@ const MainLayout: React.FC = () => {
                         />
                     </section>
 
-                    {/* Main Content Grid */}
+                    {/* Mobile Layout: Profile card then content, stacked */}
+                    <div className="md:hidden w-[90%] mx-auto relative z-20 -mt-16">
+                        <div className="flex justify-center mb-6">
+                            <ProfileCard />
+                        </div>
+                        <section className="space-y-6 min-w-0">
+                            <HeroComponent />
+                            <Outlet />
+                        </section>
+                    </div>
+
+                    {/* Desktop Layout: Sidebar grid */}
                     <main
-                        className="w-[90%] mx-auto grid grid-cols-1 md:grid relative z-20"
+                        className="hidden md:grid w-[90%] mx-auto relative z-20"
                         style={{
-                            marginTop: overlapMargin,
+                            marginTop: '-27.5vh',
                             gridTemplateColumns: collapsed ? '0fr 1fr' : '3fr 7fr',
                             gap: collapsed ? 0 : '1.5rem',
                             transition: 'grid-template-columns 0.7s cubic-bezier(0.4, 0, 0.2, 1), gap 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -84,7 +94,7 @@ const MainLayout: React.FC = () => {
                             </div>
                         </aside>
 
-                        {/* Right Column: Page Content (Outlet renders child routes) */}
+                        {/* Right Column: Page Content */}
                         <section className="space-y-6 min-w-0">
                             <HeroComponent />
                             <Outlet />
