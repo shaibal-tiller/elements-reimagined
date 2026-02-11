@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Linkedin, Twitter, Dribbble, Instagram, Mail, Facebook, Github } from "lucide-react";
 import avatarImg from "@/assets/avatar.jpg";
 import Divider from "./divider";
 import { getAge } from "@/lib/utils";
+
+const HIRE_TEXT = "AVAILABLE FOR HIRE";
 
 const socialLinks = [
   { icon: Linkedin, href: "https://www.linkedin.com/in/shaibal-sharif/" },
@@ -30,6 +32,36 @@ const ProfileCard = () => {
   const fullText = "I'm a Software Engineer working as a Full Stack Web Developer";
   const [displayText, setDisplayText] = useState("");
   const [showGithubMenu, setShowGithubMenu] = useState(false);
+
+  // "Available for Hire" badge state
+  const [badgeExpanded, setBadgeExpanded] = useState(false);
+  const [badgeText, setBadgeText] = useState("");
+  const badgeTypingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startBadgeTyping = useCallback(() => {
+    setBadgeExpanded(true);
+    setBadgeText("");
+    if (badgeTypingRef.current) clearInterval(badgeTypingRef.current);
+    let i = 0;
+    badgeTypingRef.current = setInterval(() => {
+      i++;
+      if (i <= HIRE_TEXT.length) {
+        setBadgeText(HIRE_TEXT.slice(0, i));
+      } else {
+        if (badgeTypingRef.current) clearInterval(badgeTypingRef.current);
+      }
+    }, 55);
+  }, []);
+
+  const collapseBadge = useCallback(() => {
+    if (badgeTypingRef.current) clearInterval(badgeTypingRef.current);
+    setBadgeText("");
+    setBadgeExpanded(false);
+  }, []);
+
+  useEffect(() => {
+    return () => { if (badgeTypingRef.current) clearInterval(badgeTypingRef.current); };
+  }, []);
 
   useEffect(() => {
     let index = 0;
@@ -74,15 +106,41 @@ const ProfileCard = () => {
       <div className="relative p-8 pb-10 text-white">
         {/* Avatar */}
         <div className="flex justify-center mb-6">
-          <div className="relative">
-            <div className="w-36 h-36 rounded-full overflow-hidden ring-4 ring-slate-700/50">
+          <div
+            className="relative"
+            onMouseEnter={startBadgeTyping}
+            onMouseLeave={collapseBadge}
+          >
+            <div className={`w-36 h-36 rounded-full overflow-hidden ring-4 transition-all duration-700 ${badgeExpanded ? "ring-lime-500/60 scale-90" : "ring-slate-700/50 scale-100"}`}>
               <img
                 src={avatarImg}
                 alt="Sharif Shaibal"
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="absolute bottom-2 right-2 w-7 h-7 bg-lime-500 rounded-full border-4 border-slate-800"></div>
+            {/* Green dot → expands into "AVAILABLE FOR HIRE" pill */}
+            <div
+              className="absolute bottom-1 right-1 bg-lime-500 border-4 border-slate-800 rounded-full flex items-center justify-center overflow-hidden whitespace-nowrap"
+              style={{
+                width: badgeExpanded ? 180 : 28,
+                height: badgeExpanded ? 32 : 28,
+                transition: "width 700ms cubic-bezier(0.4,0,0.2,1), height 500ms cubic-bezier(0.4,0,0.2,1), box-shadow 600ms ease",
+                boxShadow: badgeExpanded ? "0 0 16px rgba(132,204,22,0.5)" : "none",
+              }}
+            >
+              <span
+                className="text-slate-900 text-[10px] font-bold tracking-widest uppercase"
+                style={{
+                  opacity: badgeExpanded ? 1 : 0,
+                  transition: "opacity 400ms ease 350ms",
+                }}
+              >
+                {badgeText}
+                {badgeExpanded && (
+                  <span className="inline-block w-[1px] h-2.5 bg-slate-900 ml-0.5 animate-pulse align-middle" />
+                )}
+              </span>
+            </div>
           </div>
         </div>
 
