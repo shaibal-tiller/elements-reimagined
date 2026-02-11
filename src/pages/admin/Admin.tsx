@@ -1,21 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   LogOut,
   FolderKanban,
   Wrench,
   User,
+  FileText,
   Plus,
   Pencil,
   Trash2,
   Loader2,
   AlertCircle,
-  CheckCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../hooks/useAuth";
 import { useProjects } from "../../hooks/useProjects";
 import { useServices } from "../../hooks/useServices";
 import { useProfile, useLinks } from "../../hooks/useProfile";
+import { useResume } from "../../hooks/useResume";
 import {
   createProject,
   updateProject,
@@ -27,19 +29,26 @@ import {
   deleteService,
 } from "../../services/servicesService";
 import { updateProfile, updateLinks } from "../../services/profileService";
-import { FirestoreProject, FirestoreService, FirestoreProfile, FirestoreLinks } from "../../types/firebase";
+import { updateResume } from "../../services/resumeService";
+import { FirestoreProject, FirestoreService, FirestoreProfile, FirestoreLinks, FirestoreResume } from "../../types/firebase";
 import { isFirebaseConfigured } from "../../lib/firebase/config";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "../../components/ui/alert-dialog";
 import LoginForm from "./components/LoginForm";
 import ProjectForm from "./components/ProjectForm";
 import ServiceForm from "./components/ServiceForm";
 import ProfileForm from "./components/ProfileForm";
+import ResumeForm from "./components/ResumeForm";
 
-type Tab = "projects" | "services" | "profile";
-
-interface Toast {
-  type: "success" | "error";
-  message: string;
-}
+type Tab = "projects" | "services" | "profile" | "resume";
 
 const Admin: React.FC = () => {
   const { user, isLoading: authLoading, error: authError, signIn, signOut, clearError } = useAuth();
@@ -47,12 +56,12 @@ const Admin: React.FC = () => {
   const { data: services, isLoading: servicesLoading } = useServices();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: links, isLoading: linksLoading } = useLinks();
+  const { data: resume, isLoading: resumeLoading } = useResume();
 
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<Tab>("projects");
   const [isFormLoading, setIsFormLoading] = useState(false);
-  const [toast, setToast] = useState<Toast | null>(null);
 
   // Project state
   const [editingProject, setEditingProject] = useState<FirestoreProject | null>(null);
@@ -62,13 +71,12 @@ const Admin: React.FC = () => {
   const [editingService, setEditingService] = useState<FirestoreService | null>(null);
   const [showServiceForm, setShowServiceForm] = useState(false);
 
-  // Clear toast after 3 seconds
-  useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
+  // Delete confirmation state
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    type: "project" | "service";
+    id: string;
+    title: string;
+  } | null>(null);
 
   // Check if Firebase is configured
   if (!isFirebaseConfigured()) {
@@ -90,6 +98,15 @@ const Admin: React.FC = () => {
     );
   }
 
+  // Show loading screen while checking auth state
+  if (authLoading && !user) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+      </div>
+    );
+  }
+
   // Show login form if not authenticated
   if (!user) {
     return (
@@ -101,44 +118,29 @@ const Admin: React.FC = () => {
     );
   }
 
-  const showToast = (type: "success" | "error", message: string) => {
-    setToast({ type, message });
-  };
-
   // Project handlers
   const handleSaveProject = async (projectData: FirestoreProject) => {
     setIsFormLoading(true);
     try {
       if (editingProject) {
         await updateProject(projectData.id, projectData);
-        showToast("success", "Project updated successfully");
+        toast.success("Project updated successfully");
       } else {
         await createProject(projectData);
-        showToast("success", "Project created successfully");
+        toast.success("Project created successfully");
       }
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       setShowProjectForm(false);
       setEditingProject(null);
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "Failed to save project");
+      toast.error(error instanceof Error ? error.message : "Failed to save project");
     } finally {
       setIsFormLoading(false);
     }
   };
 
-  const handleDeleteProject = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this project?")) return;
-
-    setIsFormLoading(true);
-    try {
-      await deleteProject(id);
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
-      showToast("success", "Project deleted successfully");
-    } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "Failed to delete project");
-    } finally {
-      setIsFormLoading(false);
-    }
+  const handleDeleteProject = (id: string, title: string) => {
+    setDeleteConfirm({ type: "project", id, title });
   };
 
   const handleEditProject = (project: FirestoreProject) => {
@@ -152,39 +154,50 @@ const Admin: React.FC = () => {
     try {
       if (editingService) {
         await updateService(serviceData.id!, serviceData);
-        showToast("success", "Service updated successfully");
+        toast.success("Service updated successfully");
       } else {
         await createService(serviceData);
-        showToast("success", "Service created successfully");
+        toast.success("Service created successfully");
       }
       queryClient.invalidateQueries({ queryKey: ["services"] });
       setShowServiceForm(false);
       setEditingService(null);
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "Failed to save service");
+      toast.error(error instanceof Error ? error.message : "Failed to save service");
     } finally {
       setIsFormLoading(false);
     }
   };
 
-  const handleDeleteService = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this service?")) return;
-
-    setIsFormLoading(true);
-    try {
-      await deleteService(id);
-      queryClient.invalidateQueries({ queryKey: ["services"] });
-      showToast("success", "Service deleted successfully");
-    } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "Failed to delete service");
-    } finally {
-      setIsFormLoading(false);
-    }
+  const handleDeleteService = (id: string, title: string) => {
+    setDeleteConfirm({ type: "service", id, title });
   };
 
   const handleEditService = (service: FirestoreService) => {
     setEditingService(service);
     setShowServiceForm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
+
+    setIsFormLoading(true);
+    try {
+      if (deleteConfirm.type === "project") {
+        await deleteProject(deleteConfirm.id);
+        queryClient.invalidateQueries({ queryKey: ["projects"] });
+        toast.success("Project deleted successfully");
+      } else {
+        await deleteService(deleteConfirm.id);
+        queryClient.invalidateQueries({ queryKey: ["services"] });
+        toast.success("Service deleted successfully");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : `Failed to delete ${deleteConfirm.type}`);
+    } finally {
+      setIsFormLoading(false);
+      setDeleteConfirm(null);
+    }
   };
 
   // Profile handlers
@@ -193,9 +206,9 @@ const Admin: React.FC = () => {
     try {
       await updateProfile(profileData);
       queryClient.invalidateQueries({ queryKey: ["profile"] });
-      showToast("success", "Profile updated successfully");
+      toast.success("Profile updated successfully");
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "Failed to save profile");
+      toast.error(error instanceof Error ? error.message : "Failed to save profile");
     } finally {
       setIsFormLoading(false);
     }
@@ -206,9 +219,23 @@ const Admin: React.FC = () => {
     try {
       await updateLinks(linksData);
       queryClient.invalidateQueries({ queryKey: ["links"] });
-      showToast("success", "Links updated successfully");
+      toast.success("Links updated successfully");
     } catch (error) {
-      showToast("error", error instanceof Error ? error.message : "Failed to save links");
+      toast.error(error instanceof Error ? error.message : "Failed to save links");
+    } finally {
+      setIsFormLoading(false);
+    }
+  };
+
+  // Resume handlers
+  const handleSaveResume = async (resumeData: Partial<FirestoreResume>) => {
+    setIsFormLoading(true);
+    try {
+      await updateResume(resumeData);
+      queryClient.invalidateQueries({ queryKey: ["resume"] });
+      toast.success("Resume updated successfully");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to save resume");
     } finally {
       setIsFormLoading(false);
     }
@@ -240,6 +267,7 @@ const Admin: React.FC = () => {
     techStack: p.techStack,
     marqueeIconNames: p.marqueeIcons.map((i) => i?.name || "Code2"),
     challenge: p.challenge,
+    coverMedia: p.coverMedia || [],
     order: 0,
   })) || [];
 
@@ -256,25 +284,35 @@ const Admin: React.FC = () => {
     { id: "projects" as Tab, label: "Projects", icon: FolderKanban },
     { id: "services" as Tab, label: "Services", icon: Wrench },
     { id: "profile" as Tab, label: "Profile", icon: User },
+    { id: "resume" as Tab, label: "Resume", icon: FileText },
   ];
 
   return (
     <div className="min-h-screen bg-slate-900">
-      {/* Toast */}
-      {toast && (
-        <div className={`fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border ${
-          toast.type === "success"
-            ? "bg-green-500/10 border-green-500/20 text-green-400"
-            : "bg-red-500/10 border-red-500/20 text-red-400"
-        }`}>
-          {toast.type === "success" ? (
-            <CheckCircle className="w-5 h-5" />
-          ) : (
-            <AlertCircle className="w-5 h-5" />
-          )}
-          <span>{toast.message}</span>
-        </div>
-      )}
+      {/* Delete Confirmation Modal */}
+      <AlertDialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent className="bg-slate-800 border-slate-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              Delete {deleteConfirm?.type}?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              Are you sure you want to delete &ldquo;{deleteConfirm?.title}&rdquo;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600 hover:text-white">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Project Form Modal */}
       {showProjectForm && (
@@ -392,7 +430,7 @@ const Admin: React.FC = () => {
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDeleteProject(project.id)}
+                        onClick={() => handleDeleteProject(project.id, project.title)}
                         className="p-2 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -455,7 +493,7 @@ const Admin: React.FC = () => {
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteService(service.id!)}
+                          onClick={() => handleDeleteService(service.id!, service.title)}
                           className="p-2 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -491,6 +529,25 @@ const Admin: React.FC = () => {
                 links={links as FirestoreLinks | null}
                 onSaveProfile={handleSaveProfile}
                 onSaveLinks={handleSaveLinks}
+                isLoading={isFormLoading}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Resume Tab */}
+        {activeTab === "resume" && (
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-6">Resume Management</h2>
+
+            {resumeLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+              </div>
+            ) : (
+              <ResumeForm
+                resume={(resume as FirestoreResume) || null}
+                onSave={handleSaveResume}
                 isLoading={isFormLoading}
               />
             )}

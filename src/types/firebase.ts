@@ -7,6 +7,7 @@ export interface FirestoreProjectImage {
   src: string;
   caption: string;
   details: string;
+  type?: "image" | "video";
 }
 
 export interface FirestoreProjectFeature {
@@ -30,6 +31,9 @@ export interface FirestoreProjectTheme {
   pillBg: string;
   pillBorder: string;
   pillText: string;
+  techFrontendColor?: string;
+  techBackendColor?: string;
+  techDevopsColor?: string;
 }
 
 export interface FirestoreHeaderInfo {
@@ -64,6 +68,7 @@ export interface FirestoreProject {
     title: string;
     desc: string;
   };
+  coverMedia?: FirestoreProjectImage[];
   order?: number; // For sorting
 }
 
@@ -118,6 +123,7 @@ export interface ProjectImage {
   src: string;
   caption: string;
   details: string;
+  type?: "image" | "video";
 }
 
 export interface ProjectFeature {
@@ -141,6 +147,9 @@ export interface ProjectTheme {
   pillBg: string;
   pillBorder: string;
   pillText: string;
+  techFrontendColor?: string;
+  techBackendColor?: string;
+  techDevopsColor?: string;
 }
 
 export interface HeaderInfo {
@@ -175,6 +184,7 @@ export interface Project {
     title: string;
     desc: string;
   };
+  coverMedia?: ProjectImage[];
 }
 
 export interface Service {
@@ -210,4 +220,47 @@ export interface Links {
   linkedin: string;
   github: string;
   whatsapp: string;
+}
+
+export interface ResumeSkillCategory {
+  title: string;
+  skills: string[];
+}
+
+export interface ResumeWorkExperience {
+  project: string;
+  client: string;
+  period: string;
+  link?: string;
+  points: string[];
+}
+
+export interface ResumeEducation {
+  institution: string;
+  degree: string;
+  grade?: string;
+  period: string;
+}
+
+export interface ResumeLanguage {
+  name: string;
+  level: string;
+}
+
+export interface ResumeReference {
+  name: string;
+  title: string;
+  phone: string;
+  email: string;
+}
+
+export interface FirestoreResume {
+  profile: string;
+  videoResumeUrl: string;
+  skillCategories: ResumeSkillCategory[];
+  workExperience: ResumeWorkExperience[];
+  competencies: string[];
+  education: ResumeEducation[];
+  languages: ResumeLanguage[];
+  references: ResumeReference[];
 }

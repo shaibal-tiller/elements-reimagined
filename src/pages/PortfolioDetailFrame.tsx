@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -12,9 +12,13 @@ import {
   AlertTriangle,
   RefreshCw,
   FolderX,
+  Play,
 } from 'lucide-react';
+import { isVideo, isEmbedVideo, getEmbedUrl } from '../lib/mediaUtils';
 import { useProject } from '../hooks/useProject';
 import { ProjectDetailSkeleton } from '../components/skeletons';
+import { resolveTechPillStyles } from '../lib/twColors';
+import { useSidebar } from '../contexts/SidebarContext';
 
 // --- IMAGE VIEWER COMPONENT ---
 
@@ -58,7 +62,7 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
 
   return (
     <div
-      className="fixed top-16 inset-0 z-[1000] bg-black/90 backdrop-blur-md flex flex-col animate-fadeIn"
+      className="fixed inset-0 top-16 z-[1000] bg-black/90 backdrop-blur-md flex flex-col animate-fadeIn overflow-hidden"
       onClick={handleBackdropClick}
     >
 
@@ -76,7 +80,7 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 relative flex flex-col items-center justify-center w-full h-full overflow-hidden">
+      <div className="flex-1 relative flex flex-col items-center justify-center w-full min-h-0">
 
         {/* Navigation Buttons */}
         <button
@@ -93,59 +97,89 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
           <ChevronRight className="w-8 h-8 group-hover:translate-x-1 transition-transform" />
         </button>
 
-        {/* Image Container */}
+        {/* Media Container — fills remaining space, never overflows */}
         <div
-          className={`relative w-full transition-all duration-500 ease-in-out flex items-center justify-center ${showDetails ? 'h-[35vh] mt-4' : 'h-[75vh]'}`}
+          className={`relative w-full transition-all duration-500 ease-in-out flex items-center justify-center min-h-0 ${showDetails ? 'flex-[0_0_35vh] mt-4' : 'flex-1'}`}
           onClick={e => e.stopPropagation()}
         >
-          <img
-            src={currentImage.src}
-            alt={currentImage.caption}
-            className="h-full w-auto object-contain max-w-[90%] shadow-2xl"
-          />
+          {isVideo(currentImage) ? (
+            isEmbedVideo(currentImage.src) ? (
+              <iframe
+                key={currentIndex}
+                src={getEmbedUrl(currentImage.src) || currentImage.src}
+                className="max-h-full w-[90%] aspect-video shadow-2xl rounded-lg"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
+              <video
+                key={currentIndex}
+                src={currentImage.src}
+                controls
+                autoPlay
+                playsInline
+                className="max-h-full max-w-[90%] object-contain shadow-2xl"
+              />
+            )
+          ) : (
+            <img
+              src={currentImage.src}
+              alt={currentImage.caption}
+              className="max-h-full max-w-[90%] object-contain shadow-2xl"
+            />
+          )}
         </div>
 
-        {/* Caption Bar (Visible when details hidden) */}
-        {!showDetails && (
+        {/* Slide-up Details Panel — starts fully off-screen, slides to caption peek, then full details */}
+        {currentImage.caption && (
           <div
-            className="absolute bottom-24 left-0 right-0 z-30 flex justify-center pointer-events-none"
+            className={`absolute left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-xl border-t border-white/10 text-white flex flex-col transition-all duration-500 ease-in-out ${showDetails ? 'bottom-0 h-[55vh]' : 'bottom-0 h-14'}`}
             onClick={e => e.stopPropagation()}
           >
-            <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-full pl-6 pr-2 py-2 flex items-center gap-4 pointer-events-auto hover:bg-black/70 transition-colors cursor-pointer" onClick={() => setShowDetails(true)}>
-              <span className="text-white font-medium text-sm md:text-base">{currentImage.caption}</span>
-              <button className="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-colors">
-                <ChevronUp className="w-4 h-4 text-white animate-bounce" />
-              </button>
-            </div>
+            {/* Toggle handle */}
+            <button
+              onClick={() => setShowDetails((v) => !v)}
+              className="absolute -top-5 left-1/2 -translate-x-1/2 p-2 bg-slate-800 text-white rounded-full shadow-lg border border-white/10 hover:bg-slate-700 transition-colors z-10"
+            >
+              {showDetails ? (
+                <ChevronDown className="w-5 h-5" />
+              ) : (
+                <ChevronUp className="w-5 h-5 animate-bounce" />
+              )}
+            </button>
+
+            {/* Collapsed caption bar */}
+            {!showDetails && (
+              <div
+                className="flex items-center justify-center h-14 cursor-pointer px-6"
+                onClick={() => setShowDetails(true)}
+              >
+                <span className="text-white font-medium text-sm md:text-base truncate">{currentImage.caption}</span>
+              </div>
+            )}
+
+            {/* Expanded details */}
+            {showDetails && (
+              <div className="flex-1 overflow-y-auto p-8 md:p-12 pt-4">
+                <div className="max-w-4xl mx-auto w-full">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-1 h-6 bg-cyan-400 rounded-full"></div>
+                    <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">
+                      {isVideo(currentImage) ? 'Media Details' : 'Image Details'}
+                    </span>
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">{currentImage.caption}</h3>
+                  <p className="text-slate-300 text-lg leading-relaxed whitespace-pre-line">{currentImage.details}</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
-
-        {/* Slide-up Details Panel */}
-        <div
-          className={`absolute -bottom-6 left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-xl border-t border-white/10 text-white p-8 md:p-12 flex flex-col transition-transform duration-500 ease-in-out h-[55vh] ${showDetails ? 'translate-y-0' : 'translate-y-full'}`}
-          onClick={e => e.stopPropagation()}
-        >
-          <button
-            onClick={() => setShowDetails(false)}
-            className="absolute -top-5 left-1/2 -translate-x-1/2 p-2 bg-slate-800 text-white rounded-full shadow-lg border border-white/10 hover:bg-slate-700 transition-colors"
-          >
-            <ChevronDown className="w-5 h-5" />
-          </button>
-
-          <div className="max-w-4xl mx-auto w-full overflow-y-auto pr-4 custom-scrollbar">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-1 h-6 bg-cyan-400 rounded-full"></div>
-              <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">Image Details</span>
-            </div>
-            <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">{currentImage.caption}</h3>
-            <p className="text-slate-300 text-lg leading-relaxed whitespace-pre-line">{currentImage.details}</p>
-          </div>
-        </div>
 
       </div>
 
       {/* Thumbnails Strip */}
-      <div className={`h-20 w-full flex items-center justify-center gap-2 overflow-x-auto px-4 py-2 z-20 transition-all duration-300 ${showDetails ? 'opacity-0 translate-y-20 pointer-events-none' : 'opacity-100'}`} onClick={e => e.stopPropagation()}>
+      <div className={`flex-shrink-0 w-full flex items-center justify-center gap-2 overflow-x-auto px-4 py-2 z-20 transition-all duration-300 ${showDetails ? 'opacity-0 pointer-events-none' : 'opacity-100'}`} onClick={e => e.stopPropagation()}>
         {images.map((img, idx) => (
           <button
             key={idx}
@@ -153,11 +187,185 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
             className={`relative w-16 h-12 flex-shrink-0 rounded-md overflow-hidden transition-all duration-300 border ${idx === currentIndex ? 'border-cyan-400 opacity-100 scale-110' : 'border-white/20 opacity-40 hover:opacity-80'
               }`}
           >
-            <img src={img.src} alt="thumb" className="w-full h-full object-cover" />
+            {isVideo(img) ? (
+              <>
+                <video src={img.src} muted preload="metadata" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Play className="w-3 h-3 text-white fill-white drop-shadow" />
+                </div>
+              </>
+            ) : (
+              <img src={img.src} alt="thumb" className="w-full h-full object-cover" />
+            )}
           </button>
         ))}
       </div>
     </div>
+  );
+};
+
+// --- GALLERY CAROUSEL COMPONENT ---
+
+const GallerySection = ({
+  images,
+  theme,
+  onImageClick,
+}: {
+  images: { src: string; caption: string; details: string }[];
+  theme: any;
+  onImageClick: (idx: number) => void;
+}) => {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const thumbStripRef = useRef<HTMLDivElement>(null);
+
+  // Keep the active thumbnail scrolled into view
+  useEffect(() => {
+    const strip = thumbStripRef.current;
+    if (!strip) return;
+    const thumb = strip.children[activeIdx] as HTMLElement | undefined;
+    if (thumb) {
+      thumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }, [activeIdx]);
+
+  if (images.length === 0) return null;
+
+  const prev = () => setActiveIdx((i) => (i - 1 + images.length) % images.length);
+  const next = () => setActiveIdx((i) => (i + 1) % images.length);
+  const current = images[activeIdx];
+
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className={`text-xl font-bold`} style={{ color: theme.textMain }}>System Visuals</h3>
+        <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
+          {activeIdx + 1} / {images.length}
+        </span>
+      </div>
+
+      {/* Featured Media */}
+      <div className="relative group rounded-2xl overflow-hidden bg-slate-900 shadow-lg border border-slate-200">
+        <div
+          className="aspect-[16/9] cursor-pointer relative"
+          onClick={() => onImageClick(activeIdx)}
+        >
+          {images.map((img, idx) => (
+            <div
+              key={idx}
+              className="absolute inset-0 w-full h-full transition-opacity duration-500 ease-in-out"
+              style={{ opacity: idx === activeIdx ? 1 : 0, pointerEvents: idx === activeIdx ? 'auto' : 'none' }}
+            >
+              {isVideo(img) ? (
+                isEmbedVideo(img.src) ? (
+                  <iframe
+                    src={getEmbedUrl(img.src) || img.src}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video
+                    src={img.src}
+                    controls
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-contain"
+                  />
+                )
+              ) : (
+                <img
+                  src={img.src}
+                  alt={img.caption}
+                  className="w-full h-full object-contain"
+                />
+              )}
+            </div>
+          ))}
+
+          {/* Hover overlay (only for non-embed items) */}
+          {!isEmbedVideo(current.src) && (
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 translate-y-3 group-hover:translate-y-0 transition-all duration-300 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-white text-xs font-medium border border-white/20 flex items-center gap-2">
+                <Maximize2 className="w-4 h-4" />
+                View full size
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Caption bar */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 pt-10">
+          <p className="text-white text-sm font-medium truncate">{current.caption}</p>
+          {current.details && (
+            <p className="text-white/60 text-xs mt-0.5 line-clamp-1">{current.details}</p>
+          )}
+        </div>
+
+        {/* Nav arrows */}
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); prev(); }}
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/10"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); next(); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/10"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Thumbnail strip */}
+      {images.length > 1 && (
+        <div className="mt-3 relative">
+          <div
+            ref={thumbStripRef}
+            className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide scroll-smooth"
+            style={{ scrollbarWidth: 'none' }}
+          >
+            {images.map((img, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveIdx(idx)}
+                className={`relative flex-shrink-0 rounded-lg overflow-hidden transition-all duration-300 border-2 shadow-sm ${
+                  idx === activeIdx
+                    ? 'ring-2 ring-current/20 scale-105'
+                    : 'border-slate-200 opacity-70 hover:opacity-100 hover:border-slate-300'
+                }`}
+                style={{
+                  width: 80,
+                  height: 52,
+                  ...(idx === activeIdx ? { borderColor: theme.textMain, '--tw-ring-color': theme.textMain } as React.CSSProperties : {}),
+                }}
+              >
+                {isVideo(img) ? (
+                  <>
+                    <video src={img.src} muted preload="metadata" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-5 h-5 rounded-full bg-black/50 flex items-center justify-center">
+                        <Play className="w-2.5 h-2.5 text-white fill-white" />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <img src={img.src} alt={img.caption} className="w-full h-full object-cover" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Fade edges when scrollable */}
+          <div className="absolute left-0 top-0 bottom-1 w-6 bg-gradient-to-r from-slate-50 to-transparent pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-1 w-6 bg-gradient-to-l from-slate-50 to-transparent pointer-events-none" />
+        </div>
+      )}
+    </section>
   );
 };
 
@@ -167,12 +375,82 @@ const ProjectDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const { setCollapsed } = useSidebar();
+  const contextSectionRef = useRef<HTMLElement>(null);
 
   const { data: project, isLoading, error, refetch } = useProject(id);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
+
+  // Collapse sidebar when "Project Context" section scrolls past mid-screen
+  useEffect(() => {
+    const el = contextSectionRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Section is crossing the mid-screen line → keep sidebar open
+          setCollapsed(false);
+        } else if (entry.boundingClientRect.bottom < window.innerHeight / 2) {
+          // Section has scrolled above mid-screen → collapse
+          setCollapsed(true);
+        }
+      },
+      // Shrink root to a thin line at vertical center of viewport
+      { rootMargin: '-50% 0px -50% 0px', threshold: 0 },
+    );
+
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      setCollapsed(false);
+    };
+  }, [project, setCollapsed]);
+
+  // Cover media slideshow: starts at -1 (themed bg), then loops through coverMedia
+  const coverMedia = project?.coverMedia || [];
+  const [coverIdx, setCoverIdx] = useState(-1);
+  const hasShownCoverRef = useRef(false);
+  const isPausedRef = useRef(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    // Reset on project change
+    setCoverIdx(-1);
+    hasShownCoverRef.current = false;
+    isPausedRef.current = false;
+
+    if (coverMedia.length === 0) return;
+
+    const tick = () => {
+      if (isPausedRef.current) return;
+      setCoverIdx((prev) => {
+        if (!hasShownCoverRef.current) {
+          // First tick: move from cover bg (-1) to first media item (0)
+          hasShownCoverRef.current = true;
+          return 0;
+        }
+        // Subsequent ticks: loop through 0..length-1
+        return (prev + 1) % coverMedia.length;
+      });
+    };
+
+    intervalRef.current = setInterval(tick, 2500);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [coverMedia.length]);
+
+  const handleHeroMouseEnter = () => {
+    isPausedRef.current = true;
+  };
+
+  const handleHeroMouseLeave = () => {
+    isPausedRef.current = false;
+  };
 
   // Loading State
   if (isLoading) {
@@ -237,6 +515,7 @@ const ProjectDetail = () => {
   }
 
   const { theme } = project;
+  const hasCover = coverMedia.length > 0;
 
   return (
     <>
@@ -251,11 +530,63 @@ const ProjectDetail = () => {
       <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20 animate-fadeUp mt-[100px]">
 
         {/* Hero Header */}
-        <div className={`relative ${theme.bgMain} text-white overflow-hidden rounded-xl -translate-y-[10px]` }>
-          <div className="absolute inset-0 opacity-10">
+        <div
+          className={`relative ${theme.bgMain} text-white overflow-hidden rounded-xl -translate-y-[10px]`}
+          onMouseEnter={handleHeroMouseEnter}
+          onMouseLeave={handleHeroMouseLeave}
+        >
+          {/* Slide 0: Themed cover background (shown initially) */}
+          <div
+            className="absolute inset-0 transition-opacity duration-700 ease-in-out opacity-10"
+            style={{ opacity: coverIdx === -1 ? 0.1 : 0 }}
+          >
             <div className={`absolute right-0 top-0 w-[600px] h-[600px] ${theme.accentBlur} rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4`}></div>
             <div className={`absolute left-10 bottom-0 w-[400px] h-[400px] ${theme.accentBlur} rounded-full blur-[100px] translate-y-1/2`}></div>
           </div>
+
+          {/* Slides 1+: Cover media items */}
+          {hasCover && (
+            <>
+              {coverMedia.map((media, idx) => (
+                <div
+                  key={idx}
+                  className="absolute inset-0 transition-opacity duration-700 ease-in-out"
+                  style={{ opacity: idx === coverIdx ? 1 : 0 }}
+                >
+                  {isVideo(media) ? (
+                    isEmbedVideo(media.src) ? (
+                      <iframe
+                        src={getEmbedUrl(media.src) || media.src}
+                        className="w-full h-full object-cover"
+                        allow="autoplay; muted"
+                        style={{ border: 0 }}
+                      />
+                    ) : (
+                      <video
+                        src={media.src}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="w-full h-full object-cover"
+                      />
+                    )
+                  ) : (
+                    <img
+                      src={media.src}
+                      alt={media.caption || ""}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </div>
+              ))}
+              {/* Dark overlay for readability (only when showing media) */}
+              <div
+                className="absolute inset-0 bg-black/50 transition-opacity duration-700"
+                style={{ opacity: coverIdx >= 0 ? 1 : 0 }}
+              />
+            </>
+          )}
 
           <div className="container mx-auto px-6 pt-6 pb-16 relative z-10 ">
             <button onClick={() => navigate('/portfolio')} className="mb-8 flex items-center text-slate-300 hover:text-white transition-colors border hover:border-white rounded-lg pl-2 pr-4" >
@@ -299,7 +630,7 @@ const ProjectDetail = () => {
             {/* Left Column: Main Content */}
             <div className="lg:col-span-8 space-y-8">
 
-              <section className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+              <section ref={contextSectionRef} className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
                 <h2 className={`text-2xl font-bold ${theme.textMain} mb-6 flex items-center gap-3`}>
                   <div className={`w-2 h-8 ${theme.accentBlur} rounded-full`}></div>
                   Project Context
@@ -324,32 +655,11 @@ const ProjectDetail = () => {
                 </div>
               </section>
 
-              <section>
-                <h3 className={`text-xl font-bold ${theme.textMain} mb-6`}>System Visuals</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {project.images.map((img, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => setSelectedImageIndex(idx)}
-                      className="group relative aspect-video bg-slate-200 rounded-xl overflow-hidden border border-slate-200 cursor-pointer shadow-sm hover:shadow-lg transition-all duration-300"
-                    >
-                      <img
-                        src={img.src}
-                        alt={img.caption}
-                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
-                        <div className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 bg-white/20 backdrop-blur-sm p-3 rounded-full text-white border border-white/30">
-                          <Maximize2 className="w-6 h-6" />
-                        </div>
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent text-white opacity-0 group-hover:opacity-100 transition-opacity truncate text-sm font-medium">
-                        {img.caption}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
+              <GallerySection
+                images={project.images}
+                theme={theme}
+                onImageClick={(idx) => setSelectedImageIndex(idx)}
+              />
 
               <section className={`bg-gradient-to-br ${theme.bgMain} text-white rounded-2xl p-8 relative overflow-hidden`}>
                 <div className={`absolute top-0 right-0 w-64 h-64 ${theme.accentBlur} opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2`}></div>
@@ -397,38 +707,25 @@ const ProjectDetail = () => {
                   </h3>
 
                   <div className="space-y-6">
-                    <div>
-                      <p className="text-xs font-semibold text-slate-400 uppercase mb-3">Frontend</p>
-                      <div className="flex flex-wrap gap-2">
-                        {project.techStack.frontend.map((tech) => (
-                          <span key={tech} className={`px-3 py-1 ${theme.pillBg} ${theme.pillBorder} rounded-lg text-xs font-medium border transition-colors cursor-default backdrop-blur-sm`} style={{ color: theme.textMain }}>
-                            {tech}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-semibold text-slate-400 uppercase mb-3">Backend</p>
-                      <div className="flex flex-wrap gap-2">
-                        {project.techStack.backend.map((tech) => (
-                          <span key={tech} className={`px-3 py-1 ${theme.pillBg} ${theme.pillBorder} rounded-lg text-xs font-medium border transition-colors cursor-default backdrop-blur-sm`} style={{ color: theme.textMain }}>
-                            {tech}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-semibold text-slate-400 uppercase mb-3">DevOps & Tools</p>
-                      <div className="flex flex-wrap gap-2">
-                        {project.techStack.devops.map((tech) => (
-                          <span key={tech} className={`px-3 py-1 ${theme.pillBg} ${theme.pillBorder} rounded-lg text-xs font-medium border transition-colors cursor-default backdrop-blur-sm`} style={{ color: theme.textMain }}>
-                            {tech}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                    {([
+                      { key: "frontend" as const, label: "Frontend", colorOverride: theme.techFrontendColor },
+                      { key: "backend" as const, label: "Backend", colorOverride: theme.techBackendColor },
+                      { key: "devops" as const, label: "DevOps & Tools", colorOverride: theme.techDevopsColor },
+                    ]).map(({ key, label, colorOverride }) => {
+                      const pillStyle = resolveTechPillStyles(theme, colorOverride);
+                      return (
+                        <div key={key}>
+                          <p className="text-xs font-semibold text-slate-400 uppercase mb-3">{label}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {project.techStack[key].map((tech) => (
+                              <span key={tech} className="px-3 py-1 rounded-lg text-xs font-medium border transition-colors cursor-default backdrop-blur-sm" style={pillStyle}>
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <div className="mt-8 pt-6 border-t border-slate-100">

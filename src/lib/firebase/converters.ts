@@ -39,6 +39,7 @@ export const convertFirestoreProject = (doc: FirestoreProject): Project => {
     techStack: doc.techStack,
     marqueeIcons: getIcons(doc.marqueeIconNames),
     challenge: doc.challenge,
+    coverMedia: doc.coverMedia || [],
   };
 };
 
@@ -77,6 +78,7 @@ export const convertProjectToFirestore = (
       (icon) => iconNameMap.get(icon) || "Code2"
     ),
     challenge: project.challenge,
+    coverMedia: project.coverMedia || [],
   };
 };
 

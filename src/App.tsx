@@ -14,10 +14,44 @@ import PortfolioDetail from "./pages/Detail1";
 import PortfolioDetail2 from "./pages/Detail2";
 import ProjectDetail from './pages/PortfolioDetailFrame'
 import Admin from './pages/admin/Admin'
-const queryClient = new QueryClient();
+import { useEffect } from "react";
+import { isFirebaseConfigured } from "./lib/firebase/config";
+import { getProfile, getLinks } from "./services/profileService";
+import { getProjects } from "./services/projectService";
+import { getServices } from "./services/servicesService";
+import { getResume } from "./services/resumeService";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30 * 60 * 1000,   // 30 minutes — data rarely changes
+      gcTime: 2 * 60 * 60 * 1000,  // 2 hours in memory
+      retry: 2,
+      refetchOnWindowFocus: false,  // don't refetch when tab regains focus
+      refetchOnReconnect: false,    // don't refetch on reconnect — Firestore handles offline
+    },
+  },
+});
+
+/** Prefetch all portfolio data at startup so navigation is instant. */
+function DataPrefetcher() {
+  useEffect(() => {
+    if (!isFirebaseConfigured()) return;
+
+    // Fire all fetches in parallel — they populate the React Query cache
+    queryClient.prefetchQuery({ queryKey: ["profile"], queryFn: getProfile });
+    queryClient.prefetchQuery({ queryKey: ["links"], queryFn: getLinks });
+    queryClient.prefetchQuery({ queryKey: ["projects"], queryFn: getProjects });
+    queryClient.prefetchQuery({ queryKey: ["services"], queryFn: getServices });
+    queryClient.prefetchQuery({ queryKey: ["resume"], queryFn: getResume });
+  }, []);
+
+  return null;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <DataPrefetcher />
     <Toaster />
     <Sonner />
     <BrowserRouter>

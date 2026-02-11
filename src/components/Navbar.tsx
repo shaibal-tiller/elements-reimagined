@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Menu, X, Download } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import cvFile from "@/assets/CV/Shaibal resume 2026.pdf";
 
 const navLinks = [
@@ -13,6 +13,13 @@ const navLinks = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+
+  const isActive = (href: string) => {
+    const path = href.startsWith("/") ? href : `/${href}`;
+    if (path === "/") return location.pathname === "/";
+    return location.pathname.startsWith(path);
+  };
 
   const handleDownloadCV = () => {
     // Create a temporary anchor element to trigger download
@@ -38,7 +45,11 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <Link key={link.name} to={link.href} className="nav-link">
+              <Link
+                key={link.name}
+                to={link.href}
+                className={`nav-link ${isActive(link.href) ? "text-primary font-semibold border-b-2 border-primary pb-0.5" : ""}`}
+              >
                 {link.name}
               </Link>
             ))}
@@ -72,7 +83,7 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   to={link.href}
-                  className="nav-link py-2"
+                  className={`nav-link py-2 ${isActive(link.href) ? "text-primary font-semibold" : ""}`}
                   onClick={() => setIsOpen(false)}
                 >
                   {link.name}

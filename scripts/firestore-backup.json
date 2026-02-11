@@ -1,0 +1,810 @@
+{
+  "projects": {
+    "1": {
+      "id": "1",
+      "title": "PLIS-ACCNLDP",
+      "subtitle": "Climate Resilient Planning System",
+      "category": "Govt. GIS Platform",
+      "year": "2022 - 2023",
+      "company": "Tiller",
+      "overview": "PLIS (Planning Information System) serves as the technological backbone for the ACCNLDP Phase II project, enabling the Bangladesh Planning Commission to mainstream climate considerations into national development planning.",
+      "contributions": [
+        {
+          "title": "Frontend Architecture & GIS",
+          "desc": "Led the React frontend development and OpenLayers-based GIS engine."
+        },
+        {
+          "title": "Solved Localization Challenge",
+          "desc": "Overcame Bengali language PDF rendering challenges."
+        }
+      ],
+      "techStack": {
+        "frontend": [
+          "React.js",
+          "Redux Toolkit",
+          "Tailwind",
+          "OpenLayers",
+          "Google Maps API"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "PostgreSQL",
+          "GeoServer"
+        ],
+        "devops": [
+          "Git/GitHub",
+          "Windows Server",
+          "IIS",
+          "Jira"
+        ]
+      },
+      "challenge": {
+        "title": "Bengali PDF Generation",
+        "desc": "Standard libraries failed to render complex Bengali scripts. Required custom font embedding solution."
+      },
+      "features": [
+        {
+          "title": "Interactive GIS Analysis",
+          "desc": "Multi-layer map engine using OpenLayers for spatial decision-making.",
+          "iconName": "Code2"
+        },
+        {
+          "title": "Automated Reporting",
+          "desc": "One-click generation of climate clearance certificates in Bengali.",
+          "iconName": "Code2"
+        },
+        {
+          "title": "RBAC Security",
+          "desc": "Strict Role-Based Access Control managing ministerial hierarchy.",
+          "iconName": "Code2"
+        },
+        {
+          "title": "Digital Screening",
+          "desc": "Automated climate risk scoring algorithms for projects.",
+          "iconName": "Code2"
+        }
+      ],
+      "headerInfo": [
+        {
+          "label": "Client",
+          "text": "Bangladesh Planning Commission",
+          "iconName": "Code2"
+        },
+        {
+          "label": "Funded By",
+          "text": "GIZ (Germany)",
+          "iconName": "Code2"
+        },
+        {
+          "label": "Impact Goal",
+          "text": "Delta Plan 2100 & Vision 2041",
+          "iconName": "Code2"
+        }
+      ],
+      "bannerIconName": "Code2",
+      "marqueeIconNames": [
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2"
+      ],
+      "order": 0,
+      "images": [
+        {
+          "src": "",
+          "caption": "Log In Page",
+          "details": ""
+        }
+      ],
+      "theme": {
+        "primary": "emerald",
+        "secondary": "teal",
+        "bgMain": "bg-[#064e3b]",
+        "bgGradient": "from-emerald-400 to-teal-400",
+        "accentBlur": "bg-emerald-500",
+        "textMain": "#10b981",
+        "pillBg": "bg-emerald-500/10",
+        "pillBorder": "border-emerald-500/20",
+        "pillText": "text-emerald-400"
+      }
+    },
+    "2": {
+      "id": "2",
+      "title": "IUNSD",
+      "subtitle": "Integrative Upscaling of National Sanitation Database",
+      "category": "WASH Data Hub",
+      "year": "2023",
+      "company": "DPHE",
+      "bannerIconName": "Droplets",
+      "theme": {
+        "primary": "cyan",
+        "secondary": "teal",
+        "bgMain": "bg-[#004d61]",
+        "bgGradient": "from-cyan-300 to-teal-300",
+        "accentBlur": "bg-cyan-400",
+        "textMain": "text-[#004d61]",
+        "pillBg": "bg-cyan-500/10",
+        "pillBorder": "border-cyan-500/20",
+        "pillText": "text-cyan-300"
+      },
+      "headerInfo": [
+        {
+          "label": "Implemented In",
+          "text": "DPHE Bangladesh",
+          "iconName": "Building"
+        },
+        {
+          "label": "Partners",
+          "text": "AIT Thailand, GWSC, ITN-BUET",
+          "iconName": "Users2"
+        },
+        {
+          "label": "Funded By",
+          "text": "Bill & Melinda Gates Foundation",
+          "iconName": "Droplets"
+        }
+      ],
+      "overview": "IUNSD stands as a landmark initiative in the WASH sector for Bangladesh, creating the nation's first comprehensive digital platform for tracking sanitation value chains.",
+      "features": [
+        {
+          "title": "Advanced Sankey Diagrams",
+          "desc": "Custom-built Sankey charts representing 'Shit Flow Diagram' for cities.",
+          "iconName": "ArrowRightLeft"
+        },
+        {
+          "title": "City Profile & Comparison",
+          "desc": "Detailed analytical views for individual cities with comparative metrics.",
+          "iconName": "LayoutDashboard"
+        },
+        {
+          "title": "IMIS Integration",
+          "desc": "Seamless integration with IMIS to fetch dynamic infrastructure data.",
+          "iconName": "Database"
+        },
+        {
+          "title": "Multilingual Support",
+          "desc": "Full internationalization (i18n) support for Bengali and English.",
+          "iconName": "Languages"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://images.unsplash.com/photo-1543286386-713df548e9cc?q=80&w=2070&auto=format&fit=crop",
+          "caption": "National Sanitation Data Overview",
+          "details": "High-level view for national policymakers."
+        },
+        {
+          "src": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
+          "caption": "City Profile Dashboard",
+          "details": "Dashboard for specific municipality data."
+        }
+      ],
+      "contributions": [
+        {
+          "title": "Complex Sankey Implementation",
+          "desc": "Engineered the Sankey Chart for waste flow visualization."
+        },
+        {
+          "title": "Full-Stack Development",
+          "desc": "Handled frontend UI and backend API logic."
+        }
+      ],
+      "techStack": {
+        "frontend": [
+          "React.js",
+          "React Router",
+          "Tailwind",
+          "Sankey Charts",
+          "i18n"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "PostgreSQL",
+          "GeoServer"
+        ],
+        "devops": [
+          "Docker",
+          "CI/CD",
+          "Windows Server"
+        ]
+      },
+      "marqueeIconNames": [
+        "BarChart3",
+        "Map",
+        "LayoutDashboard",
+        "PieChart",
+        "ArrowRightLeft",
+        "Droplets",
+        "Database",
+        "Server",
+        "Code2",
+        "Globe2",
+        "Layers",
+        "Box"
+      ],
+      "challenge": {
+        "title": "Manual Data Formulation",
+        "desc": "Developing the logic to trace 'distinct flows' through the sanitation chain was mathematically intensive."
+      },
+      "order": 3
+    },
+    "3": {
+      "id": "3",
+      "title": "INCLUDE Call for Ideas",
+      "subtitle": "Climate Innovation Platform for Urban Bangladesh",
+      "category": "Grant Management System",
+      "year": "2024 - 2025",
+      "company": "GIZ Bangladesh",
+      "bannerIconName": "Award",
+      "theme": {
+        "primary": "violet",
+        "secondary": "purple",
+        "bgMain": "bg-[#1e1b4b]",
+        "bgGradient": "from-violet-400 to-purple-400",
+        "accentBlur": "bg-violet-500",
+        "textMain": "text-[#1e1b4b]",
+        "pillBg": "bg-violet-500/10",
+        "pillBorder": "border-violet-500/20",
+        "pillText": "text-violet-400"
+      },
+      "headerInfo": [
+        {
+          "label": "Client",
+          "text": "GIZ Bangladesh (INCLUDE Project)",
+          "iconName": "Building"
+        },
+        {
+          "label": "Municipalities",
+          "text": "Chapainawabganj, Charghat, Gaibandha, Sirajganj",
+          "iconName": "Landmark"
+        },
+        {
+          "label": "Funded By",
+          "text": "German Federal Ministry (BMZ)",
+          "iconName": "Users2"
+        }
+      ],
+      "overview": "The INCLUDE Call for Ideas platform serves as the digital backbone for a nationwide climate innovation challenge across four municipalities in Bangladesh.",
+      "features": [
+        {
+          "title": "Multi-Stage Application System",
+          "desc": "Managed online and paper-based submissions across 12 climate challenges.",
+          "iconName": "FileText"
+        },
+        {
+          "title": "Custom Evaluation Framework",
+          "desc": "Built specialized review workflows for eligibility and jury evaluation.",
+          "iconName": "UserCheck"
+        },
+        {
+          "title": "API-Powered Dashboards",
+          "desc": "Developed custom web applications using Good Grants API.",
+          "iconName": "BarChart"
+        },
+        {
+          "title": "Stakeholder Communication",
+          "desc": "Coordinated automated email broadcasts and SMS notifications.",
+          "iconName": "Mail"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop",
+          "caption": "Application Dashboard Overview",
+          "details": "Real-time analytics showing application statistics."
+        },
+        {
+          "src": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
+          "caption": "Multi-Stage Review System",
+          "details": "Custom evaluation workflow managing multiple stages."
+        }
+      ],
+      "contributions": [
+        {
+          "title": "Platform Administration & Configuration",
+          "desc": "Managed the entire Good Grants platform setup."
+        },
+        {
+          "title": "Custom API Integration",
+          "desc": "Built specialized web applications using Good Grants API."
+        }
+      ],
+      "techStack": {
+        "frontend": [
+          "React.js",
+          "Custom Dashboard UI",
+          "Data Visualization"
+        ],
+        "backend": [
+          "Good Grants Platform",
+          "REST API Integration",
+          "Automated Workflows"
+        ],
+        "devops": [
+          "Platform Configuration",
+          "User Management",
+          "Email/SMS Systems"
+        ]
+      },
+      "marqueeIconNames": [
+        "Award",
+        "FileText",
+        "Users2",
+        "BarChart",
+        "Database",
+        "Settings",
+        "Shield",
+        "Mail",
+        "Bell",
+        "Activity",
+        "Target",
+        "Workflow"
+      ],
+      "challenge": {
+        "title": "Complex Multi-Stage Workflow",
+        "desc": "Managing a sophisticated evaluation pipeline across multiple stakeholder groups."
+      },
+      "order": 4
+    },
+    "4": {
+      "id": "4",
+      "title": "TVET UMIMCC",
+      "subtitle": "Job Placement & Business Mentoring Platform",
+      "category": "Migration & Livelihood",
+      "year": "Jun 2023 - Sep 2023",
+      "company": "GIZ Hamburg",
+      "overview": "The TVET project under the \"Urban Management of Internal Migration due to Climate Change\" (UMIMCC) initiative addresses the livelihood challenges faced by climate migrants in five partner cities of Bangladesh. As climate change displaces approximately six million people, vulnerable migrants often end up in underdeveloped urban slums without access to basic services and income opportunities.\n\nThis comprehensive digital platform was developed to track, mentor, and support 6,304 vocational and entrepreneurship training graduates—74% of whom are women—in securing employment and establishing small businesses. The system manages the entire lifecycle from baseline surveys through job placements, business mentoring, and continuous monitoring, creating a data-driven approach to improving livelihoods for climate-displaced populations.\n\nWorking across six divisions, the platform integrates multiple datasets, tracking graduate progress, coordinating with employers and financial institutions, and measuring project impact through performance-based frameworks. The system facilitated online marketing training for 250 graduates, Tally accounting training for 370 entrepreneurs, and organized job fairs and mentoring sessions across all partner cities.",
+      "images": [
+        {
+          "src": "https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=2074&auto=format&fit=crop",
+          "caption": "Graduate Database & Tracking System",
+          "details": "Comprehensive dashboard showing the 6,304 training graduates across five cities, with real-time status updates on employment, business ventures, and training participation."
+        },
+        {
+          "src": "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop",
+          "caption": "Job Placement & Mentoring Portal",
+          "details": "Interface connecting vocational training graduates with potential employers through digital job fairs and mentoring session scheduling."
+        },
+        {
+          "src": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop",
+          "caption": "Performance Monitoring Analytics",
+          "details": "Comprehensive analytics dashboard tracking project outcomes against baseline indicators with gender-disaggregated data."
+        }
+      ],
+      "contributions": [
+        {
+          "title": "Multi-Division Data Integration",
+          "desc": "Analyzed and processed extensive datasets from six divisions into a unified tracking system."
+        },
+        {
+          "title": "Graduate Progress Portal",
+          "desc": "Developed a comprehensive web portal for tracking the current job status of contacted trainees."
+        },
+        {
+          "title": "Performance Framework Implementation",
+          "desc": "Built analytics tools to measure project efficiency and progress against baseline indicators."
+        }
+      ],
+      "techStack": {
+        "frontend": [
+          "React.js",
+          "Dashboard UI",
+          "Data Visualization",
+          "Geospatial Mapping"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "PostgreSQL",
+          "Data Processing"
+        ],
+        "devops": [
+          "Database Management",
+          "Multi-City Deployment",
+          "Data Security"
+        ]
+      },
+      "challenge": {
+        "title": "Multi-Division Data Consolidation",
+        "desc": "Integrating diverse datasets from six divisions with varying data quality while maintaining real-time status updates."
+      },
+      "order": 0,
+      "features": [
+        {
+          "title": "Graduate Tracking Database",
+          "desc": "Comprehensive system managing 6,304 graduate profiles with geographic mapping and status monitoring.",
+          "iconName": "Code2"
+        },
+        {
+          "title": "Job Placement Portal",
+          "desc": "Digital platform connecting vocational graduates with employers through job fairs and mentoring sessions.",
+          "iconName": "Code2"
+        },
+        {
+          "title": "Business Mentoring System",
+          "desc": "Tracking and support framework for entrepreneurship graduates seeking financing and business guidance.",
+          "iconName": "Code2"
+        },
+        {
+          "title": "Performance Analytics",
+          "desc": "Real-time monitoring dashboard with outcomes, indicators, baselines, and targets for project evaluation.",
+          "iconName": "Code2"
+        },
+        {
+          "title": "Multi-City Coordination",
+          "desc": "Centralized management system coordinating activities across five partner municipalities.",
+          "iconName": "Code2"
+        },
+        {
+          "title": "Training Management",
+          "desc": "Digital platform for organizing online marketing and accounting training programs.",
+          "iconName": "Code2"
+        }
+      ],
+      "headerInfo": [
+        {
+          "label": "Client",
+          "text": "GIZ (Urban Migration Management)",
+          "iconName": "Code2"
+        },
+        {
+          "label": "Coverage",
+          "text": "Khulna, Satkhira, Barisal, Rajshahi, Sirajganj",
+          "iconName": "Code2"
+        },
+        {
+          "label": "Beneficiaries",
+          "text": "6,304 Graduates (74% Women)",
+          "iconName": "Code2"
+        }
+      ],
+      "bannerIconName": "Code2",
+      "theme": {
+        "primary": "amber",
+        "secondary": "orange",
+        "bgMain": "bg-[#78350f]",
+        "bgGradient": "from-amber-400 to-orange-400",
+        "accentBlur": "bg-amber-500",
+        "textMain": "#f59e0b",
+        "pillBg": "bg-amber-500/10",
+        "pillBorder": "border-amber-500/20",
+        "pillText": "text-amber-400"
+      },
+      "marqueeIconNames": [
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2",
+        "Code2"
+      ]
+    },
+    "5": {
+      "id": "5",
+      "title": "Survey Monitoring System",
+      "subtitle": "Real-Time GIS Survey Progress Tracking Platform",
+      "category": "Internal GIS Tool",
+      "year": "2023 - Present",
+      "company": "Tiller",
+      "bannerIconName": "Map",
+      "theme": {
+        "primary": "indigo",
+        "secondary": "blue",
+        "bgMain": "bg-[#1e1b4b]",
+        "bgGradient": "from-indigo-400 to-blue-400",
+        "accentBlur": "bg-indigo-500",
+        "textMain": "text-[#1e1b4b]",
+        "pillBg": "bg-indigo-500/10",
+        "pillBorder": "border-indigo-500/20",
+        "pillText": "text-indigo-400"
+      },
+      "headerInfo": [
+        {
+          "label": "Project Type",
+          "text": "In-House Survey Management Tool",
+          "iconName": "Building"
+        },
+        {
+          "label": "Technology",
+          "text": "Full-Stack GIS Application",
+          "iconName": "Code2"
+        },
+        {
+          "label": "Impact",
+          "text": "Zero Data Loss & Real-Time Tracking",
+          "iconName": "Activity"
+        }
+      ],
+      "overview": "The Survey Monitoring System is a comprehensive in-house platform developed to revolutionize how large-scale geospatial survey projects are managed, tracked, and executed. Traditional survey workflows faced critical challenges: data loss during daily transfers, mismatches between field data and digital records, inefficient progress tracking, and inability to make real-time decisions on resource allocation.\n\nThis system transforms the entire survey lifecycle by dividing city areas into phases and working unit grids, enabling surveyors to conduct drone flights and manual surveys while digitizing data in 2D/3D using QGIS and other desktop GIS tools.",
+      "features": [
+        {
+          "title": "Real-Time Data Synchronization",
+          "desc": "Direct integration with QGIS for automatic database updates.",
+          "iconName": "Database"
+        },
+        {
+          "title": "Grid-Based Progress Tracking",
+          "desc": "Visual management of survey phases with color-coded completion status.",
+          "iconName": "Layers"
+        },
+        {
+          "title": "Interactive Web GIS Viewer",
+          "desc": "Web-based map interface for visualizing survey coverage.",
+          "iconName": "Globe2"
+        },
+        {
+          "title": "Automated Progress Analytics",
+          "desc": "Real-time dashboards showing completion percentages.",
+          "iconName": "BarChart"
+        }
+      ],
+      "images": [
+        {
+          "src": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
+          "caption": "Real-Time Survey Progress Dashboard",
+          "details": "Main dashboard showing live survey progress across all phases and grids."
+        },
+        {
+          "src": "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?q=80&w=2070&auto=format&fit=crop",
+          "caption": "Interactive GIS Web Map Viewer",
+          "details": "Web-based GIS interface displaying survey grids overlaid on satellite imagery."
+        }
+      ],
+      "contributions": [
+        {
+          "title": "Full-Stack Development",
+          "desc": "Architected and developed the complete system from database design to frontend UI."
+        },
+        {
+          "title": "QGIS Integration & Automation",
+          "desc": "Implemented Python scripts for seamless integration with QGIS."
+        }
+      ],
+      "techStack": {
+        "frontend": [
+          "React.js",
+          "OpenLayers",
+          "Tailwind CSS",
+          "Web GIS UI"
+        ],
+        "backend": [
+          "Node.js",
+          "Express",
+          "PostgreSQL",
+          "PostGIS",
+          "Prisma ORM",
+          "GeoServer"
+        ],
+        "devops": [
+          "Real-Time Sync",
+          "QGIS Integration",
+          "Authentication"
+        ]
+      },
+      "marqueeIconNames": [
+        "Map",
+        "Database",
+        "Layers",
+        "Globe2",
+        "Code2",
+        "Server",
+        "Terminal",
+        "GitBranch",
+        "Settings",
+        "Shield",
+        "Activity",
+        "Workflow"
+      ],
+      "challenge": {
+        "title": "Real-Time GIS Data Synchronization",
+        "desc": "Creating seamless integration between desktop GIS tools and a centralized database with real-time sync."
+      },
+      "order": 1
+    }
+  },
+  "services": {
+    "service-0": {
+      "iconName": "Code2",
+      "title": "Full-Stack Web Development",
+      "description": "Building scalable, production-ready web applications using React, Next.js, Node.js, and modern web standards—from frontend to backend.",
+      "order": 0
+    },
+    "service-1": {
+      "iconName": "LayoutDashboard",
+      "title": "Frontend Engineering",
+      "description": "Crafting responsive, accessible, and high-performance user interfaces with React, Next.js, HTML, CSS, and Tailwind for exceptional UX.",
+      "order": 1
+    },
+    "service-2": {
+      "iconName": "Server",
+      "title": "Backend & API Development",
+      "description": "Developing secure backend systems with Node.js and Next.js APIs, including authentication, role-based access control, and REST integrations.",
+      "order": 2
+    },
+    "service-3": {
+      "iconName": "Database",
+      "title": "Database & Server Management",
+      "description": "Managing PostgreSQL, MySQL, and Firebase databases along with deploying and maintaining applications on local servers and cloud infrastructure.",
+      "order": 3
+    },
+    "service-4": {
+      "iconName": "Wrench",
+      "title": "CI/CD, Testing & Deployment",
+      "description": "Implementing automated testing, Docker-based CI/CD pipelines, and smooth deployment workflows for reliable and maintainable systems.",
+      "order": 4
+    },
+    "service-5": {
+      "iconName": "LifeBuoy",
+      "title": "Technical Support & Event Facilitation",
+      "description": "Providing on-ground technical support as a backstopper—ensuring system stability, rapid issue resolution, and smooth project or event execution.",
+      "order": 5
+    }
+  },
+  "profile": {
+    "links": {
+      "facebook": "",
+      "linkedin": "",
+      "github": "",
+      "whatsapp": ""
+    },
+    "main": {
+      "name": "Mohshin Ahamed Sharif Shaibal",
+      "short_name": "Sharif Shaibal",
+      "reverse_short_name": "Shaibal Sharif",
+      "first_short_name": "Mohshin Ahamed ",
+      "email": "shaibalsharif@gmail.com",
+      "business_email": "shaibal.tiller@gmail.com",
+      "company_email": "shaibal@tiller.com.bd",
+      "student_email": "sharif15-7348@diu.edu.bd",
+      "primary_phone": "+8801521330598",
+      "secondary_phone": "+8801978330598",
+      "full_address": "Mirpur, Dhaka, Bangladesh",
+      "residence": "Mirpur",
+      "city": "Dhaka",
+      "country": "Bangladesh",
+      "dob": "1998-06-25",
+      "gender": "Male",
+      "age": "26 yrs",
+      "bio": "React/Next.js frontend engineer. Delivers robust, tested code & enjoys collaborative problem-solving. Brings a positive, fun energy to the team, enhancing productivity & morale. Passionate about creating exceptional user experiences."
+    }
+  },
+  "resume": {
+    "main": {
+      "profile": "Software engineer with 3+ years of experience specializing in React.js, Next.js, and TypeScript, with strong backend integration capabilities. Delivered end-to-end solutions for multiple foreign and domestic projects, managing complete development lifecycles from architecture to deployment. Passionate about building scalable, high-performance applications with clean code and modern development practices.",
+      "videoResumeUrl": "https://drive.google.com/file/d/1Eki_Nwu4ANgJxg-tmbtKWBnhLE1s57_t/preview",
+      "skillCategories": [
+        {
+          "title": "Frontend Development",
+          "skills": ["React.js", "Next.js (SSR/SSG/API Routes)", "JavaScript (ES6+)", "TypeScript", "HTML5", "CSS3", "SCSS", "Tailwind CSS", "Bootstrap", "Material UI", "Redux Toolkit", "Zustand", "Context API", "Responsive & Cross-browser Design", "Performance Optimization"]
+        },
+        {
+          "title": "Backend & Database",
+          "skills": ["Node.js", "RESTful API Development", "PostgreSQL", "MySQL", "Neon DB", "Firebase", "JWT", "OAuth", "RBAC", "WebSocket", "GraphQL"]
+        },
+        {
+          "title": "DevOps & Tools",
+          "skills": ["Git", "GitHub", "GitHub Actions", "npm", "yarn", "Docker", "CI/CD Pipelines", "Unit & Integration Testing", "Postman", "VS Code"]
+        },
+        {
+          "title": "Specialized",
+          "skills": ["OpenLayers", "Google Maps", "Geoserver", "i18n (Multilingual Support)", "PWA Development", "Third-party API Integration", "Agile/Scrum Methodology"]
+        }
+      ],
+      "workExperience": [
+        {
+          "project": "NSD - National Sanitation Dashboard",
+          "client": "DPHE, a2i, GWSC",
+          "period": "2023 - Present",
+          "link": "https://sanboard.gov.bd",
+          "points": [
+            "Developed centralized WASH and sanitation data dashboard with integrations to a2i, DPHE, and IMIS, involved from RFP/EOI preparation through project acquisition and deployment.",
+            "Participated in requirement analysis meetings with stakeholders and regular update sessions with government bodies, leading wireframe-to-development lifecycle.",
+            "Implemented complete authentication system with JWT, refresh tokens, RBAC, password management (forgot/reset).",
+            "Bilingual support (English/Bangla) using i18n.",
+            "Designed and developed dynamic reusable components with state management using Context API and Redux Toolkit, creating multiple forms with validation and interactive charts.",
+            "Seamlessly integrated with Java backend APIs, conducted rigorous unit testing and debugging in collaboration with backend team.",
+            "Implemented advanced caching and performance optimization to minimize re-renders and enhance user experience with high interactivity.",
+            "Integrated OpenLayers map API with Geoserver for geospatial visualization, configured layers and shapefile processing.",
+            "Deployed on IIS server and established CI/CD pipeline using Docker via Jenkins for automated testing and deployment workflows."
+          ]
+        },
+        {
+          "project": "ACCNLDP-II (PLIS - DPP Analysis Tool)",
+          "client": "Planning Commission Bangladesh, GIZ",
+          "period": "2022 - 2023",
+          "points": [
+            "Developed map-based DPP (Development Project Plan) feasibility analysis platform with comprehensive authentication, RBAC, and precise input validation for critical data accuracy.",
+            "Built extensive geospatial features integrating server and Geoserver APIs with robust error handling for location-specific project evaluation.",
+            "Managed state with Context API, designed dashboards for various user types, and implemented GIS layer customization (add/remove/modify overlays).",
+            "Generated comprehensive reports with maps, charts, and graphs using three libraries ensuring map interaction and Bangla language support.",
+            "Participated in client meetings for requirements, conducted post-deployment training sessions as trainer, and created user manuals for widespread adoption.",
+            "Developed PDF export functionality combining maps, tables, and statistical analysis data for complete reporting."
+          ]
+        },
+        {
+          "project": "INCLUDE - Innovations for Climate-smart Urban Development",
+          "client": "GIZ Bangladesh - BMZ, UNITAC",
+          "period": "2025",
+          "points": [
+            "Provided technical assistance in identifying urban climate challenges for innovation competition across 4 municipalities, managing complete GoodGrants.com platform operations.",
+            "Designed platform pages, forms, and managed 900+ submissions including processing 800 paper-based PDFs through Excel conversion with help of automation.",
+            "Developed Next.js application with PostgreSQL (Neon DB), Python scripts, GitHub Actions, cron jobs, and rate limiter management using batches and delays.",
+            "Built and uploaded data to platform via custom Python scripts integrating with GoodGrants API, resolving technical issues with support team.",
+            "Configured complete reviewer management system with multi-round evaluation workflows and scoring setup, generating real-time reports with charts.",
+            "Coordinated all technical operations for 3-day Rajshahi pitching ceremony including LED screens, audio-video, web conferencing, and live scoring."
+          ]
+        },
+        {
+          "project": "Internal Systems & Tools Development for Tiller",
+          "client": "Tiller",
+          "period": "",
+          "points": [
+            "Developed Survey Management Dashboard web app for tracking drone surveys, 3D modeling, and map survey operations with real-time progress monitoring connected to company servers for project planning and milestone tracking.",
+            "Redesigned and migrated company website (tiller.com.bd) from WordPress to React, creating dynamic, faster-loading interface with component-based architecture and simplified content management for non-technical staff.",
+            "Architected and developed full-stack Bill Management and Budget Analysis application using Next.js, TypeScript, and PostgreSQL with role-based access control.",
+            "Built comprehensive financial management features including automated bill processing, approval workflows, payment tracking, budget variance analysis, and real-time financial projections.",
+            "Created interactive dashboards with charts and reports for project-wise cost breakdown, spending trends, and profitability analysis with alert mechanisms for budget overruns."
+          ]
+        }
+      ],
+      "competencies": [
+        "Strong problem-solving & debugging",
+        "Cross-functional team collaboration",
+        "Clear technical communication",
+        "Works well under pressure & tight deadlines",
+        "Quick learner, adaptable to new tech",
+        "Detail-oriented, quality-focused",
+        "Positive attitude, team morale builder",
+        "Self-motivated, takes initiative",
+        "Client-facing experience"
+      ],
+      "education": [
+        {
+          "institution": "Daffodil International University",
+          "degree": "B.Sc. in Computer Science & Technology",
+          "grade": "CGPA: 3.82 / 4.0",
+          "period": "2016 - 2020"
+        },
+        {
+          "institution": "B.A.F. Shaheen College, Kurmitola",
+          "degree": "H.S.C | GPA 5/5.00 · S.S.C | GPA 5/5.00",
+          "period": "2013 - 2015"
+        }
+      ],
+      "languages": [
+        { "name": "Bangla", "level": "Native" },
+        { "name": "English", "level": "Fluent" }
+      ],
+      "references": [
+        {
+          "name": "Md. Ahsan Iqbal",
+          "title": "Tiller / Sr. SE & Team Lead",
+          "phone": "01961130638",
+          "email": "md.ahsan.iqbal@gmail.com"
+        },
+        {
+          "name": "Md. Mostafizur Rahman",
+          "title": "Selise / Technology Manager",
+          "phone": "01674411302",
+          "email": "mostafizur.rahman@selise.ch"
+        }
+      ]
+    }
+  }
+}

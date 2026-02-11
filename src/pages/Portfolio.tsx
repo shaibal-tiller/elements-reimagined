@@ -55,6 +55,7 @@ const Portfolio: React.FC = () => {
                 <div className="card-white p-0 h-full overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border border-slate-100 flex flex-col">
                   {/* Header / Banner */}
                   <div className={`h-48 ${project.theme.bgMain} relative overflow-hidden p-6 flex flex-col justify-between`}>
+                    {/* Themed colored background */}
                     <div className={`absolute top-0 right-0 w-32 h-32 ${project.theme.accentBlur} rounded-full blur-[60px] opacity-20 -translate-y-1/2 translate-x-1/4`}></div>
 
                     <div className="flex justify-between items-start z-10">

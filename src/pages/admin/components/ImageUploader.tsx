@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from "react";
 import { Upload, X, Image as ImageIcon, Loader2, AlertCircle } from "lucide-react";
-import { uploadImage, validateImage, UploadProgress } from "../../../services/storageService";
+import { uploadMedia, validateMedia, UploadProgress } from "../../../services/storageService";
+import { MEDIA_ACCEPT_STRING } from "../../../lib/mediaUtils";
 
 interface ImageUploaderProps {
   currentImage?: string;
@@ -24,6 +25,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImage || null);
+  const [isVideoPreview, setIsVideoPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -42,7 +44,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     setError(null);
 
     // Validate file
-    const validation = validateImage(file);
+    const validation = validateMedia(file);
     if (!validation.valid) {
       setError(validation.error || "Invalid file");
       return;
@@ -51,13 +53,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     // Create local preview
     const localPreview = URL.createObjectURL(file);
     setPreviewUrl(localPreview);
+    setIsVideoPreview(file.type.startsWith("video/"));
 
-    // Upload to Firebase Storage
+    // Upload via UploadThing
     setIsUploading(true);
     setUploadProgress(0);
 
     try {
-      const result = await uploadImage(file, folder, (progress: UploadProgress) => {
+      const result = await uploadMedia(file, folder, (progress: UploadProgress) => {
         setUploadProgress(Math.round(progress.progress));
       });
 
@@ -95,6 +98,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   const handleRemove = () => {
     setPreviewUrl(null);
+    setIsVideoPreview(false);
     setError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -117,11 +121,21 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       {/* Preview */}
       {previewUrl && (
         <div className="relative mb-3 rounded-lg overflow-hidden border border-slate-600 bg-slate-800">
-          <img
-            src={previewUrl}
-            alt="Preview"
-            className="w-full h-48 object-cover"
-          />
+          {isVideoPreview ? (
+            <video
+              src={previewUrl}
+              muted
+              playsInline
+              preload="metadata"
+              className="w-full h-48 object-cover"
+            />
+          ) : (
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="w-full h-48 object-cover"
+            />
+          )}
           {isUploading && (
             <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center">
               <Loader2 className="w-8 h-8 text-white animate-spin mb-2" />
@@ -184,7 +198,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                   {isDragging ? "Drop image here" : "Drag & drop or click to upload"}
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  PNG, JPG, GIF, WebP up to 5MB
+                  Images up to 8MB, Videos up to 64MB
                 </p>
               </>
             )}
@@ -204,7 +218,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp"
+        accept={MEDIA_ACCEPT_STRING}
         onChange={handleFileSelect}
         className="hidden"
       />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   X,
   Plus,
@@ -14,11 +14,39 @@ import {
   Award,
   Code2,
   AlertTriangle,
+  Upload,
+  CheckCircle,
+  AlertCircle,
+  Maximize2,
+  Smartphone,
+  Tablet,
+  Laptop,
+  Tv,
+  Film,
+  ChevronUp,
+  ChevronDown,
+  Link,
+  Play,
 } from "lucide-react";
+import { toast } from "sonner";
 import { FirestoreProject } from "../../../types/firebase";
 import { iconRegistry } from "../../../lib/iconRegistry";
+import { uploadMedia, validateMedia, deleteFilesByKeys } from "../../../services/storageService";
+import { getMediaTypeFromFile, isVideo, isEmbedVideo, MEDIA_ACCEPT_STRING } from "../../../lib/mediaUtils";
+import ConfirmModal from "../../../components/ui/confirm-modal";
 import ImageUploader from "./ImageUploader";
 import ProjectCardPreview from "./ProjectCardPreview";
+import {
+  TW_COLORS,
+  TW_COLOR_NAMES,
+  TW_SHADES,
+  parseTwColor,
+  buildTwClass,
+  hexFromBgMain,
+  bgMainFromHex,
+  resolveThemeStyles,
+  resolveTechPillStyles,
+} from "../../../lib/twColors";
 
 interface ProjectFormProps {
   project?: FirestoreProject | null;
@@ -43,6 +71,9 @@ const themePresets = [
       pillBg: "bg-indigo-500/10",
       pillBorder: "border-indigo-500/20",
       pillText: "text-indigo-400",
+      techFrontendColor: "blue",
+      techBackendColor: "green",
+      techDevopsColor: "purple",
     },
     color: "#4f46e5",
   },
@@ -58,6 +89,9 @@ const themePresets = [
       pillBg: "bg-emerald-500/10",
       pillBorder: "border-emerald-500/20",
       pillText: "text-emerald-400",
+      techFrontendColor: "blue",
+      techBackendColor: "green",
+      techDevopsColor: "purple",
     },
     color: "#10b981",
   },
@@ -73,6 +107,9 @@ const themePresets = [
       pillBg: "bg-amber-500/10",
       pillBorder: "border-amber-500/20",
       pillText: "text-amber-400",
+      techFrontendColor: "blue",
+      techBackendColor: "green",
+      techDevopsColor: "purple",
     },
     color: "#f59e0b",
   },
@@ -88,6 +125,9 @@ const themePresets = [
       pillBg: "bg-rose-500/10",
       pillBorder: "border-rose-500/20",
       pillText: "text-rose-400",
+      techFrontendColor: "blue",
+      techBackendColor: "green",
+      techDevopsColor: "purple",
     },
     color: "#f43f5e",
   },
@@ -103,6 +143,9 @@ const themePresets = [
       pillBg: "bg-cyan-500/10",
       pillBorder: "border-cyan-500/20",
       pillText: "text-cyan-400",
+      techFrontendColor: "blue",
+      techBackendColor: "green",
+      techDevopsColor: "purple",
     },
     color: "#06b6d4",
   },
@@ -118,6 +161,9 @@ const themePresets = [
       pillBg: "bg-purple-500/10",
       pillBorder: "border-purple-500/20",
       pillText: "text-purple-400",
+      techFrontendColor: "blue",
+      techBackendColor: "green",
+      techDevopsColor: "purple",
     },
     color: "#a855f7",
   },
@@ -140,13 +186,15 @@ const emptyProject: FirestoreProject = {
   techStack: { frontend: [], backend: [], devops: [] },
   marqueeIconNames: [],
   challenge: { title: "", desc: "" },
+  coverMedia: [],
   order: 0,
 };
 
-type TabId = "basic" | "theme" | "content" | "images" | "features" | "tech";
+type TabId = "basic" | "cover" | "theme" | "content" | "images" | "features" | "tech";
 
 const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: "basic", label: "Basic Info", icon: Info },
+  { id: "cover", label: "Cover", icon: Film },
   { id: "theme", label: "Theme", icon: Palette },
   { id: "content", label: "Content", icon: Layers },
   { id: "images", label: "Images", icon: ImageIcon },
@@ -162,19 +210,140 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
 }) => {
   const [formData, setFormData] = useState<FirestoreProject>(emptyProject);
   const [activeTab, setActiveTab] = useState<TabId>("basic");
-  const [showPreview, setShowPreview] = useState(true);
+
+  // Resizable preview panel
+  const MIN_PANEL = 260;
+  const MAX_PANEL = 560;
+  const DEFAULT_PANEL = 360;
+  const [panelWidth, setPanelWidth] = useState(DEFAULT_PANEL);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(DEFAULT_PANEL);
+
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    startXRef.current = e.clientX;
+    startWidthRef.current = panelWidth;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    const handleMouseMove = (ev: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+      const delta = startXRef.current - ev.clientX; // dragging left = wider panel
+      const newWidth = Math.min(MAX_PANEL, Math.max(MIN_PANEL, startWidthRef.current + delta));
+      setPanelWidth(newWidth);
+      setIsCollapsed(false);
+    };
+
+    const handleMouseUp = () => {
+      isDraggingRef.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  }, [panelWidth]);
+
+  // Confirmation modal state
+  const [confirmAction, setConfirmAction] = useState<{
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    variant?: "danger" | "warning";
+  } | null>(null);
+
+  // Fullscreen preview
+  const [showFullPreview, setShowFullPreview] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "laptop" | "tv">("laptop");
+
+  // Dirty tracking — snapshot initial form data to compare
+  const initialDataRef = useRef<string>("");
+  const isDirty = useMemo(
+    () => initialDataRef.current !== "" && initialDataRef.current !== JSON.stringify(formData),
+    [formData]
+  );
+
+  // Keys of images deleted during this edit session — cleaned up on save
+  const deletedKeysRef = useRef<string[]>([]);
+
+  // Track uploaded file keys for cleanup on cancel or tab close
+  const uploadedKeysRef = useRef<string[]>([]);
+  const PENDING_KEYS_STORAGE = "ut_pending_keys";
+
+  // On mount: clean up any orphaned files from a previous crashed session
+  useEffect(() => {
+    const stale = localStorage.getItem(PENDING_KEYS_STORAGE);
+    if (stale) {
+      try {
+        const keys = JSON.parse(stale) as string[];
+        if (keys.length > 0) deleteFilesByKeys(keys);
+      } catch { /* ignore */ }
+      localStorage.removeItem(PENDING_KEYS_STORAGE);
+    }
+  }, []);
+
+  // Sync pending keys to localStorage so tab close can be recovered
+  const persistPendingKeys = (keys: string[]) => {
+    if (keys.length > 0) {
+      localStorage.setItem(PENDING_KEYS_STORAGE, JSON.stringify(keys));
+    } else {
+      localStorage.removeItem(PENDING_KEYS_STORAGE);
+    }
+  };
 
   useEffect(() => {
     if (project) {
       setFormData(project);
+      initialDataRef.current = JSON.stringify(project);
     } else {
-      setFormData({ ...emptyProject, id: `project-${Date.now()}` });
+      const fresh = { ...emptyProject, id: `project-${Date.now()}` };
+      setFormData(fresh);
+      initialDataRef.current = JSON.stringify(fresh);
     }
   }, [project]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Clear tracked keys on successful save — files are no longer orphaned
+    uploadedKeysRef.current = [];
+    persistPendingKeys([]);
+    // Delete files that were removed from the form during this session
+    if (deletedKeysRef.current.length > 0) {
+      deleteFilesByKeys(deletedKeysRef.current);
+      deletedKeysRef.current = [];
+    }
     await onSave(formData);
+  };
+
+  const doCancel = () => {
+    // Delete any uploaded files that weren't saved
+    if (uploadedKeysRef.current.length > 0) {
+      deleteFilesByKeys(uploadedKeysRef.current);
+      uploadedKeysRef.current = [];
+      persistPendingKeys([]);
+      toast.info("Unsaved uploads cleaned up");
+    }
+    // Don't delete removed-image keys — user cancelled, so changes are discarded
+    deletedKeysRef.current = [];
+    onCancel();
+  };
+
+  const handleCancel = () => {
+    if (isDirty) {
+      setConfirmAction({
+        title: "Discard changes?",
+        description: "You have unsaved changes. Are you sure you want to close? All changes will be lost.",
+        variant: "warning",
+        onConfirm: doCancel,
+      });
+    } else {
+      doCancel();
+    }
   };
 
   const updateField = (field: keyof FirestoreProject, value: unknown) => {
@@ -203,10 +372,17 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   };
 
   const removeFeature = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      features: prev.features.filter((_, i) => i !== index),
-    }));
+    const feature = formData.features[index];
+    setConfirmAction({
+      title: "Remove feature?",
+      description: `Remove "${feature?.title || `Feature ${index + 1}`}"? This won't be saved until you click Save.`,
+      variant: "danger",
+      onConfirm: () =>
+        setFormData((prev) => ({
+          ...prev,
+          features: prev.features.filter((_, i) => i !== index),
+        })),
+    });
   };
 
   const updateFeature = (index: number, field: string, value: string) => {
@@ -226,10 +402,25 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   };
 
   const removeImage = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
-    }));
+    const image = formData.images[index];
+    setConfirmAction({
+      title: "Remove media?",
+      description: `Remove "${image?.caption || `Item ${index + 1}`}"? The file will be deleted when you save.`,
+      variant: "danger",
+      onConfirm: () => {
+        // Track the UploadThing key for deletion on save
+        const key = uploadedKeysRef.current.find((k) => image?.src?.includes(k));
+        if (key) {
+          deletedKeysRef.current.push(key);
+          uploadedKeysRef.current = uploadedKeysRef.current.filter((k2) => k2 !== key);
+          persistPendingKeys(uploadedKeysRef.current);
+        }
+        setFormData((prev) => ({
+          ...prev,
+          images: prev.images.filter((_, i) => i !== index),
+        }));
+      },
+    });
   };
 
   const updateImage = (index: number, field: string, value: string) => {
@@ -241,6 +432,119 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     }));
   };
 
+  // Bulk image upload state
+  const [bulkUploading, setBulkUploading] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{ file: string; progress: number; status: "uploading" | "done" | "error" }[]>([]);
+  const [isDraggingBulk, setIsDraggingBulk] = useState(false);
+  const bulkFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleBulkFiles = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/") || f.type.startsWith("video/"));
+    if (fileArray.length === 0) return;
+
+    // Validate all files first
+    const validFiles: File[] = [];
+    const progressItems: typeof bulkProgress = [];
+
+    fileArray.forEach((file) => {
+      const validation = validateMedia(file);
+      progressItems.push({
+        file: file.name,
+        progress: 0,
+        status: validation.valid ? "uploading" : "error",
+      });
+      if (validation.valid) validFiles.push(file);
+    });
+
+    setBulkUploading(true);
+    setBulkProgress(progressItems);
+
+    const skippedCount = fileArray.length - validFiles.length;
+    if (skippedCount > 0) {
+      toast.warning(`${skippedCount} file${skippedCount > 1 ? "s" : ""} skipped (invalid type or size)`);
+    }
+
+    if (validFiles.length === 0) {
+      setTimeout(() => { setBulkUploading(false); setBulkProgress([]); }, 2000);
+      return;
+    }
+
+    // Upload files sequentially so each shows real progress
+    let successCount = 0;
+    for (const file of validFiles) {
+      try {
+        const result = await uploadMedia(
+          file,
+          `projects/${formData.id}`,
+          ({ progress }) => {
+            setBulkProgress((prev) =>
+              prev.map((p) =>
+                p.file === file.name ? { ...p, progress: Math.round(progress) } : p
+              )
+            );
+          }
+        );
+
+        // Mark this file as done
+        setBulkProgress((prev) =>
+          prev.map((p) =>
+            p.file === file.name ? { ...p, progress: 100, status: "done" as const } : p
+          )
+        );
+
+        // Track key for cleanup if form is cancelled
+        uploadedKeysRef.current.push(result.path);
+        persistPendingKeys(uploadedKeysRef.current);
+
+        // Add uploaded media to form immediately
+        const mediaType = getMediaTypeFromFile(file);
+        setFormData((prev) => ({
+          ...prev,
+          images: [...prev.images, { src: result.url, caption: "", details: "", type: mediaType }],
+        }));
+
+        successCount++;
+      } catch {
+        setBulkProgress((prev) =>
+          prev.map((p) =>
+            p.file === file.name ? { ...p, status: "error" as const } : p
+          )
+        );
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`${successCount} file${successCount > 1 ? "s" : ""} uploaded`);
+    }
+    if (successCount < validFiles.length) {
+      toast.error(`${validFiles.length - successCount} upload${validFiles.length - successCount > 1 ? "s" : ""} failed`);
+    }
+
+    setTimeout(() => {
+      setBulkUploading(false);
+      setBulkProgress([]);
+    }, 1500);
+  };
+
+  const handleBulkDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingBulk(false);
+    handleBulkFiles(e.dataTransfer.files);
+  }, [formData.id]);
+
+  const handleBulkDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingBulk(true);
+  }, []);
+
+  const handleBulkDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingBulk(false);
+  }, []);
+
   const addContribution = () => {
     setFormData((prev) => ({
       ...prev,
@@ -249,10 +553,17 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   };
 
   const removeContribution = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      contributions: prev.contributions.filter((_, i) => i !== index),
-    }));
+    const contrib = formData.contributions[index];
+    setConfirmAction({
+      title: "Remove contribution?",
+      description: `Remove "${contrib?.title || `Contribution ${index + 1}`}"?`,
+      variant: "danger",
+      onConfirm: () =>
+        setFormData((prev) => ({
+          ...prev,
+          contributions: prev.contributions.filter((_, i) => i !== index),
+        })),
+    });
   };
 
   const updateContribution = (index: number, field: string, value: string) => {
@@ -272,10 +583,17 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   };
 
   const removeHeaderInfo = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      headerInfo: prev.headerInfo.filter((_, i) => i !== index),
-    }));
+    const info = formData.headerInfo[index];
+    setConfirmAction({
+      title: "Remove header info?",
+      description: `Remove "${info?.label || `Item ${index + 1}`}"?`,
+      variant: "danger",
+      onConfirm: () =>
+        setFormData((prev) => ({
+          ...prev,
+          headerInfo: prev.headerInfo.filter((_, i) => i !== index),
+        })),
+    });
   };
 
   const updateHeaderInfo = (index: number, field: string, value: string) => {
@@ -295,6 +613,168 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
         [category]: value.split(",").map((s) => s.trim()).filter(Boolean),
       },
     }));
+  };
+
+  // --- Cover media helpers ---
+  const addCoverMedia = () => {
+    setFormData((prev) => ({
+      ...prev,
+      coverMedia: [...(prev.coverMedia || []), { src: "", caption: "", details: "" }],
+    }));
+  };
+
+  const removeCoverMedia = (index: number) => {
+    const item = (formData.coverMedia || [])[index];
+    setConfirmAction({
+      title: "Remove cover media?",
+      description: `Remove "${item?.caption || `Cover ${index + 1}`}"? The file will be deleted when you save.`,
+      variant: "danger",
+      onConfirm: () => {
+        const key = uploadedKeysRef.current.find((k) => item?.src?.includes(k));
+        if (key) {
+          deletedKeysRef.current.push(key);
+          uploadedKeysRef.current = uploadedKeysRef.current.filter((k2) => k2 !== key);
+          persistPendingKeys(uploadedKeysRef.current);
+        }
+        setFormData((prev) => ({
+          ...prev,
+          coverMedia: (prev.coverMedia || []).filter((_, i) => i !== index),
+        }));
+      },
+    });
+  };
+
+  const updateCoverMedia = (index: number, field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      coverMedia: (prev.coverMedia || []).map((item, i) =>
+        i === index ? { ...item, [field]: value } : item
+      ),
+    }));
+  };
+
+  const moveCoverMedia = (index: number, direction: "up" | "down") => {
+    setFormData((prev) => {
+      const arr = [...(prev.coverMedia || [])];
+      const swapIdx = direction === "up" ? index - 1 : index + 1;
+      if (swapIdx < 0 || swapIdx >= arr.length) return prev;
+      [arr[index], arr[swapIdx]] = [arr[swapIdx], arr[index]];
+      return { ...prev, coverMedia: arr };
+    });
+  };
+
+  // Cover bulk upload state
+  const [coverBulkUploading, setCoverBulkUploading] = useState(false);
+  const [coverBulkProgress, setCoverBulkProgress] = useState<{ file: string; progress: number; status: "uploading" | "done" | "error" }[]>([]);
+  const [isDraggingCover, setIsDraggingCover] = useState(false);
+  const coverFileInputRef = useRef<HTMLInputElement>(null);
+  const [coverUrlInput, setCoverUrlInput] = useState("");
+
+  const handleCoverBulkFiles = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/") || f.type.startsWith("video/"));
+    if (fileArray.length === 0) return;
+
+    const validFiles: File[] = [];
+    const progressItems: typeof coverBulkProgress = [];
+
+    fileArray.forEach((file) => {
+      const validation = validateMedia(file);
+      progressItems.push({
+        file: file.name,
+        progress: 0,
+        status: validation.valid ? "uploading" : "error",
+      });
+      if (validation.valid) validFiles.push(file);
+    });
+
+    setCoverBulkUploading(true);
+    setCoverBulkProgress(progressItems);
+
+    const skippedCount = fileArray.length - validFiles.length;
+    if (skippedCount > 0) {
+      toast.warning(`${skippedCount} file${skippedCount > 1 ? "s" : ""} skipped (invalid type or size)`);
+    }
+
+    if (validFiles.length === 0) {
+      setTimeout(() => { setCoverBulkUploading(false); setCoverBulkProgress([]); }, 2000);
+      return;
+    }
+
+    let successCount = 0;
+    for (const file of validFiles) {
+      try {
+        const result = await uploadMedia(
+          file,
+          `projects/${formData.id}/cover`,
+          ({ progress }) => {
+            setCoverBulkProgress((prev) =>
+              prev.map((p) =>
+                p.file === file.name ? { ...p, progress: Math.round(progress) } : p
+              )
+            );
+          }
+        );
+
+        setCoverBulkProgress((prev) =>
+          prev.map((p) =>
+            p.file === file.name ? { ...p, progress: 100, status: "done" as const } : p
+          )
+        );
+
+        uploadedKeysRef.current.push(result.path);
+        persistPendingKeys(uploadedKeysRef.current);
+
+        const mediaType = getMediaTypeFromFile(file);
+        setFormData((prev) => ({
+          ...prev,
+          coverMedia: [...(prev.coverMedia || []), { src: result.url, caption: "", details: "", type: mediaType }],
+        }));
+
+        successCount++;
+      } catch {
+        setCoverBulkProgress((prev) =>
+          prev.map((p) =>
+            p.file === file.name ? { ...p, status: "error" as const } : p
+          )
+        );
+      }
+    }
+
+    if (successCount > 0) toast.success(`${successCount} cover file${successCount > 1 ? "s" : ""} uploaded`);
+    if (successCount < validFiles.length) toast.error(`${validFiles.length - successCount} upload${validFiles.length - successCount > 1 ? "s" : ""} failed`);
+
+    setTimeout(() => { setCoverBulkUploading(false); setCoverBulkProgress([]); }, 1500);
+  };
+
+  const handleCoverDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingCover(false);
+    handleCoverBulkFiles(e.dataTransfer.files);
+  }, [formData.id]);
+
+  const handleCoverDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingCover(true);
+  }, []);
+
+  const handleCoverDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingCover(false);
+  }, []);
+
+  const addCoverUrl = () => {
+    const url = coverUrlInput.trim();
+    if (!url) return;
+    const type: "image" | "video" = /youtube\.com|youtu\.be|drive\.google\.com|\.mp4|\.webm|\.ogg/i.test(url) ? "video" : "image";
+    setFormData((prev) => ({
+      ...prev,
+      coverMedia: [...(prev.coverMedia || []), { src: url, caption: "", details: "", type }],
+    }));
+    setCoverUrlInput("");
+    toast.success("Cover URL added");
   };
 
   const renderTabContent = () => {
@@ -480,10 +960,250 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
           </div>
         );
 
-      case "theme":
+      case "cover":
+        return (
+          <div className="space-y-5">
+            <p className="text-xs text-slate-500">
+              Cover media appears as the hero background on the project detail page. Multiple items cycle as a 2.5s slideshow with crossfade.
+            </p>
+
+            {/* Drop zone */}
+            <div
+              onClick={() => coverFileInputRef.current?.click()}
+              onDragOver={handleCoverDragOver}
+              onDragLeave={handleCoverDragLeave}
+              onDrop={handleCoverDrop}
+              className={`
+                relative border-2 border-dashed rounded-xl p-6 cursor-pointer transition-all
+                ${isDraggingCover
+                  ? "border-indigo-400 bg-indigo-500/10"
+                  : "border-slate-600 hover:border-slate-500 hover:bg-slate-700/30"
+                }
+                ${coverBulkUploading ? "pointer-events-none" : ""}
+              `}
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className={`p-3 rounded-full mb-3 transition-colors ${isDraggingCover ? "bg-indigo-500/20" : "bg-slate-700"}`}>
+                  {coverBulkUploading ? (
+                    <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+                  ) : (
+                    <Upload className={`w-6 h-6 ${isDraggingCover ? "text-indigo-400" : "text-slate-400"}`} />
+                  )}
+                </div>
+                <p className="text-sm text-slate-300 font-medium">
+                  {coverBulkUploading
+                    ? "Uploading files..."
+                    : isDraggingCover
+                      ? "Drop files here"
+                      : "Drag & drop cover images or videos, or click to browse"
+                  }
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Images up to 8MB, Videos (MP4, WebM) up to 64MB
+                </p>
+              </div>
+
+              {coverBulkProgress.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {coverBulkProgress.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-slate-400 truncate">{item.file}</span>
+                          <span className="text-xs text-slate-500 flex-shrink-0 ml-2">
+                            {item.status === "done" ? (
+                              <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+                            ) : item.status === "error" ? (
+                              <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+                            ) : (
+                              `${item.progress}%`
+                            )}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-300 rounded-full ${
+                              item.status === "error" ? "bg-red-500" : item.status === "done" ? "bg-green-500" : "bg-indigo-500"
+                            }`}
+                            style={{ width: `${item.status === "error" ? 100 : item.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <input
+              ref={coverFileInputRef}
+              type="file"
+              accept={MEDIA_ACCEPT_STRING}
+              multiple
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  handleCoverBulkFiles(e.target.files);
+                  e.target.value = "";
+                }
+              }}
+              className="hidden"
+            />
+
+            {/* URL input */}
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Paste image/video URL (YouTube, GDrive, direct link)"
+                  value={coverUrlInput}
+                  onChange={(e) => setCoverUrlInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCoverUrl())}
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={addCoverUrl}
+                disabled={!coverUrlInput.trim()}
+                className="px-4 py-2.5 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Add URL
+              </button>
+            </div>
+
+            {/* Cover media list */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-slate-300">
+                  Cover Media ({(formData.coverMedia || []).length})
+                </label>
+              </div>
+
+              {(formData.coverMedia || []).map((item, idx) => (
+                <div
+                  key={idx}
+                  className="bg-slate-700/30 rounded-xl border border-slate-600 overflow-hidden"
+                >
+                  <div className="flex">
+                    {/* Thumbnail */}
+                    <div className="w-32 flex-shrink-0 relative">
+                      {item.src ? (
+                        <div className="relative h-full min-h-[80px]">
+                          {isVideo(item) ? (
+                            <>
+                              <video
+                                src={isEmbedVideo(item.src) ? undefined : item.src}
+                                muted
+                                playsInline
+                                preload="metadata"
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                <Play className="w-6 h-6 text-white fill-white" />
+                              </div>
+                            </>
+                          ) : (
+                            <img
+                              src={item.src}
+                              alt={item.caption || `Cover ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </div>
+                      ) : (
+                        <div className="h-full min-h-[80px] flex items-center justify-center bg-slate-800 text-slate-600 text-xs">
+                          No media
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Details + actions */}
+                    <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="text-xs font-medium text-slate-400">
+                          {isVideo(item) ? "Video" : "Image"} {idx + 1}
+                        </span>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => moveCoverMedia(idx, "up")}
+                            disabled={idx === 0}
+                            className="p-1 hover:bg-slate-600 text-slate-400 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            title="Move up"
+                          >
+                            <ChevronUp className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveCoverMedia(idx, "down")}
+                            disabled={idx === (formData.coverMedia || []).length - 1}
+                            className="p-1 hover:bg-slate-600 text-slate-400 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            title="Move down"
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeCoverMedia(idx)}
+                            className="p-1 hover:bg-red-500/20 text-red-400 rounded transition-colors"
+                            title="Remove"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Caption (optional)"
+                        value={item.caption}
+                        onChange={(e) => updateCoverMedia(idx, "caption", e.target.value)}
+                        className="w-full px-2.5 py-1.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm mt-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {(formData.coverMedia || []).length === 0 && !coverBulkUploading && (
+                <div className="text-center py-8 text-slate-500">
+                  <Film className="w-10 h-10 mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">No cover media yet — upload images or videos above</p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case "theme": {
+        const gradientParsed = {
+          from: parseTwColor(formData.theme.bgGradient.split(" ")[0] || "from-indigo-400"),
+          to: parseTwColor(formData.theme.bgGradient.split(" ")[1] || "to-blue-400"),
+        };
+        const accentParsed = parseTwColor(formData.theme.accentBlur);
+        const pillBgParsed = parseTwColor(formData.theme.pillBg);
+        const pillBorderParsed = parseTwColor(formData.theme.pillBorder);
+        const pillTextParsed = parseTwColor(formData.theme.pillText);
+
+        // Shared accent color (most accent fields use the same color name)
+        const sharedAccentColor = accentParsed.color || "indigo";
+
+        const updateAccentColor = (color: string) => {
+          const aShade = accentParsed.shade || "500";
+          const pbShade = pillBgParsed.shade || "500";
+          const pbOpacity = pillBgParsed.opacity || "10";
+          const pbrShade = pillBorderParsed.shade || "500";
+          const pbrOpacity = pillBorderParsed.opacity || "20";
+          const ptShade = pillTextParsed.shade || "400";
+          updateTheme("accentBlur", buildTwClass("bg-", color, aShade));
+          updateTheme("pillBg", buildTwClass("bg-", color, pbShade, pbOpacity));
+          updateTheme("pillBorder", buildTwClass("border-", color, pbrShade, pbrOpacity));
+          updateTheme("pillText", buildTwClass("text-", color, ptShade));
+        };
+
         return (
           <div className="space-y-6">
-            {/* Theme Presets */}
+            {/* Quick Presets */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-3">
                 Quick Presets
@@ -496,7 +1216,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                     onClick={() => applyThemePreset(preset)}
                     className={`
                       flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-all
-                      ${formData.theme.primary === preset.theme.primary
+                      ${formData.theme.primary === preset.theme.primary && formData.theme.secondary === preset.theme.secondary
                         ? "border-indigo-500 bg-indigo-500/10"
                         : "border-slate-600 hover:border-slate-500 bg-slate-700/30"
                       }
@@ -512,26 +1232,293 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
               </div>
             </div>
 
-            {/* Advanced Theme Options */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">
-                Advanced Customization
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                {Object.entries(formData.theme).map(([key, value]) => (
-                  <div key={key}>
-                    <label className="block text-xs font-medium text-slate-400 mb-1">
-                      {key}
-                    </label>
-                    <input
-                      type="text"
-                      value={value}
-                      onChange={(e) => updateTheme(key, e.target.value)}
-                      className="w-full px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                    />
+            {/* Color Identity */}
+            <div className="p-4 bg-slate-700/20 rounded-xl border border-slate-600/50">
+              <label className="block text-sm font-medium text-slate-300 mb-3">Color Identity</label>
+              {(["primary", "secondary"] as const).map((field) => (
+                <div key={field} className="mb-3 last:mb-0">
+                  <label className="block text-xs font-medium text-slate-400 mb-2 capitalize">{field}</label>
+                  <div className="flex flex-wrap gap-2">
+                    {TW_COLOR_NAMES.map((name) => (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => updateTheme(field, name)}
+                        title={name}
+                        className={`w-6 h-6 rounded-full border-2 transition-all ${
+                          formData.theme[field] === name
+                            ? "border-white scale-110 ring-2 ring-white/30"
+                            : "border-transparent hover:border-slate-400"
+                        }`}
+                        style={{ backgroundColor: TW_COLORS[name]?.[500] || "#888" }}
+                      />
+                    ))}
                   </div>
-                ))}
+                  <span className="text-[10px] text-slate-500 font-mono mt-1 block">{formData.theme[field]}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Backgrounds */}
+            <div className="p-4 bg-slate-700/20 rounded-xl border border-slate-600/50">
+              <label className="block text-sm font-medium text-slate-300 mb-3">Backgrounds</label>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-2">Banner Background</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={hexFromBgMain(formData.theme.bgMain)}
+                      onChange={(e) => updateTheme("bgMain", bgMainFromHex(e.target.value))}
+                      className="w-8 h-8 rounded-lg cursor-pointer border border-slate-600 bg-transparent"
+                    />
+                    <span className="text-xs text-slate-400 font-mono">{hexFromBgMain(formData.theme.bgMain)}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-2">Accent Text Color</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={formData.theme.textMain}
+                      onChange={(e) => updateTheme("textMain", e.target.value)}
+                      className="w-8 h-8 rounded-lg cursor-pointer border border-slate-600 bg-transparent"
+                    />
+                    <span className="text-xs text-slate-400 font-mono">{formData.theme.textMain}</span>
+                  </div>
+                </div>
               </div>
+            </div>
+
+            {/* Gradient */}
+            <div className="p-4 bg-slate-700/20 rounded-xl border border-slate-600/50">
+              <label className="block text-sm font-medium text-slate-300 mb-3">Gradient</label>
+              <div className="grid grid-cols-2 gap-4 mb-3">
+                {(["from", "to"] as const).map((dir) => {
+                  const parsed = gradientParsed[dir];
+                  const prefix = dir === "from" ? "from-" : "to-";
+                  return (
+                    <div key={dir}>
+                      <label className="block text-xs font-medium text-slate-400 mb-2 capitalize">{dir}</label>
+                      <div className="flex gap-2">
+                        <select
+                          value={parsed.color}
+                          onChange={(e) => {
+                            const other = dir === "from" ? formData.theme.bgGradient.split(" ")[1] : formData.theme.bgGradient.split(" ")[0];
+                            const built = buildTwClass(prefix, e.target.value, parsed.shade || "400");
+                            updateTheme("bgGradient", dir === "from" ? `${built} ${other}` : `${other} ${built}`);
+                          }}
+                          className="flex-1 px-2 py-1.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-xs"
+                        >
+                          {TW_COLOR_NAMES.map((n) => (
+                            <option key={n} value={n}>{n}</option>
+                          ))}
+                        </select>
+                        <select
+                          value={parsed.shade || "400"}
+                          onChange={(e) => {
+                            const other = dir === "from" ? formData.theme.bgGradient.split(" ")[1] : formData.theme.bgGradient.split(" ")[0];
+                            const built = buildTwClass(prefix, parsed.color, e.target.value);
+                            updateTheme("bgGradient", dir === "from" ? `${built} ${other}` : `${other} ${built}`);
+                          }}
+                          className="w-16 px-2 py-1.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-xs"
+                        >
+                          {TW_SHADES.map((s) => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Gradient preview bar */}
+              <div
+                className="h-6 rounded-lg"
+                style={{
+                  background: `linear-gradient(to right, ${TW_COLORS[gradientParsed.from.color]?.[Number(gradientParsed.from.shade) || 400] || "#818cf8"}, ${TW_COLORS[gradientParsed.to.color]?.[Number(gradientParsed.to.shade) || 400] || "#60a5fa"})`,
+                }}
+              />
+              <span className="text-[10px] text-slate-500 font-mono mt-1 block">{formData.theme.bgGradient}</span>
+            </div>
+
+            {/* Accent & Pills */}
+            <div className="p-4 bg-slate-700/20 rounded-xl border border-slate-600/50">
+              <label className="block text-sm font-medium text-slate-300 mb-3">Accent &amp; Pills</label>
+
+              {/* Shared color selector */}
+              <div className="mb-4">
+                <label className="block text-xs font-medium text-slate-400 mb-2">Shared Accent Color</label>
+                <div className="flex flex-wrap gap-2">
+                  {TW_COLOR_NAMES.map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => updateAccentColor(name)}
+                      title={name}
+                      className={`w-6 h-6 rounded-full border-2 transition-all ${
+                        sharedAccentColor === name
+                          ? "border-white scale-110 ring-2 ring-white/30"
+                          : "border-transparent hover:border-slate-400"
+                      }`}
+                      style={{ backgroundColor: TW_COLORS[name]?.[500] || "#888" }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Individual controls */}
+              <div className="space-y-3">
+                {/* Accent Blur */}
+                <div className="flex items-center gap-3">
+                  <label className="text-xs font-medium text-slate-400 w-20 flex-shrink-0">Accent Blur</label>
+                  <div className="flex gap-1">
+                    {TW_SHADES.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => updateTheme("accentBlur", buildTwClass("bg-", accentParsed.color || sharedAccentColor, s))}
+                        className={`px-2 py-1 text-[10px] rounded transition-all ${
+                          String(accentParsed.shade) === String(s)
+                            ? "bg-white/20 text-white font-bold"
+                            : "text-slate-400 hover:text-white hover:bg-slate-700"
+                        }`}
+                      >{s}</button>
+                    ))}
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-mono ml-auto">{formData.theme.accentBlur}</span>
+                </div>
+
+                {/* Pill Background */}
+                <div className="flex items-center gap-3">
+                  <label className="text-xs font-medium text-slate-400 w-20 flex-shrink-0">Pill BG</label>
+                  <div className="flex gap-1">
+                    {TW_SHADES.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => updateTheme("pillBg", buildTwClass("bg-", pillBgParsed.color || sharedAccentColor, s, pillBgParsed.opacity || "10"))}
+                        className={`px-2 py-1 text-[10px] rounded transition-all ${
+                          String(pillBgParsed.shade) === String(s)
+                            ? "bg-white/20 text-white font-bold"
+                            : "text-slate-400 hover:text-white hover:bg-slate-700"
+                        }`}
+                      >{s}</button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 ml-2">
+                    <input
+                      type="range"
+                      min="5"
+                      max="50"
+                      step="5"
+                      value={Number(pillBgParsed.opacity) || 10}
+                      onChange={(e) => updateTheme("pillBg", buildTwClass("bg-", pillBgParsed.color || sharedAccentColor, pillBgParsed.shade || "500", e.target.value))}
+                      className="w-20 accent-indigo-500"
+                    />
+                    <span className="text-[10px] text-slate-500 w-6">{pillBgParsed.opacity || "10"}%</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-mono ml-auto">{formData.theme.pillBg}</span>
+                </div>
+
+                {/* Pill Border */}
+                <div className="flex items-center gap-3">
+                  <label className="text-xs font-medium text-slate-400 w-20 flex-shrink-0">Pill Border</label>
+                  <div className="flex gap-1">
+                    {TW_SHADES.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => updateTheme("pillBorder", buildTwClass("border-", pillBorderParsed.color || sharedAccentColor, s, pillBorderParsed.opacity || "20"))}
+                        className={`px-2 py-1 text-[10px] rounded transition-all ${
+                          String(pillBorderParsed.shade) === String(s)
+                            ? "bg-white/20 text-white font-bold"
+                            : "text-slate-400 hover:text-white hover:bg-slate-700"
+                        }`}
+                      >{s}</button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 ml-2">
+                    <input
+                      type="range"
+                      min="5"
+                      max="50"
+                      step="5"
+                      value={Number(pillBorderParsed.opacity) || 20}
+                      onChange={(e) => updateTheme("pillBorder", buildTwClass("border-", pillBorderParsed.color || sharedAccentColor, pillBorderParsed.shade || "500", e.target.value))}
+                      className="w-20 accent-indigo-500"
+                    />
+                    <span className="text-[10px] text-slate-500 w-6">{pillBorderParsed.opacity || "20"}%</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-mono ml-auto">{formData.theme.pillBorder}</span>
+                </div>
+
+                {/* Pill Text */}
+                <div className="flex items-center gap-3">
+                  <label className="text-xs font-medium text-slate-400 w-20 flex-shrink-0">Pill Text</label>
+                  <div className="flex gap-1">
+                    {TW_SHADES.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => updateTheme("pillText", buildTwClass("text-", pillTextParsed.color || sharedAccentColor, s))}
+                        className={`px-2 py-1 text-[10px] rounded transition-all ${
+                          String(pillTextParsed.shade) === String(s)
+                            ? "bg-white/20 text-white font-bold"
+                            : "text-slate-400 hover:text-white hover:bg-slate-700"
+                        }`}
+                      >{s}</button>
+                    ))}
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-mono ml-auto">{formData.theme.pillText}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Tech Stack Colors */}
+            <div className="p-4 bg-slate-700/20 rounded-xl border border-slate-600/50">
+              <label className="block text-sm font-medium text-slate-300 mb-3">Tech Stack Colors</label>
+              <p className="text-[10px] text-slate-500 mb-3">Per-category pill hue override. Leave empty to use the shared accent color.</p>
+              {([
+                { field: "techFrontendColor" as const, label: "Frontend" },
+                { field: "techBackendColor" as const, label: "Backend" },
+                { field: "techDevopsColor" as const, label: "DevOps" },
+              ]).map(({ field, label }) => (
+                <div key={field} className="mb-3 last:mb-0">
+                  <label className="block text-xs font-medium text-slate-400 mb-2">{label}</label>
+                  <div className="flex flex-wrap gap-2">
+                    {/* "None" option — clears the override */}
+                    <button
+                      type="button"
+                      onClick={() => updateTheme(field, "")}
+                      title="None (use default)"
+                      className={`w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center text-[8px] font-bold ${
+                        !formData.theme[field]
+                          ? "border-white scale-110 ring-2 ring-white/30 text-white"
+                          : "border-transparent hover:border-slate-400 text-slate-500"
+                      }`}
+                      style={{ backgroundColor: "#334155" }}
+                    >
+                      —
+                    </button>
+                    {TW_COLOR_NAMES.map((name) => (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => updateTheme(field, name)}
+                        title={name}
+                        className={`w-6 h-6 rounded-full border-2 transition-all ${
+                          formData.theme[field] === name
+                            ? "border-white scale-110 ring-2 ring-white/30"
+                            : "border-transparent hover:border-slate-400"
+                        }`}
+                        style={{ backgroundColor: TW_COLORS[name]?.[500] || "#888" }}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-mono mt-1 block">{formData.theme[field] || "(default)"}</span>
+                </div>
+              ))}
             </div>
 
             {/* Theme Preview */}
@@ -539,20 +1526,27 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
               <label className="block text-sm font-medium text-slate-300 mb-3">
                 Theme Preview
               </label>
-              <div className={`${formData.theme.bgMain} p-4 rounded-xl`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <span
-                    className={`${formData.theme.pillBg} ${formData.theme.pillText} border ${formData.theme.pillBorder} px-3 py-1 rounded-full text-xs font-bold uppercase`}
-                  >
-                    Category
-                  </span>
-                </div>
-                <h4 className="text-white text-lg font-bold mb-1">Sample Title</h4>
-                <p className="text-slate-300 text-sm">Subtitle text here</p>
-              </div>
+              {(() => {
+                const styles = resolveThemeStyles(formData.theme);
+                return (
+                  <div className="p-4 rounded-xl" style={styles.bgMain}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <span
+                        className="border px-3 py-1 rounded-full text-xs font-bold uppercase"
+                        style={{ ...styles.pillBg, ...styles.pillText, ...styles.pillBorder }}
+                      >
+                        Category
+                      </span>
+                    </div>
+                    <h4 className="text-white text-lg font-bold mb-1">Sample Title</h4>
+                    <p className="text-slate-300 text-sm">Subtitle text here</p>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         );
+      }
 
       case "content":
         return (
@@ -670,10 +1664,94 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                 onClick={addImage}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 text-sm font-medium transition-colors"
               >
-                <Plus className="w-4 h-4" /> Add Image
+                <Plus className="w-4 h-4" /> Add Single
               </button>
             </div>
 
+            {/* Bulk Upload Drop Zone */}
+            <div
+              onClick={() => bulkFileInputRef.current?.click()}
+              onDragOver={handleBulkDragOver}
+              onDragLeave={handleBulkDragLeave}
+              onDrop={handleBulkDrop}
+              className={`
+                relative border-2 border-dashed rounded-xl p-6 cursor-pointer transition-all
+                ${isDraggingBulk
+                  ? "border-indigo-400 bg-indigo-500/10"
+                  : "border-slate-600 hover:border-slate-500 hover:bg-slate-700/30"
+                }
+                ${bulkUploading ? "pointer-events-none" : ""}
+              `}
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className={`p-3 rounded-full mb-3 transition-colors ${isDraggingBulk ? "bg-indigo-500/20" : "bg-slate-700"}`}>
+                  {bulkUploading ? (
+                    <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+                  ) : (
+                    <Upload className={`w-6 h-6 ${isDraggingBulk ? "text-indigo-400" : "text-slate-400"}`} />
+                  )}
+                </div>
+                <p className="text-sm text-slate-300 font-medium">
+                  {bulkUploading
+                    ? "Uploading files..."
+                    : isDraggingBulk
+                      ? "Drop files here"
+                      : "Drag & drop images or videos, or click to browse"
+                  }
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Images up to 8MB, Videos (MP4, WebM) up to 64MB
+                </p>
+              </div>
+
+              {/* Bulk Upload Progress */}
+              {bulkProgress.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {bulkProgress.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-slate-400 truncate">{item.file}</span>
+                          <span className="text-xs text-slate-500 flex-shrink-0 ml-2">
+                            {item.status === "done" ? (
+                              <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+                            ) : item.status === "error" ? (
+                              <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+                            ) : (
+                              `${item.progress}%`
+                            )}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-300 rounded-full ${
+                              item.status === "error" ? "bg-red-500" : item.status === "done" ? "bg-green-500" : "bg-indigo-500"
+                            }`}
+                            style={{ width: `${item.status === "error" ? 100 : item.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <input
+              ref={bulkFileInputRef}
+              type="file"
+              accept={MEDIA_ACCEPT_STRING}
+              multiple
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  handleBulkFiles(e.target.files);
+                  e.target.value = "";
+                }
+              }}
+              className="hidden"
+            />
+
+            {/* Image List */}
             <div className="space-y-4">
               {formData.images.map((image, idx) => (
                 <div
@@ -681,15 +1759,25 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                   className="bg-slate-700/30 rounded-xl border border-slate-600 overflow-hidden"
                 >
                   <div className="flex">
-                    {/* Image Preview / Upload */}
+                    {/* Media Preview / Upload */}
                     <div className="w-48 flex-shrink-0">
                       {image.src ? (
                         <div className="relative h-full min-h-[120px]">
-                          <img
-                            src={image.src}
-                            alt={image.caption || `Image ${idx + 1}`}
-                            className="w-full h-full object-cover"
-                          />
+                          {isVideo(image) ? (
+                            <video
+                              src={image.src}
+                              muted
+                              playsInline
+                              preload="metadata"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <img
+                              src={image.src}
+                              alt={image.caption || `Image ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
                           <button
                             type="button"
                             onClick={() => updateImage(idx, "src", "")}
@@ -712,7 +1800,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                     <div className="flex-1 p-3 space-y-2">
                       <div className="flex justify-between items-start">
                         <span className="text-xs font-medium text-slate-400">
-                          Image {idx + 1}
+                          {isVideo(image) ? "Video" : "Image"} {idx + 1}
                         </span>
                         <button
                           type="button"
@@ -741,17 +1829,9 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                 </div>
               ))}
 
-              {formData.images.length === 0 && (
-                <div className="text-center py-12 bg-slate-700/20 rounded-xl border-2 border-dashed border-slate-600">
-                  <ImageIcon className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                  <p className="text-slate-400 mb-2">No images added yet</p>
-                  <button
-                    type="button"
-                    onClick={addImage}
-                    className="text-indigo-400 hover:text-indigo-300 text-sm font-medium"
-                  >
-                    Add your first image
-                  </button>
+              {formData.images.length === 0 && !bulkUploading && (
+                <div className="text-center py-8 text-slate-500">
+                  <p className="text-sm">No images yet — use the drop zone above to add multiple images at once</p>
                 </div>
               )}
             </div>
@@ -919,30 +1999,42 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                   Preview
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {formData.techStack.frontend.map((tech) => (
-                    <span
-                      key={`fe-${tech}`}
-                      className="px-2.5 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-md font-medium border border-blue-500/20"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                  {formData.techStack.backend.map((tech) => (
-                    <span
-                      key={`be-${tech}`}
-                      className="px-2.5 py-1 bg-green-500/20 text-green-400 text-xs rounded-md font-medium border border-green-500/20"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                  {formData.techStack.devops.map((tech) => (
-                    <span
-                      key={`do-${tech}`}
-                      className="px-2.5 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-md font-medium border border-purple-500/20"
-                    >
-                      {tech}
-                    </span>
-                  ))}
+                  {formData.techStack.frontend.map((tech) => {
+                    const s = resolveTechPillStyles(formData.theme, formData.theme.techFrontendColor);
+                    return (
+                      <span
+                        key={`fe-${tech}`}
+                        className="px-2.5 py-1 text-xs rounded-md font-medium border"
+                        style={s}
+                      >
+                        {tech}
+                      </span>
+                    );
+                  })}
+                  {formData.techStack.backend.map((tech) => {
+                    const s = resolveTechPillStyles(formData.theme, formData.theme.techBackendColor);
+                    return (
+                      <span
+                        key={`be-${tech}`}
+                        className="px-2.5 py-1 text-xs rounded-md font-medium border"
+                        style={s}
+                      >
+                        {tech}
+                      </span>
+                    );
+                  })}
+                  {formData.techStack.devops.map((tech) => {
+                    const s = resolveTechPillStyles(formData.theme, formData.theme.techDevopsColor);
+                    return (
+                      <span
+                        key={`do-${tech}`}
+                        className="px-2.5 py-1 text-xs rounded-md font-medium border"
+                        style={s}
+                      >
+                        {tech}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -955,10 +2047,88 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center overflow-y-auto py-4 px-4">
-      <div className="bg-slate-900 rounded-2xl shadow-2xl w-full max-w-6xl border border-slate-700 my-4">
+    <>
+    {/* Confirmation Modal */}
+    <ConfirmModal
+      open={confirmAction !== null}
+      onOpenChange={(open) => !open && setConfirmAction(null)}
+      title={confirmAction?.title || ""}
+      description={confirmAction?.description || ""}
+      confirmLabel={confirmAction?.variant === "warning" ? "Discard" : "Delete"}
+      variant={confirmAction?.variant || "danger"}
+      onConfirm={() => {
+        confirmAction?.onConfirm();
+        setConfirmAction(null);
+      }}
+    />
+
+    {/* Fullscreen Preview Modal */}
+    {showFullPreview && (() => {
+      const deviceConfig = {
+        mobile: { width: 375, panelWidth: 320, label: "Mobile" },
+        tablet: { width: 768, panelWidth: 500, label: "Tablet" },
+        laptop: { width: "80%", panelWidth: 560, label: "Laptop" },
+        tv: { width: "95%", panelWidth: 560, label: "TV" },
+      } as const;
+      const device = deviceConfig[previewDevice];
+      const deviceButtons = [
+        { id: "mobile" as const, icon: Smartphone },
+        { id: "tablet" as const, icon: Tablet },
+        { id: "laptop" as const, icon: Laptop },
+        { id: "tv" as const, icon: Tv },
+      ];
+      return (
+        <div
+          className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex flex-col items-center overflow-y-auto"
+          onClick={() => setShowFullPreview(false)}
+        >
+          {/* Device toolbar */}
+          <div
+            className="sticky top-4 z-10 flex items-center gap-1 bg-slate-800 border border-slate-700 rounded-full px-2 py-1.5 mt-4 mb-4 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {deviceButtons.map(({ id, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setPreviewDevice(id)}
+                className={`p-2 rounded-full transition-colors ${
+                  previewDevice === id
+                    ? "bg-indigo-500 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-slate-700"
+                }`}
+                title={deviceConfig[id].label}
+              >
+                <Icon className="w-4 h-4" />
+              </button>
+            ))}
+            <div className="w-px h-5 bg-slate-700 mx-1" />
+            <button
+              type="button"
+              onClick={() => setShowFullPreview(false)}
+              className="p-2 rounded-full text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+              title="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Preview container */}
+          <div
+            className="mx-auto pb-8 transition-all duration-300 ease-out"
+            style={{ width: typeof device.width === "number" ? device.width : device.width, maxWidth: "95%" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ProjectCardPreview project={formData} panelWidth={device.panelWidth} />
+          </div>
+        </div>
+      );
+    })()}
+
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-slate-900 rounded-2xl shadow-2xl w-full max-w-6xl border border-slate-700 max-h-[95vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-700">
+        <div className="flex items-center justify-between p-5 border-b border-slate-700 flex-shrink-0">
           <div>
             <h2 className="text-xl font-bold text-white">
               {project ? "Edit Project" : "Create New Project"}
@@ -968,18 +2138,18 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
             </p>
           </div>
           <button
-            onClick={onCancel}
+            onClick={handleCancel}
             className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-slate-400" />
           </button>
         </div>
 
-        <div className="flex">
+        <div className="flex flex-1 min-h-0">
           {/* Main Form Area */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 flex flex-col">
             {/* Tabs */}
-            <div className="border-b border-slate-700 px-5">
+            <div className="border-b border-slate-700 px-5 flex-shrink-0">
               <div className="flex gap-1 -mb-px overflow-x-auto">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
@@ -1005,13 +2175,13 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
             </div>
 
             {/* Form Content */}
-            <form onSubmit={handleSubmit}>
-              <div className="p-5 max-h-[60vh] overflow-y-auto">
+            <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+              <div className="p-5 flex-1 overflow-y-auto">
                 {renderTabContent()}
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-between p-5 border-t border-slate-700 bg-slate-800/50">
+              <div className="flex items-center justify-between p-5 border-t border-slate-700 bg-slate-800/50 flex-shrink-0">
                 <div className="flex items-center gap-2 text-sm text-slate-400">
                   <ChevronRight className="w-4 h-4" />
                   <span>
@@ -1028,7 +2198,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                 <div className="flex gap-3">
                   <button
                     type="button"
-                    onClick={onCancel}
+                    onClick={handleCancel}
                     className="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors"
                   >
                     Cancel
@@ -1055,19 +2225,72 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
             </form>
           </div>
 
-          {/* Preview Sidebar */}
-          <div className="w-80 border-l border-slate-700 flex-shrink-0 bg-slate-800/30">
-            <div className="p-4 sticky top-0">
-              <ProjectCardPreview
-                project={formData}
-                showPreview={showPreview}
-                onTogglePreview={() => setShowPreview(!showPreview)}
-              />
-            </div>
+          {/* Drag Handle */}
+          <div
+            onMouseDown={handleDragStart}
+            onDoubleClick={() => setIsCollapsed((c) => !c)}
+            className="w-1.5 flex-shrink-0 cursor-col-resize group relative hover:bg-indigo-500/20 transition-colors"
+            title="Drag to resize — double-click to toggle"
+          >
+            <div className="absolute inset-y-0 -left-1 -right-1" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-slate-600 group-hover:bg-indigo-400 transition-colors" />
+          </div>
+
+          {/* Preview Panel */}
+          <div
+            className="flex-shrink-0 bg-slate-800/30 flex flex-col overflow-hidden transition-[width] duration-150 ease-out"
+            style={{ width: isCollapsed ? 48 : panelWidth }}
+          >
+            {isCollapsed ? (
+              /* Collapsed rail */
+              <button
+                type="button"
+                onClick={() => setIsCollapsed(false)}
+                className="h-full flex flex-col items-center justify-center gap-2 text-slate-500 hover:text-indigo-400 hover:bg-slate-800/60 transition-colors"
+                title="Show preview"
+              >
+                <span className="[writing-mode:vertical-lr] text-[11px] font-medium tracking-wider rotate-180">
+                  PREVIEW
+                </span>
+              </button>
+            ) : (
+              /* Full preview */
+              <>
+                <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-700/50 flex-shrink-0">
+                  <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Live Preview
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setShowFullPreview(true)}
+                      className="text-slate-500 hover:text-slate-300 p-1 rounded hover:bg-slate-700/50 transition-colors"
+                      title="Fullscreen preview"
+                    >
+                      <Maximize2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsCollapsed(true)}
+                      className="text-[10px] text-slate-500 hover:text-slate-300 px-1.5 py-0.5 rounded hover:bg-slate-700/50 transition-colors"
+                    >
+                      Hide
+                    </button>
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto p-3">
+                  <ProjectCardPreview project={formData} panelWidth={panelWidth} />
+                </div>
+                <div className="border-t border-slate-700/30 px-3 py-1.5 flex-shrink-0 text-center">
+                  <p className="text-[10px] text-slate-600">Drag edge to resize</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 };
 

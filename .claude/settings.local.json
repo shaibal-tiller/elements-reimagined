@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node --input-type=module -e \"\nimport { readFileSync } from ''fs'';\nconst envContent = readFileSync\\(''.env.local'', ''utf-8''\\);\nfor \\(const line of envContent.split\\(''\\\\n''\\)\\) {\n  const match = line.match\\(/^\\([^#=]+\\)=\\(.*\\)$/\\);\n  if \\(match\\) process.env[match[1].trim\\(\\)] = match[2].trim\\(\\);\n}\n\nconst { UTApi } = await import\\(''uploadthing/server''\\);\nconst utapi = new UTApi\\(\\);\nconst files = await utapi.listFiles\\({ limit: 50 }\\);\nconsole.log\\(''Files in UploadThing:'', files.files.length\\);\nfiles.files.forEach\\(f => console.log\\(''  key:'', f.key, ''| name:'', f.name, ''| customId:'', f.customId || ''none''\\)\\);\n\nif \\(files.files.length > 0\\) {\n  const keys = files.files.map\\(f => f.key\\);\n  console.log\\(''\\\\nDeleting all'', keys.length, ''orphaned files...''\\);\n  await utapi.deleteFiles\\(keys\\);\n  console.log\\(''Done! All garbage cleaned.''\\);\n}\n\")",
+      "Bash(npx vite build)"
     ]
   }
 }

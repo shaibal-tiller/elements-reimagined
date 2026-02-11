@@ -1,11 +1,10 @@
+import { uploadFiles } from "../lib/uploadthing";
 import {
-  ref,
-  uploadBytesResumable,
-  getDownloadURL,
-  deleteObject,
-  UploadTaskSnapshot,
-} from "firebase/storage";
-import { storage } from "../lib/firebase/config";
+  ACCEPTED_IMAGE_TYPES,
+  ACCEPTED_VIDEO_TYPES,
+  MAX_IMAGE_SIZE_MB,
+  MAX_VIDEO_SIZE_MB,
+} from "../lib/mediaUtils";
 
 export interface UploadProgress {
   progress: number;
@@ -19,117 +18,176 @@ export interface UploadResult {
 }
 
 /**
- * Upload an image to Firebase Storage
- * @param file The file to upload
- * @param folder The folder path in storage (e.g., "projects/project-id")
- * @param onProgress Callback for upload progress
- * @returns Promise with the download URL and storage path
+ * Extract project ID from folder path (e.g., "projects/my-project" -> "my-project")
+ */
+const getProjectId = (folder: string): string => {
+  const parts = folder.split("/");
+  return parts[parts.length - 1] || "unknown";
+};
+
+/**
+ * Upload a single image via UploadThing
  */
 export const uploadImage = async (
   file: File,
   folder: string,
   onProgress?: (progress: UploadProgress) => void
 ): Promise<UploadResult> => {
-  if (!storage) {
-    throw new Error("Firebase Storage is not configured");
-  }
-
-  // Generate unique filename
-  const timestamp = Date.now();
-  const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-  const path = `${folder}/${timestamp}-${sanitizedName}`;
-  const storageRef = ref(storage, path);
-
-  return new Promise((resolve, reject) => {
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on(
-      "state_changed",
-      (snapshot: UploadTaskSnapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        onProgress?.({
-          progress,
-          bytesTransferred: snapshot.bytesTransferred,
-          totalBytes: snapshot.totalBytes,
-        });
-      },
-      (error) => {
-        console.error("Upload error:", error);
-        reject(error);
-      },
-      async () => {
-        try {
-          const url = await getDownloadURL(uploadTask.snapshot.ref);
-          resolve({ url, path });
-        } catch (error) {
-          reject(error);
-        }
-      }
-    );
+  const res = await uploadFiles("projectImage", {
+    files: [file],
+    input: { projectId: getProjectId(folder) },
+    onUploadProgress: ({ progress }: { progress: number }) => {
+      onProgress?.({
+        progress,
+        bytesTransferred: Math.round((progress / 100) * file.size),
+        totalBytes: file.size,
+      });
+    },
   });
+
+  if (!res || res.length === 0) {
+    throw new Error("Upload failed");
+  }
+
+  return { url: res[0].url, path: res[0].key };
 };
 
 /**
- * Delete an image from Firebase Storage
- * @param path The storage path of the image to delete
+ * Upload multiple images at once via UploadThing (more efficient than individual uploads)
  */
-export const deleteImage = async (path: string): Promise<void> => {
-  if (!storage) {
-    throw new Error("Firebase Storage is not configured");
+export const uploadMultipleImages = async (
+  files: File[],
+  folder: string,
+  onFileProgress?: (fileIndex: number, progress: number) => void
+): Promise<UploadResult[]> => {
+  const fileNames = files.map((f) => f.name);
+
+  const res = await uploadFiles("projectImage", {
+    files,
+    input: { projectId: getProjectId(folder) },
+    onUploadProgress: ({ file, progress }: { file: string; progress: number }) => {
+      const idx = fileNames.indexOf(file);
+      if (idx !== -1) {
+        onFileProgress?.(idx, progress);
+      }
+    },
+  });
+
+  if (!res) {
+    throw new Error("Upload failed");
   }
 
-  const storageRef = ref(storage, path);
-  await deleteObject(storageRef);
-};
-
-/**
- * Delete an image by its URL
- * Extracts the path from the download URL and deletes the file
- */
-export const deleteImageByUrl = async (url: string): Promise<void> => {
-  if (!storage) {
-    throw new Error("Firebase Storage is not configured");
-  }
-
-  try {
-    // Extract the path from the URL
-    // Firebase Storage URLs contain the path after /o/ and before ?
-    const match = url.match(/\/o\/(.+?)\?/);
-    if (match) {
-      const path = decodeURIComponent(match[1]);
-      await deleteImage(path);
-    }
-  } catch (error) {
-    console.error("Error deleting image by URL:", error);
-    throw error;
-  }
+  return res.map((r: { url: string; key: string }) => ({ url: r.url, path: r.key }));
 };
 
 /**
  * Validate file type and size
- * @param file The file to validate
- * @param maxSizeMB Maximum file size in MB
- * @param allowedTypes Array of allowed MIME types
  */
 export const validateImage = (
   file: File,
-  maxSizeMB: number = 5,
+  maxSizeMB: number = 8,
   allowedTypes: string[] = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 ): { valid: boolean; error?: string } => {
   if (!allowedTypes.includes(file.type)) {
     return {
       valid: false,
-      error: `File type not allowed. Accepted types: ${allowedTypes.join(", ")}`,
+      error: `File type not allowed. Accepted: ${allowedTypes.join(", ")}`,
     };
   }
 
-  const maxSizeBytes = maxSizeMB * 1024 * 1024;
-  if (file.size > maxSizeBytes) {
-    return {
-      valid: false,
-      error: `File size exceeds ${maxSizeMB}MB limit`,
-    };
+  if (file.size > maxSizeMB * 1024 * 1024) {
+    return { valid: false, error: `File exceeds ${maxSizeMB}MB limit` };
   }
 
   return { valid: true };
+};
+
+/**
+ * Upload a single video via UploadThing
+ */
+export const uploadVideo = async (
+  file: File,
+  folder: string,
+  onProgress?: (progress: UploadProgress) => void
+): Promise<UploadResult> => {
+  const res = await uploadFiles("projectVideo", {
+    files: [file],
+    input: { projectId: getProjectId(folder) },
+    onUploadProgress: ({ progress }: { progress: number }) => {
+      onProgress?.({
+        progress,
+        bytesTransferred: Math.round((progress / 100) * file.size),
+        totalBytes: file.size,
+      });
+    },
+  });
+
+  if (!res || res.length === 0) {
+    throw new Error("Upload failed");
+  }
+
+  return { url: res[0].url, path: res[0].key };
+};
+
+/**
+ * Validate any media file (image or video) with appropriate limits
+ */
+export const validateMedia = (
+  file: File
+): { valid: boolean; error?: string } => {
+  const isVideoFile = file.type.startsWith("video/");
+
+  if (isVideoFile) {
+    if (!ACCEPTED_VIDEO_TYPES.includes(file.type)) {
+      return {
+        valid: false,
+        error: `Video type not allowed. Accepted: ${ACCEPTED_VIDEO_TYPES.join(", ")}`,
+      };
+    }
+    if (file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
+      return { valid: false, error: `Video exceeds ${MAX_VIDEO_SIZE_MB}MB limit` };
+    }
+  } else {
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      return {
+        valid: false,
+        error: `File type not allowed. Accepted: ${ACCEPTED_IMAGE_TYPES.join(", ")}`,
+      };
+    }
+    if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+      return { valid: false, error: `Image exceeds ${MAX_IMAGE_SIZE_MB}MB limit` };
+    }
+  }
+
+  return { valid: true };
+};
+
+/**
+ * Upload any media file — auto-picks image or video route based on file type
+ */
+export const uploadMedia = async (
+  file: File,
+  folder: string,
+  onProgress?: (progress: UploadProgress) => void
+): Promise<UploadResult> => {
+  if (file.type.startsWith("video/")) {
+    return uploadVideo(file, folder, onProgress);
+  }
+  return uploadImage(file, folder, onProgress);
+};
+
+/**
+ * Delete uploaded files by their keys (calls server-side UTApi)
+ */
+export const deleteFilesByKeys = async (keys: string[]): Promise<void> => {
+  if (keys.length === 0) return;
+  try {
+    await fetch("/api/delete-files", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ keys }),
+    });
+  } catch {
+    // Silent fail — orphaned files can be cleaned from UploadThing dashboard
+  }
 };
