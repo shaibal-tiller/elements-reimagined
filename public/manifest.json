@@ -1,0 +1,31 @@
+{
+  "name": "Sharif Shaibal — Full Stack Developer Portfolio",
+  "short_name": "Shaibal Portfolio",
+  "description": "Portfolio of Sharif Shaibal, Full Stack Web Developer and Software Engineer.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#00283a",
+  "theme_color": "#00283a",
+  "icons": [
+    {
+      "src": "/favicon-16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "256x256",
+      "type": "image/x-icon"
+    }
+  ]
+}
