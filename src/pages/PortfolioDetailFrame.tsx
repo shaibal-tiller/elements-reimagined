@@ -455,13 +455,13 @@ const GallerySection = ({
 // --- MAIN COMPONENT ---
 
 const ProjectDetail = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const { setCollapsed } = useSidebar();
   const contextSectionRef = useRef<HTMLElement>(null);
 
-  const { data: project, isLoading, error, refetch } = useProject(id);
+  const { data: project, isLoading, error, refetch } = useProject(slug);
   const [showFloatingBack, setShowFloatingBack] = useState(false);
   const [profileExpanded, setProfileExpanded] = useState(false);
 
@@ -484,7 +484,7 @@ const ProjectDetail = () => {
     scrollToTop();
     // Also schedule after a paint so it catches post-render layout shifts
     requestAnimationFrame(scrollToTop);
-  }, [id, isLoading]);
+  }, [slug, isLoading]);
 
   useEffect(() => {
     const container = getScrollContainer();
@@ -505,7 +505,7 @@ const ProjectDetail = () => {
   useEffect(() => {
     hasCollapsedRef.current = false;
     setProfileExpanded(false);
-  }, [id]);
+  }, [slug]);
 
   // When profileExpanded changes, sync with sidebar
   useEffect(() => {

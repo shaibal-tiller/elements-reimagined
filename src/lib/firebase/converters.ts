@@ -11,11 +11,30 @@ import {
 } from "../../types/firebase";
 
 /**
+ * Generate a URL-friendly slug from a project title.
+ * Keeps it short by trimming to ~40 chars on a word boundary.
+ */
+export const generateSlug = (title: string): string => {
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  // Trim to ~40 chars on a word boundary
+  if (slug.length <= 40) return slug;
+  const trimmed = slug.slice(0, 40);
+  const lastDash = trimmed.lastIndexOf("-");
+  return lastDash > 10 ? trimmed.slice(0, lastDash) : trimmed;
+};
+
+/**
  * Convert Firestore project document to client-side project with resolved icons
  */
 export const convertFirestoreProject = (doc: FirestoreProject): Project => {
   return {
     id: doc.id,
+    slug: doc.slug || generateSlug(doc.title),
     title: doc.title,
     subtitle: doc.subtitle,
     category: doc.category,

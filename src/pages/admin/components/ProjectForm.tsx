@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from "react";
 import {
   X,
   Plus,
@@ -28,6 +28,7 @@ import {
   Link,
   Play,
   GripVertical,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { FirestoreProject } from "../../../types/firebase";
@@ -37,6 +38,7 @@ import { getMediaTypeFromFile, isVideo, isEmbedVideo, MEDIA_ACCEPT_STRING } from
 import ConfirmModal from "../../../components/ui/confirm-modal";
 import ImageUploader from "./ImageUploader";
 import ProjectCardPreview from "./ProjectCardPreview";
+const ImageEditor = lazy(() => import("./ImageEditor"));
 import {
   TW_COLORS,
   TW_COLOR_NAMES,
@@ -473,7 +475,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   const [bulkUploading, setBulkUploading] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<{ file: string; fileSize: number; bytesUploaded: number; progress: number; startedAt: number; status: "uploading" | "done" | "error" }[]>([]);
   const [isDraggingBulk, setIsDraggingBulk] = useState(false);
-  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<{ src: string; index: number } | null>(null);
+  const [editingImage, setEditingImage] = useState(false);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const bulkFileInputRef = useRef<HTMLInputElement>(null);
@@ -1929,7 +1932,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                           <div className="absolute inset-0 bg-black/0 group-hover/thumb:bg-black/30 transition-colors" />
                           <button
                             type="button"
-                            onClick={() => setLightboxSrc(image.src)}
+                            onClick={() => setLightboxImage({ src: image.src, index: idx })}
                             className="absolute top-2 left-2 p-1 bg-slate-900/80 hover:bg-slate-800 text-white rounded transition-all opacity-0 group-hover/thumb:opacity-100"
                             title="View full size"
                           >
@@ -2219,36 +2222,69 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
       }}
     />
 
-    {/* Image Lightbox */}
-    {lightboxSrc && (
+    {/* Image / Video Lightbox (full preview) */}
+    {lightboxImage && !editingImage && (
       <div
         className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-8"
-        onClick={() => setLightboxSrc(null)}
+        onClick={() => setLightboxImage(null)}
       >
         <button
           type="button"
-          onClick={() => setLightboxSrc(null)}
+          onClick={() => setLightboxImage(null)}
           className="absolute top-4 right-4 p-2 bg-slate-800/80 hover:bg-slate-700 text-white rounded-lg transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
-        {lightboxSrc.match(/\.(mp4|webm|ogg)/i) ? (
+        {lightboxImage.src.match(/\.(mp4|webm|ogg)/i) ? (
           <video
-            src={lightboxSrc}
+            src={lightboxImage.src}
             controls
             autoPlay
             className="max-w-full max-h-full rounded-lg"
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
-          <img
-            src={lightboxSrc}
-            alt="Full size preview"
-            className="max-w-full max-h-full object-contain rounded-lg"
-            onClick={(e) => e.stopPropagation()}
-          />
+          <>
+            <img
+              src={lightboxImage.src}
+              alt="Full size preview"
+              className="max-w-full max-h-full object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingImage(true);
+              }}
+              className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium shadow-lg transition-colors"
+            >
+              <Pencil className="w-4 h-4" />
+              Edit Image
+            </button>
+          </>
         )}
       </div>
+    )}
+
+    {/* Image Editor (opens from lightbox "Edit" button) */}
+    {lightboxImage && editingImage && !lightboxImage.src.match(/\.(mp4|webm|ogg)/i) && (
+      <Suspense fallback={null}>
+        <ImageEditor
+          src={lightboxImage.src}
+          uploadFolder={`projects/${formData.id}`}
+          onSave={(newUrl, newPath) => {
+            updateImage(lightboxImage.index, "src", newUrl);
+            uploadedKeysRef.current.push(newPath);
+            persistPendingKeys(uploadedKeysRef.current);
+            setEditingImage(false);
+            setLightboxImage(null);
+          }}
+          onClose={() => {
+            setEditingImage(false);
+          }}
+        />
+      </Suspense>
     )}
 
     {/* Fullscreen Preview Modal */}

@@ -51,7 +51,7 @@ const Portfolio: React.FC = () => {
             const BannerIcon = project.bannerIcon;
 
             return (
-              <Link key={project.id} to={`/portfolio/${project.id}`} className="group block">
+              <Link key={project.id} to={`/portfolio/${project.slug}`} className="group block">
                 <div className="card-white p-0 h-full overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border border-slate-100 flex flex-col">
                   {/* Header / Banner */}
                   <div className={`h-48 ${project.theme.bgMain} relative overflow-hidden p-6 flex flex-col justify-between`}>

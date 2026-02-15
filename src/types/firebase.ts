@@ -50,6 +50,7 @@ export interface FirestoreTechStack {
 
 export interface FirestoreProject {
   id: string;
+  slug?: string;
   title: string;
   subtitle: string;
   category: string;
@@ -166,6 +167,7 @@ export interface TechStack {
 
 export interface Project {
   id: string;
+  slug: string;
   title: string;
   subtitle: string;
   category: string;

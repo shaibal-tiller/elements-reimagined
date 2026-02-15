@@ -131,7 +131,7 @@ const Navbar = () => {
                           {dropdownProjects.map((project, i) => (
                             <Link
                               key={project.id}
-                              to={`/portfolio/${project.id}`}
+                              to={`/portfolio/${project.slug}`}
                               className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-700/50 transition-colors group"
                               style={{
                                 animationDelay: `${i * 40}ms`,
@@ -239,7 +239,7 @@ const Navbar = () => {
                   {dropdownProjects.slice(0, 3).map((project) => (
                     <Link
                       key={project.id}
-                      to={`/portfolio/${project.id}`}
+                      to={`/portfolio/${project.slug}`}
                       className="block text-sm text-slate-400 hover:text-white py-1 truncate"
                       onClick={() => setIsOpen(false)}
                     >
