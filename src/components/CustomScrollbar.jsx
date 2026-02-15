@@ -1,31 +1,106 @@
 import { Scrollbars } from 'react-custom-scrollbars-2';
-import { useState, useEffect, useRef } from 'react';
-
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 const CustomScrollbar = ({ children, className = '' }) => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const scrollTimeout = useRef(null);
   const fadeTimeout = useRef(null);
-   // ✅ smooth + momentum scroll
+  const scrollbarRef = useRef(null);
 
+  // --- Smooth inertia scroll ---
+  const targetScroll = useRef(0);
+  const currentScroll = useRef(0);
+  const rafId = useRef(null);
+  const isAnimating = useRef(false);
+
+  // Easing factor: lower = slower/smoother glide (0.06–0.12 is the sweet spot)
+  const EASE = 0.04;
+  // Multiplier for wheel delta: >1 = more travel per scroll tick
+  const SCROLL_MULTIPLIER = 1.0;
+
+  const animateScroll = useCallback(() => {
+    const diff = targetScroll.current - currentScroll.current;
+
+    // Stop when close enough
+    if (Math.abs(diff) < 0.5) {
+      currentScroll.current = targetScroll.current;
+      if (scrollbarRef.current) {
+        scrollbarRef.current.scrollTop(currentScroll.current);
+      }
+      isAnimating.current = false;
+      return;
+    }
+
+    currentScroll.current += diff * EASE;
+    if (scrollbarRef.current) {
+      scrollbarRef.current.scrollTop(currentScroll.current);
+    }
+
+    rafId.current = requestAnimationFrame(animateScroll);
+  }, []);
+
+  const startAnimation = useCallback(() => {
+    if (!isAnimating.current) {
+      isAnimating.current = true;
+      rafId.current = requestAnimationFrame(animateScroll);
+    }
+  }, [animateScroll]);
+
+  // Intercept wheel events for smooth inertia
+  useEffect(() => {
+    const container = scrollbarRef.current;
+    if (!container) return;
+
+    // The actual scrollable element inside react-custom-scrollbars
+    const viewEl = container.view;
+    if (!viewEl) return;
+
+    const handleWheel = (e) => {
+      e.preventDefault();
+
+      const maxScroll = viewEl.scrollHeight - viewEl.clientHeight;
+      const delta = e.deltaY * SCROLL_MULTIPLIER;
+
+      // Sync current position in case user grabbed the scrollbar thumb
+      currentScroll.current = viewEl.scrollTop;
+
+      targetScroll.current = Math.max(
+        0,
+        Math.min(maxScroll, targetScroll.current + delta)
+      );
+
+      startAnimation();
+    };
+
+    viewEl.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      viewEl.removeEventListener('wheel', handleWheel);
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+    };
+  }, [startAnimation]);
+
+  // Sync target when scrollbar is used directly (thumb drag, keyboard, etc.)
   const handleScroll = () => {
-    // Clear existing timeouts
+    if (scrollbarRef.current && !isAnimating.current) {
+      const pos = scrollbarRef.current.getScrollTop();
+      targetScroll.current = pos;
+      currentScroll.current = pos;
+    }
+
+    // Scrollbar visibility logic
     if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
     if (fadeTimeout.current) clearTimeout(fadeTimeout.current);
 
-    // Show scrollbar
-    if (!isVisible) {
-      setIsVisible(true);
-    }
+    if (!isVisible) setIsVisible(true);
     setIsScrolling(true);
 
-    // Hide scrollbar after 750ms of no scrolling
     scrollTimeout.current = setTimeout(() => {
       setIsScrolling(false);
       fadeTimeout.current = setTimeout(() => {
         setIsVisible(false);
-      }, 300); // Duration of fade out animation
+      }, 300);
     }, 250);
   };
 
@@ -33,12 +108,13 @@ const CustomScrollbar = ({ children, className = '' }) => {
     return () => {
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
       if (fadeTimeout.current) clearTimeout(fadeTimeout.current);
+      if (rafId.current) cancelAnimationFrame(rafId.current);
     };
   }, []);
 
   const renderThumb = ({ style, ...props }) => {
     const thumbStyle = {
-      backgroundColor: '#afb42b', // Yellow color (Tailwind yellow-400)
+      backgroundColor: '#afb42b',
       borderRadius: '6px',
       cursor: 'pointer',
       opacity: isScrolling ? 1 : isVisible ? 0.7 : 0,
@@ -54,7 +130,7 @@ const CustomScrollbar = ({ children, className = '' }) => {
       top: '2px',
       borderRadius: '6px',
       width: '3px',
-      zIndex:"99999",
+      zIndex: '99999',
       opacity: isVisible ? 1 : 0,
       transition: 'opacity 300ms ease-in-out',
     };
@@ -67,6 +143,7 @@ const CustomScrollbar = ({ children, className = '' }) => {
 
   return (
     <Scrollbars
+      ref={scrollbarRef}
       onScroll={handleScroll}
       renderThumbVertical={renderThumb}
       renderTrackVertical={renderTrack}
