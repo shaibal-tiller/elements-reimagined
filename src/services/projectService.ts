@@ -4,7 +4,6 @@ import {
   getDocs,
   getDoc,
   setDoc,
-  updateDoc,
   deleteDoc,
   query,
   orderBy,
@@ -74,17 +73,19 @@ export const createProject = async (
 
 /**
  * Update an existing project in Firestore
+ * Uses setDoc to fully replace the document, ensuring fields like images: []
+ * are written correctly (updateDoc shallow merge can leave stale array data).
  */
 export const updateProject = async (
   id: string,
-  updates: Partial<FirestoreProject>
+  updates: FirestoreProject
 ): Promise<void> => {
   if (!isFirebaseConfigured() || !db) {
     throw new Error("Firebase is not configured");
   }
 
   const projectRef = doc(db, COLLECTION_NAME, id);
-  await updateDoc(projectRef, updates);
+  await setDoc(projectRef, updates);
 };
 
 /**

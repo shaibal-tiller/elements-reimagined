@@ -51,7 +51,7 @@ import ResumeForm from "./components/ResumeForm";
 type Tab = "projects" | "services" | "profile" | "resume";
 
 const Admin: React.FC = () => {
-  const { user, isLoading: authLoading, error: authError, signIn, signOut, clearError } = useAuth();
+  const { user, isLoading: authLoading, error: authError, successMessage, signIn, signInWithGoogle, signOut, resetPassword, clearError } = useAuth();
   const { data: projects, isLoading: projectsLoading } = useProjects();
   const { data: services, isLoading: servicesLoading } = useServices();
   const { data: profile, isLoading: profileLoading } = useProfile();
@@ -112,7 +112,10 @@ const Admin: React.FC = () => {
     return (
       <LoginForm
         onLogin={signIn}
+        onGoogleSignIn={signInWithGoogle}
+        onForgotPassword={resetPassword}
         error={authError}
+        successMessage={successMessage}
         isLoading={authLoading}
       />
     );
@@ -407,40 +410,54 @@ const Admin: React.FC = () => {
                 <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
               </div>
             ) : (
-              <div className="space-y-4">
-                {projectsForEdit.map((project) => (
-                  <div
-                    key={project.id}
-                    className="bg-slate-800 rounded-xl p-6 border border-slate-700 flex items-center justify-between"
-                  >
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">{project.title}</h3>
-                      <p className="text-slate-400 text-sm">{project.subtitle}</p>
-                      <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
-                        <span>{project.category}</span>
-                        <span>{project.year}</span>
-                        <span>{project.company}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {projectsForEdit.map((project) => {
+                  const thumb = project.coverMedia?.[0]?.src || project.images?.[0]?.src;
+                  return (
+                    <div
+                      key={project.id}
+                      className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden group hover:border-slate-600 transition-colors"
+                    >
+                      {/* Thumbnail */}
+                      <div className="relative h-36 bg-slate-900">
+                        {thumb ? (
+                          <img src={thumb} alt={project.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <FolderKanban className="w-10 h-10 text-slate-700" />
+                          </div>
+                        )}
+                        {/* Overlay actions */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                          <button
+                            onClick={() => handleEditProject(project)}
+                            className="p-2 bg-slate-800/80 hover:bg-slate-700 text-white rounded-lg transition-colors"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProject(project.id, project.title)}
+                            className="p-2 bg-slate-800/80 hover:bg-red-500/80 text-white rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      {/* Info */}
+                      <div className="p-4">
+                        <h3 className="text-sm font-semibold text-white truncate">{project.title}</h3>
+                        <p className="text-slate-400 text-xs truncate mt-0.5">{project.subtitle}</p>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
+                          <span>{project.category}</span>
+                          <span>{project.year}</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleEditProject(project)}
-                        className="p-2 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg transition-colors"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProject(project.id, project.title)}
-                        className="p-2 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {projectsForEdit.length === 0 && (
-                  <div className="text-center py-12 text-slate-400">
+                  <div className="col-span-full text-center py-12 text-slate-400">
                     <FolderKanban className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>No projects yet. Add your first project to get started.</p>
                   </div>

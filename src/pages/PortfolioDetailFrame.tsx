@@ -13,12 +13,85 @@ import {
   RefreshCw,
   FolderX,
   Play,
+  User,
+  Loader2,
 } from 'lucide-react';
 import { isVideo, isEmbedVideo, getEmbedUrl } from '../lib/mediaUtils';
 import { useProject } from '../hooks/useProject';
 import { ProjectDetailSkeleton } from '../components/skeletons';
 import { resolveTechPillStyles } from '../lib/twColors';
 import { useSidebar } from '../contexts/SidebarContext';
+
+// --- LAZY MEDIA COMPONENT ---
+// Shows a loading spinner until image/video is fully loaded, preventing layout jank
+
+const LazyMedia = ({
+  src,
+  alt = "",
+  type,
+  className = "",
+  wrapperClassName = "",
+  videoProps = {},
+}: {
+  src: string;
+  alt?: string;
+  type: "image" | "video";
+  className?: string;
+  wrapperClassName?: string;
+  videoProps?: React.VideoHTMLAttributes<HTMLVideoElement>;
+}) => {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+
+  // Reset on src change
+  useEffect(() => {
+    setLoaded(false);
+    setError(false);
+  }, [src]);
+
+  const spinner = !loaded && !error && (
+    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50 z-10 pointer-events-none">
+      <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
+    </div>
+  );
+
+  const errorOverlay = error && (
+    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50 z-10 pointer-events-none">
+      <AlertTriangle className="w-5 h-5 text-slate-500" />
+    </div>
+  );
+
+  if (type === "video") {
+    return (
+      <div className={`relative ${wrapperClassName}`}>
+        {spinner}
+        {errorOverlay}
+        <video
+          src={src}
+          onLoadedData={() => setLoaded(true)}
+          onError={() => setError(true)}
+          className={`transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"} ${className}`}
+          {...videoProps}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`relative ${wrapperClassName}`}>
+      {spinner}
+      {errorOverlay}
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        onError={() => setError(true)}
+        className={`transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"} ${className}`}
+      />
+    </div>
+  );
+};
 
 // --- IMAGE VIEWER COMPONENT ---
 
@@ -31,13 +104,16 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        if (showDetails) setShowDetails(false);
+        else onClose();
+      }
       if (e.key === 'ArrowRight') nextImage(e);
       if (e.key === 'ArrowLeft') prevImage(e);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentIndex]);
+  }, [currentIndex, showDetails]);
 
   const nextImage = (e) => {
     e?.stopPropagation();
@@ -56,7 +132,11 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
 
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      if (showDetails) {
+        setShowDetails(false);
+      } else {
+        onClose();
+      }
     }
   };
 
@@ -72,8 +152,11 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
           {currentIndex + 1} / {images.length}
         </span>
         <button
-          onClick={onClose}
-          className="p-2 bg-black/40 hover:bg-white/20 border border-white/10 rounded-full transition-colors backdrop-blur-md group"
+          onClick={showDetails ? undefined : onClose}
+          disabled={showDetails}
+          className={`p-2 bg-black/40 border border-white/10 rounded-full transition-colors backdrop-blur-md group ${
+            showDetails ? "opacity-30 cursor-not-allowed" : "hover:bg-white/20"
+          }`}
         >
           <X className="w-6 h-6 group-hover:scale-110 transition-transform" />
         </button>
@@ -100,6 +183,7 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
         {/* Media Container — fills remaining space, never overflows */}
         <div
           className={`relative w-full transition-all duration-500 ease-in-out flex items-center justify-center min-h-0 ${showDetails ? 'flex-[0_0_35vh] mt-4' : 'flex-1'}`}
+          style={{ paddingBottom: !showDetails && currentImage.caption ? '3.5rem' : 0 }}
           onClick={e => e.stopPropagation()}
         >
           {isVideo(currentImage) ? (
@@ -118,11 +202,13 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
                 controls
                 autoPlay
                 playsInline
-                className="max-h-full max-w-[90%] object-contain shadow-2xl"
+                controlsList="nodownload"
+                className="max-h-full max-w-[90%] object-contain shadow-2xl rounded-lg"
               />
             )
           ) : (
             <img
+              key={currentIndex}
               src={currentImage.src}
               alt={currentImage.caption}
               className="max-h-full max-w-[90%] object-contain shadow-2xl"
@@ -130,7 +216,7 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
           )}
         </div>
 
-        {/* Slide-up Details Panel — starts fully off-screen, slides to caption peek, then full details */}
+        {/* Slide-up Details Panel */}
         {currentImage.caption && (
           <div
             className={`absolute left-0 right-0 z-40 bg-slate-900/80 backdrop-blur-xl border-t border-white/10 text-white flex flex-col transition-all duration-500 ease-in-out ${showDetails ? 'bottom-0 h-[55vh]' : 'bottom-0 h-14'}`}
@@ -189,13 +275,13 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
           >
             {isVideo(img) ? (
               <>
-                <video src={img.src} muted preload="metadata" className="w-full h-full object-cover" />
+                <div className="w-full h-full bg-slate-800" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Play className="w-3 h-3 text-white fill-white drop-shadow" />
                 </div>
               </>
             ) : (
-              <img src={img.src} alt="thumb" className="w-full h-full object-cover" />
+              <img src={img.src} alt="thumb" loading="lazy" className="w-full h-full object-cover" />
             )}
           </button>
         ))}
@@ -249,39 +335,36 @@ const GallerySection = ({
           className="aspect-[16/9] cursor-pointer relative"
           onClick={() => onImageClick(activeIdx)}
         >
-          {images.map((img, idx) => (
-            <div
-              key={idx}
-              className="absolute inset-0 w-full h-full transition-opacity duration-500 ease-in-out"
-              style={{ opacity: idx === activeIdx ? 1 : 0, pointerEvents: idx === activeIdx ? 'auto' : 'none' }}
-            >
-              {isVideo(img) ? (
-                isEmbedVideo(img.src) ? (
-                  <iframe
-                    src={getEmbedUrl(img.src) || img.src}
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : (
-                  <video
-                    src={img.src}
-                    controls
-                    muted
-                    loop
-                    playsInline
-                    className="w-full h-full object-contain"
-                  />
-                )
-              ) : (
-                <img
-                  src={img.src}
-                  alt={img.caption}
-                  className="w-full h-full object-contain"
+          {/* Only render active item (not all at once) */}
+          <div className="absolute inset-0 w-full h-full">
+            {isVideo(current) ? (
+              isEmbedVideo(current.src) ? (
+                <iframe
+                  key={activeIdx}
+                  src={getEmbedUrl(current.src) || current.src}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
                 />
-              )}
-            </div>
-          ))}
+              ) : (
+                <LazyMedia
+                  key={activeIdx}
+                  src={current.src}
+                  type="video"
+                  className="w-full h-full object-contain"
+                  videoProps={{ controls: true, muted: true, loop: true, playsInline: true, style: { objectFit: "contain" } }}
+                />
+              )
+            ) : (
+              <LazyMedia
+                key={activeIdx}
+                src={current.src}
+                alt={current.caption}
+                type="image"
+                className="w-full h-full object-contain"
+              />
+            )}
+          </div>
 
           {/* Hover overlay (only for non-embed items) */}
           {!isEmbedVideo(current.src) && (
@@ -346,7 +429,7 @@ const GallerySection = ({
               >
                 {isVideo(img) ? (
                   <>
-                    <video src={img.src} muted preload="metadata" className="w-full h-full object-cover" />
+                    <div className="w-full h-full bg-slate-800" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-5 h-5 rounded-full bg-black/50 flex items-center justify-center">
                         <Play className="w-2.5 h-2.5 text-white fill-white" />
@@ -354,7 +437,7 @@ const GallerySection = ({
                     </div>
                   </>
                 ) : (
-                  <img src={img.src} alt={img.caption} className="w-full h-full object-cover" />
+                  <img src={img.src} alt={img.caption} loading="lazy" className="w-full h-full object-cover" />
                 )}
               </button>
             ))}
@@ -379,27 +462,74 @@ const ProjectDetail = () => {
   const contextSectionRef = useRef<HTMLElement>(null);
 
   const { data: project, isLoading, error, refetch } = useProject(id);
+  const [showFloatingBack, setShowFloatingBack] = useState(false);
+  const [profileExpanded, setProfileExpanded] = useState(false);
+
+  // The app uses react-custom-scrollbars-2 — the scrollable element
+  // is its inner "view" div, tagged with data-scroll-container.
+  const getScrollContainer = (): HTMLElement | null =>
+    document.querySelector<HTMLElement>('[data-scroll-container]');
+
+  // Scroll to top on route change AND after data finishes loading
+  // (content replacing skeleton shifts scroll position)
+  useEffect(() => {
+    const scrollToTop = () => {
+      const container = getScrollContainer();
+      if (container) {
+        container.scrollTop = 0;
+      } else {
+        window.scrollTo(0, 0);
+      }
+    };
+    scrollToTop();
+    // Also schedule after a paint so it catches post-render layout shifts
+    requestAnimationFrame(scrollToTop);
+  }, [id, isLoading]);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const container = getScrollContainer();
+    const target = container || window;
+
+    const onScroll = () => {
+      const scrollY = container ? container.scrollTop : window.scrollY;
+      setShowFloatingBack(scrollY > 300);
+    };
+
+    target.addEventListener("scroll", onScroll, { passive: true });
+    return () => target.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Collapse sidebar once when scrolling past "Project Context" — one-way, never re-expands on scroll
+  const hasCollapsedRef = useRef(false);
+
+  useEffect(() => {
+    hasCollapsedRef.current = false;
+    setProfileExpanded(false);
   }, [id]);
 
-  // Collapse sidebar when "Project Context" section scrolls past mid-screen
+  // When profileExpanded changes, sync with sidebar
+  useEffect(() => {
+    if (profileExpanded) {
+      setCollapsed(false);
+    } else if (hasCollapsedRef.current) {
+      setCollapsed(true);
+    }
+  }, [profileExpanded, setCollapsed]);
+
   useEffect(() => {
     const el = contextSectionRef.current;
     if (!el) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          // Section is crossing the mid-screen line → keep sidebar open
-          setCollapsed(false);
-        } else if (entry.boundingClientRect.bottom < window.innerHeight / 2) {
-          // Section has scrolled above mid-screen → collapse
-          setCollapsed(true);
+        if (!entry.isIntersecting && entry.boundingClientRect.bottom < window.innerHeight / 2) {
+          if (!hasCollapsedRef.current || profileExpanded) {
+            hasCollapsedRef.current = true;
+            setProfileExpanded(false);
+            setCollapsed(true);
+          }
         }
       },
-      // Shrink root to a thin line at vertical center of viewport
       { rootMargin: '-50% 0px -50% 0px', threshold: 0 },
     );
 
@@ -408,7 +538,7 @@ const ProjectDetail = () => {
       observer.disconnect();
       setCollapsed(false);
     };
-  }, [project, setCollapsed]);
+  }, [project, setCollapsed, profileExpanded]);
 
   // Cover media slideshow: starts at -1 (themed bg), then loops through coverMedia
   const coverMedia = project?.coverMedia || [];
@@ -562,19 +692,18 @@ const ProjectDetail = () => {
                         style={{ border: 0 }}
                       />
                     ) : (
-                      <video
+                      <LazyMedia
                         src={media.src}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
+                        type="video"
                         className="w-full h-full object-cover"
+                        videoProps={{ autoPlay: true, muted: true, loop: true, playsInline: true, style: { objectFit: "cover" } }}
                       />
                     )
                   ) : (
-                    <img
+                    <LazyMedia
                       src={media.src}
                       alt={media.caption || ""}
+                      type="image"
                       className="w-full h-full object-cover"
                     />
                   )}
@@ -746,6 +875,29 @@ const ProjectDetail = () => {
             </div>
           </div>
         </main>
+      </div>
+
+      {/* Floating buttons */}
+      <div className={`fixed bottom-6 left-6 z-50 flex items-center gap-3 transition-all duration-300 ${
+        showFloatingBack ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none"
+      }`}>
+        <button
+          onClick={() => navigate("/portfolio")}
+          className="flex items-center gap-2 px-4 py-2.5 bg-slate-800/90 backdrop-blur-sm border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 rounded-full shadow-lg transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm font-medium">Portfolio</span>
+        </button>
+
+        {hasCollapsedRef.current && !profileExpanded && (
+          <button
+            onClick={() => setProfileExpanded(true)}
+            className="p-2.5 bg-slate-800/90 backdrop-blur-sm border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 rounded-full shadow-lg transition-colors"
+            title="Show profile card"
+          >
+            <User className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </>
   );

@@ -27,6 +27,7 @@ import {
   ChevronDown,
   Link,
   Play,
+  GripVertical,
 } from "lucide-react";
 import { toast } from "sonner";
 import { FirestoreProject } from "../../../types/firebase";
@@ -56,6 +57,32 @@ interface ProjectFormProps {
 }
 
 const iconNames = Object.keys(iconRegistry);
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const formatEta = (seconds: number): string => {
+  if (!isFinite(seconds) || seconds < 0) return "";
+  if (seconds < 60) return `~${Math.ceil(seconds)}s`;
+  return `~${Math.floor(seconds / 60)}m ${Math.ceil(seconds % 60)}s`;
+};
+
+const cleanFileName = (name: string): string => {
+  return name
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+};
+
+const uniqueCaption = (base: string, existing: string[]): string => {
+  if (!existing.includes(base)) return base;
+  let i = 2;
+  while (existing.includes(`${base} (${i})`)) i++;
+  return `${base} (${i})`;
+};
 
 // Predefined theme presets for quick selection
 const themePresets = [
@@ -432,10 +459,23 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     }));
   };
 
+  const reorderImages = (from: number, to: number) => {
+    if (from === to) return;
+    setFormData((prev) => {
+      const arr = [...prev.images];
+      const [item] = arr.splice(from, 1);
+      arr.splice(to, 0, item);
+      return { ...prev, images: arr };
+    });
+  };
+
   // Bulk image upload state
   const [bulkUploading, setBulkUploading] = useState(false);
-  const [bulkProgress, setBulkProgress] = useState<{ file: string; progress: number; status: "uploading" | "done" | "error" }[]>([]);
+  const [bulkProgress, setBulkProgress] = useState<{ file: string; fileSize: number; bytesUploaded: number; progress: number; startedAt: number; status: "uploading" | "done" | "error" }[]>([]);
   const [isDraggingBulk, setIsDraggingBulk] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const bulkFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleBulkFiles = async (files: FileList | File[]) => {
@@ -446,11 +486,15 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     const validFiles: File[] = [];
     const progressItems: typeof bulkProgress = [];
 
+    const now = Date.now();
     fileArray.forEach((file) => {
       const validation = validateMedia(file);
       progressItems.push({
         file: file.name,
+        fileSize: file.size,
+        bytesUploaded: 0,
         progress: 0,
+        startedAt: now,
         status: validation.valid ? "uploading" : "error",
       });
       if (validation.valid) validFiles.push(file);
@@ -472,6 +516,13 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     // Upload files sequentially so each shows real progress
     let successCount = 0;
     for (const file of validFiles) {
+      // Reset startedAt for each file when it actually begins uploading
+      setBulkProgress((prev) =>
+        prev.map((p) =>
+          p.file === file.name ? { ...p, startedAt: Date.now() } : p
+        )
+      );
+
       try {
         const result = await uploadMedia(
           file,
@@ -479,7 +530,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
           ({ progress }) => {
             setBulkProgress((prev) =>
               prev.map((p) =>
-                p.file === file.name ? { ...p, progress: Math.round(progress) } : p
+                p.file === file.name ? { ...p, progress: Math.round(progress), bytesUploaded: (progress / 100) * file.size } : p
               )
             );
           }
@@ -488,7 +539,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
         // Mark this file as done
         setBulkProgress((prev) =>
           prev.map((p) =>
-            p.file === file.name ? { ...p, progress: 100, status: "done" as const } : p
+            p.file === file.name ? { ...p, progress: 100, bytesUploaded: file.size, status: "done" as const } : p
           )
         );
 
@@ -496,12 +547,16 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
         uploadedKeysRef.current.push(result.path);
         persistPendingKeys(uploadedKeysRef.current);
 
-        // Add uploaded media to form immediately
+        // Add uploaded media to form immediately with pre-filled caption
         const mediaType = getMediaTypeFromFile(file);
-        setFormData((prev) => ({
-          ...prev,
-          images: [...prev.images, { src: result.url, caption: "", details: "", type: mediaType }],
-        }));
+        setFormData((prev) => {
+          const existingCaptions = prev.images.map((img) => img.caption);
+          const caption = uniqueCaption(cleanFileName(file.name), existingCaptions);
+          return {
+            ...prev,
+            images: [...prev.images, { src: result.url, caption, details: "", type: mediaType }],
+          };
+        });
 
         successCount++;
       } catch {
@@ -665,7 +720,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
 
   // Cover bulk upload state
   const [coverBulkUploading, setCoverBulkUploading] = useState(false);
-  const [coverBulkProgress, setCoverBulkProgress] = useState<{ file: string; progress: number; status: "uploading" | "done" | "error" }[]>([]);
+  const [coverBulkProgress, setCoverBulkProgress] = useState<{ file: string; fileSize: number; bytesUploaded: number; progress: number; startedAt: number; status: "uploading" | "done" | "error" }[]>([]);
   const [isDraggingCover, setIsDraggingCover] = useState(false);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
   const [coverUrlInput, setCoverUrlInput] = useState("");
@@ -677,11 +732,15 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     const validFiles: File[] = [];
     const progressItems: typeof coverBulkProgress = [];
 
+    const now = Date.now();
     fileArray.forEach((file) => {
       const validation = validateMedia(file);
       progressItems.push({
         file: file.name,
+        fileSize: file.size,
+        bytesUploaded: 0,
         progress: 0,
+        startedAt: now,
         status: validation.valid ? "uploading" : "error",
       });
       if (validation.valid) validFiles.push(file);
@@ -702,6 +761,12 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
 
     let successCount = 0;
     for (const file of validFiles) {
+      setCoverBulkProgress((prev) =>
+        prev.map((p) =>
+          p.file === file.name ? { ...p, startedAt: Date.now() } : p
+        )
+      );
+
       try {
         const result = await uploadMedia(
           file,
@@ -709,7 +774,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
           ({ progress }) => {
             setCoverBulkProgress((prev) =>
               prev.map((p) =>
-                p.file === file.name ? { ...p, progress: Math.round(progress) } : p
+                p.file === file.name ? { ...p, progress: Math.round(progress), bytesUploaded: (progress / 100) * file.size } : p
               )
             );
           }
@@ -717,7 +782,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
 
         setCoverBulkProgress((prev) =>
           prev.map((p) =>
-            p.file === file.name ? { ...p, progress: 100, status: "done" as const } : p
+            p.file === file.name ? { ...p, progress: 100, bytesUploaded: file.size, status: "done" as const } : p
           )
         );
 
@@ -725,10 +790,14 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
         persistPendingKeys(uploadedKeysRef.current);
 
         const mediaType = getMediaTypeFromFile(file);
-        setFormData((prev) => ({
-          ...prev,
-          coverMedia: [...(prev.coverMedia || []), { src: result.url, caption: "", details: "", type: mediaType }],
-        }));
+        setFormData((prev) => {
+          const existingCaptions = (prev.coverMedia || []).map((img) => img.caption);
+          const caption = uniqueCaption(cleanFileName(file.name), existingCaptions);
+          return {
+            ...prev,
+            coverMedia: [...(prev.coverMedia || []), { src: result.url, caption, details: "", type: mediaType }],
+          };
+        });
 
         successCount++;
       } catch {
@@ -983,16 +1052,37 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
               `}
             >
               <div className="flex flex-col items-center text-center">
-                <div className={`p-3 rounded-full mb-3 transition-colors ${isDraggingCover ? "bg-indigo-500/20" : "bg-slate-700"}`}>
-                  {coverBulkUploading ? (
-                    <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
-                  ) : (
+                {coverBulkUploading ? (
+                  (() => {
+                    const total = coverBulkProgress.reduce((s, p) => s + p.fileSize, 0);
+                    const uploaded = coverBulkProgress.reduce((s, p) => s + p.bytesUploaded, 0);
+                    const pct = total > 0 ? Math.round((uploaded / total) * 100) : 0;
+                    return (
+                      <div
+                        className="p-[3px] rounded-full mb-3"
+                        style={{ background: `conic-gradient(#818cf8 ${pct * 3.6}deg, rgba(51,65,85,0.4) ${pct * 3.6}deg)` }}
+                      >
+                        <div className="p-3 rounded-full bg-slate-800">
+                          <Upload className="w-6 h-6 text-indigo-400 animate-bounce" />
+                        </div>
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <div className={`p-3 rounded-full mb-3 transition-colors ${isDraggingCover ? "bg-indigo-500/20" : "bg-slate-700"}`}>
                     <Upload className={`w-6 h-6 ${isDraggingCover ? "text-indigo-400" : "text-slate-400"}`} />
-                  )}
-                </div>
+                  </div>
+                )}
                 <p className="text-sm text-slate-300 font-medium">
                   {coverBulkUploading
-                    ? "Uploading files..."
+                    ? (() => {
+                        const totalBytes = coverBulkProgress.reduce((s, p) => s + p.fileSize, 0);
+                        const uploadedBytes = coverBulkProgress.reduce((s, p) => s + p.bytesUploaded, 0);
+                        const active = coverBulkProgress.find((p) => p.status === "uploading");
+                        const activeElapsed = active ? (Date.now() - active.startedAt) / 1000 : 0;
+                        const speed = active && activeElapsed > 0 ? active.bytesUploaded / activeElapsed : 0;
+                        return `Uploading... ${formatFileSize(uploadedBytes)} / ${formatFileSize(totalBytes)}${speed > 0 ? ` — ${formatFileSize(speed)}/s` : ""}`;
+                      })()
                     : isDraggingCover
                       ? "Drop files here"
                       : "Drag & drop cover images or videos, or click to browse"
@@ -1005,32 +1095,42 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
 
               {coverBulkProgress.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  {coverBulkProgress.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-slate-400 truncate">{item.file}</span>
-                          <span className="text-xs text-slate-500 flex-shrink-0 ml-2">
-                            {item.status === "done" ? (
-                              <CheckCircle className="w-3.5 h-3.5 text-green-400" />
-                            ) : item.status === "error" ? (
-                              <AlertCircle className="w-3.5 h-3.5 text-red-400" />
-                            ) : (
-                              `${item.progress}%`
-                            )}
-                          </span>
-                        </div>
-                        <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full transition-all duration-300 rounded-full ${
-                              item.status === "error" ? "bg-red-500" : item.status === "done" ? "bg-green-500" : "bg-indigo-500"
-                            }`}
-                            style={{ width: `${item.status === "error" ? 100 : item.progress}%` }}
-                          />
+                  {coverBulkProgress.map((item, idx) => {
+                    const elapsed = (Date.now() - item.startedAt) / 1000;
+                    const speed = elapsed > 0 && item.status === "uploading" ? item.bytesUploaded / elapsed : 0;
+                    const eta = speed > 0 ? (item.fileSize - item.bytesUploaded) / speed : 0;
+                    return (
+                      <div key={idx} className="flex items-center gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs text-slate-400 truncate">{item.file}</span>
+                            <span className="text-xs text-slate-500 flex-shrink-0 ml-2 flex items-center gap-2">
+                              {item.status === "done" ? (
+                                <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+                              ) : item.status === "error" ? (
+                                <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+                              ) : (
+                                <>
+                                  <span>{formatFileSize(item.bytesUploaded)} / {formatFileSize(item.fileSize)}</span>
+                                  {speed > 0 && <span>{formatFileSize(speed)}/s</span>}
+                                  {eta > 0 && <span>{formatEta(eta)}</span>}
+                                  <span>{item.progress}%</span>
+                                </>
+                              )}
+                            </span>
+                          </div>
+                          <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full transition-all duration-300 rounded-full ${
+                                item.status === "error" ? "bg-red-500" : item.status === "done" ? "bg-green-500" : "bg-indigo-500"
+                              }`}
+                              style={{ width: `${item.status === "error" ? 100 : item.progress}%` }}
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1684,16 +1784,37 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
               `}
             >
               <div className="flex flex-col items-center text-center">
-                <div className={`p-3 rounded-full mb-3 transition-colors ${isDraggingBulk ? "bg-indigo-500/20" : "bg-slate-700"}`}>
-                  {bulkUploading ? (
-                    <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
-                  ) : (
+                {bulkUploading ? (
+                  (() => {
+                    const total = bulkProgress.reduce((s, p) => s + p.fileSize, 0);
+                    const uploaded = bulkProgress.reduce((s, p) => s + p.bytesUploaded, 0);
+                    const pct = total > 0 ? Math.round((uploaded / total) * 100) : 0;
+                    return (
+                      <div
+                        className="p-[3px] rounded-full mb-3"
+                        style={{ background: `conic-gradient(#818cf8 ${pct * 3.6}deg, rgba(51,65,85,0.4) ${pct * 3.6}deg)` }}
+                      >
+                        <div className="p-3 rounded-full bg-slate-800">
+                          <Upload className="w-6 h-6 text-indigo-400 animate-bounce" />
+                        </div>
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <div className={`p-3 rounded-full mb-3 transition-colors ${isDraggingBulk ? "bg-indigo-500/20" : "bg-slate-700"}`}>
                     <Upload className={`w-6 h-6 ${isDraggingBulk ? "text-indigo-400" : "text-slate-400"}`} />
-                  )}
-                </div>
+                  </div>
+                )}
                 <p className="text-sm text-slate-300 font-medium">
                   {bulkUploading
-                    ? "Uploading files..."
+                    ? (() => {
+                        const totalBytes = bulkProgress.reduce((s, p) => s + p.fileSize, 0);
+                        const uploadedBytes = bulkProgress.reduce((s, p) => s + p.bytesUploaded, 0);
+                        const active = bulkProgress.find((p) => p.status === "uploading");
+                        const activeElapsed = active ? (Date.now() - active.startedAt) / 1000 : 0;
+                        const speed = active && activeElapsed > 0 ? active.bytesUploaded / activeElapsed : 0;
+                        return `Uploading... ${formatFileSize(uploadedBytes)} / ${formatFileSize(totalBytes)}${speed > 0 ? ` — ${formatFileSize(speed)}/s` : ""}`;
+                      })()
                     : isDraggingBulk
                       ? "Drop files here"
                       : "Drag & drop images or videos, or click to browse"
@@ -1707,32 +1828,42 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
               {/* Bulk Upload Progress */}
               {bulkProgress.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  {bulkProgress.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-slate-400 truncate">{item.file}</span>
-                          <span className="text-xs text-slate-500 flex-shrink-0 ml-2">
-                            {item.status === "done" ? (
-                              <CheckCircle className="w-3.5 h-3.5 text-green-400" />
-                            ) : item.status === "error" ? (
-                              <AlertCircle className="w-3.5 h-3.5 text-red-400" />
-                            ) : (
-                              `${item.progress}%`
-                            )}
-                          </span>
-                        </div>
-                        <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full transition-all duration-300 rounded-full ${
-                              item.status === "error" ? "bg-red-500" : item.status === "done" ? "bg-green-500" : "bg-indigo-500"
-                            }`}
-                            style={{ width: `${item.status === "error" ? 100 : item.progress}%` }}
-                          />
+                  {bulkProgress.map((item, idx) => {
+                    const elapsed = (Date.now() - item.startedAt) / 1000;
+                    const speed = elapsed > 0 && item.status === "uploading" ? item.bytesUploaded / elapsed : 0;
+                    const eta = speed > 0 ? (item.fileSize - item.bytesUploaded) / speed : 0;
+                    return (
+                      <div key={idx} className="flex items-center gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs text-slate-400 truncate">{item.file}</span>
+                            <span className="text-xs text-slate-500 flex-shrink-0 ml-2 flex items-center gap-2">
+                              {item.status === "done" ? (
+                                <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+                              ) : item.status === "error" ? (
+                                <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+                              ) : (
+                                <>
+                                  <span>{formatFileSize(item.bytesUploaded)} / {formatFileSize(item.fileSize)}</span>
+                                  {speed > 0 && <span>{formatFileSize(speed)}/s</span>}
+                                  {eta > 0 && <span>{formatEta(eta)}</span>}
+                                  <span>{item.progress}%</span>
+                                </>
+                              )}
+                            </span>
+                          </div>
+                          <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full transition-all duration-300 rounded-full ${
+                                item.status === "error" ? "bg-red-500" : item.status === "done" ? "bg-green-500" : "bg-indigo-500"
+                              }`}
+                              style={{ width: `${item.status === "error" ? 100 : item.progress}%` }}
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1752,17 +1883,34 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
             />
 
             {/* Image List */}
-            <div className="space-y-4">
+            <div className="space-y-1">
               {formData.images.map((image, idx) => (
                 <div
                   key={idx}
-                  className="bg-slate-700/30 rounded-xl border border-slate-600 overflow-hidden"
+                  draggable
+                  onDragStart={() => setDragIdx(idx)}
+                  onDragOver={(e) => { e.preventDefault(); setDragOverIdx(idx); }}
+                  onDragLeave={() => setDragOverIdx(null)}
+                  onDrop={(e) => { e.preventDefault(); if (dragIdx !== null) reorderImages(dragIdx, idx); setDragIdx(null); setDragOverIdx(null); }}
+                  onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
+                  className={`bg-slate-700/30 rounded-xl border overflow-hidden transition-all ${
+                    dragOverIdx === idx && dragIdx !== idx
+                      ? "border-indigo-400 bg-indigo-500/5"
+                      : dragIdx === idx
+                        ? "border-slate-500 opacity-50"
+                        : "border-slate-600"
+                  }`}
                 >
                   <div className="flex">
+                    {/* Drag Handle */}
+                    <div className="flex items-center px-1.5 cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 transition-colors">
+                      <GripVertical className="w-4 h-4" />
+                    </div>
+
                     {/* Media Preview / Upload */}
-                    <div className="w-48 flex-shrink-0">
+                    <div className="w-44 flex-shrink-0">
                       {image.src ? (
-                        <div className="relative h-full min-h-[120px]">
+                        <div className="relative h-full min-h-[120px] group/thumb">
                           {isVideo(image) ? (
                             <video
                               src={image.src}
@@ -1778,10 +1926,19 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                               className="w-full h-full object-cover"
                             />
                           )}
+                          <div className="absolute inset-0 bg-black/0 group-hover/thumb:bg-black/30 transition-colors" />
+                          <button
+                            type="button"
+                            onClick={() => setLightboxSrc(image.src)}
+                            className="absolute top-2 left-2 p-1 bg-slate-900/80 hover:bg-slate-800 text-white rounded transition-all opacity-0 group-hover/thumb:opacity-100"
+                            title="View full size"
+                          >
+                            <Maximize2 className="w-3.5 h-3.5" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => updateImage(idx, "src", "")}
-                            className="absolute top-2 right-2 p-1 bg-red-500/90 hover:bg-red-600 text-white rounded transition-colors"
+                            className="absolute top-2 right-2 p-1 bg-red-500/90 hover:bg-red-600 text-white rounded transition-colors opacity-0 group-hover/thumb:opacity-100"
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
@@ -1812,10 +1969,10 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                       </div>
                       <input
                         type="text"
-                        placeholder="Caption"
+                        placeholder="File name / caption"
                         value={image.caption}
                         onChange={(e) => updateImage(idx, "caption", e.target.value)}
-                        className="w-full px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
+                        className="w-full px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
                       />
                       <textarea
                         placeholder="Details about this image..."
@@ -2061,6 +2218,38 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
         setConfirmAction(null);
       }}
     />
+
+    {/* Image Lightbox */}
+    {lightboxSrc && (
+      <div
+        className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-8"
+        onClick={() => setLightboxSrc(null)}
+      >
+        <button
+          type="button"
+          onClick={() => setLightboxSrc(null)}
+          className="absolute top-4 right-4 p-2 bg-slate-800/80 hover:bg-slate-700 text-white rounded-lg transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+        {lightboxSrc.match(/\.(mp4|webm|ogg)/i) ? (
+          <video
+            src={lightboxSrc}
+            controls
+            autoPlay
+            className="max-w-full max-h-full rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        ) : (
+          <img
+            src={lightboxSrc}
+            alt="Full size preview"
+            className="max-w-full max-h-full object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
+      </div>
+    )}
 
     {/* Fullscreen Preview Modal */}
     {showFullPreview && (() => {

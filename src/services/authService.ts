@@ -1,10 +1,12 @@
 import {
   signInWithEmailAndPassword,
+  signInWithPopup,
   signOut as firebaseSignOut,
+  sendPasswordResetEmail,
   onAuthStateChanged,
   User,
 } from "firebase/auth";
-import { auth, ADMIN_EMAIL, isFirebaseConfigured } from "../lib/firebase/config";
+import { auth, ADMIN_EMAIL, isFirebaseConfigured, googleProvider } from "../lib/firebase/config";
 
 export interface AuthUser {
   uid: string;
@@ -44,6 +46,46 @@ export const signIn = async (
     email: user.email,
     isAdmin: isAdmin(user),
   };
+};
+
+/**
+ * Sign in with Google
+ * Only allows the authorized admin email
+ */
+export const signInWithGoogle = async (): Promise<AuthUser> => {
+  if (!isFirebaseConfigured() || !auth) {
+    throw new Error("Firebase is not configured");
+  }
+
+  const result = await signInWithPopup(auth, googleProvider);
+  const user = result.user;
+
+  if (user.email !== ADMIN_EMAIL) {
+    await firebaseSignOut(auth);
+    throw new Error("Unauthorized: Only the admin can access this page");
+  }
+
+  return {
+    uid: user.uid,
+    email: user.email,
+    isAdmin: true,
+  };
+};
+
+/**
+ * Send password reset email
+ * Only allows the authorized admin email to prevent email enumeration
+ */
+export const resetPassword = async (email: string): Promise<void> => {
+  if (!isFirebaseConfigured() || !auth) {
+    throw new Error("Firebase is not configured");
+  }
+
+  if (email !== ADMIN_EMAIL) {
+    throw new Error("Unauthorized: Password reset is only available for the admin account");
+  }
+
+  await sendPasswordResetEmail(auth, email);
 };
 
 /**
@@ -103,7 +145,9 @@ export const getCurrentUser = (): AuthUser | null => {
 
 export default {
   signIn,
+  signInWithGoogle,
   signOut,
+  resetPassword,
   subscribeToAuthChanges,
   getCurrentUser,
   isAdmin,

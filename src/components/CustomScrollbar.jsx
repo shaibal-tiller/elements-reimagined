@@ -61,11 +61,16 @@ const CustomScrollbar = ({ children, className = '' }) => {
     return <div style={{ ...style, ...trackStyle }} {...props} />;
   };
 
+  const renderView = ({ style, ...props }) => (
+    <div style={style} {...props} data-scroll-container="true" />
+  );
+
   return (
     <Scrollbars
       onScroll={handleScroll}
       renderThumbVertical={renderThumb}
       renderTrackVertical={renderTrack}
+      renderView={renderView}
       autoHide={false}
       className={className}
       style={{ width: '100%', height: '100vh' }}
