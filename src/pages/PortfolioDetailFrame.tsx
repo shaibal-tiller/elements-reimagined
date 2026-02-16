@@ -874,10 +874,15 @@ const ProjectDetail = () => {
                             href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border border-slate-100 hover:border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors group`}
+                            className="block rounded-lg border border-slate-100 hover:border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all group overflow-hidden"
                           >
-                            <span className="text-sm font-medium text-slate-700 flex-1">{link.label}</span>
-                            <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                            <div className="flex items-center gap-2 px-3 py-2.5">
+                              <span className="text-sm font-medium text-slate-700 flex-1">{link.label}</span>
+                              <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                            </div>
+                            <div className="max-h-0 group-hover:max-h-10 transition-all duration-300 ease-in-out overflow-hidden">
+                              <div className="px-3 pb-2 text-xs text-slate-400 truncate">{link.url}</div>
+                            </div>
                           </a>
                         ))}
                       </div>

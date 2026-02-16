@@ -271,6 +271,7 @@ const Admin: React.FC = () => {
     marqueeIconNames: p.marqueeIcons.map((i) => i?.name || "Code2"),
     challenge: p.challenge,
     coverMedia: p.coverMedia || [],
+    webLinks: p.webLinks || [],
     order: 0,
   })) || [];
 
