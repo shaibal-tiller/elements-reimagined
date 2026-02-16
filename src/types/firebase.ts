@@ -70,6 +70,7 @@ export interface FirestoreProject {
     desc: string;
   };
   coverMedia?: FirestoreProjectImage[];
+  webLinks?: { label: string; url: string }[];
   order?: number; // For sorting
 }
 
@@ -187,6 +188,7 @@ export interface Project {
     desc: string;
   };
   coverMedia?: ProjectImage[];
+  webLinks?: { label: string; url: string }[];
 }
 
 export interface Service {

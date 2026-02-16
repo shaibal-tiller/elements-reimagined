@@ -26,6 +26,7 @@ import {
   ChevronUp,
   ChevronDown,
   Link,
+  ExternalLink,
   Play,
   GripVertical,
   Pencil,
@@ -216,6 +217,7 @@ const emptyProject: FirestoreProject = {
   marqueeIconNames: [],
   challenge: { title: "", desc: "" },
   coverMedia: [],
+  webLinks: [],
   order: 0,
 };
 
@@ -303,6 +305,15 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   // Track uploaded file keys for cleanup on cancel or tab close
   const uploadedKeysRef = useRef<string[]>([]);
   const PENDING_KEYS_STORAGE = "ut_pending_keys";
+
+  // Lock body scroll while modal is open
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, []);
 
   // On mount: clean up any orphaned files from a previous crashed session
   useEffect(() => {
@@ -633,6 +644,36 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     }));
   };
 
+  const addWebLink = () => {
+    setFormData((prev) => ({
+      ...prev,
+      webLinks: [...(prev.webLinks || []), { label: "", url: "" }],
+    }));
+  };
+
+  const removeWebLink = (index: number) => {
+    const link = (formData.webLinks || [])[index];
+    setConfirmAction({
+      title: "Remove Link",
+      description: `Remove "${link?.label || `Link ${index + 1}`}"?`,
+      onConfirm: () => {
+        setFormData((prev) => ({
+          ...prev,
+          webLinks: (prev.webLinks || []).filter((_, i) => i !== index),
+        }));
+      },
+    });
+  };
+
+  const updateWebLink = (index: number, field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      webLinks: (prev.webLinks || []).map((l, i) =>
+        i === index ? { ...l, [field]: value } : l
+      ),
+    }));
+  };
+
   const addHeaderInfo = () => {
     setFormData((prev) => ({
       ...prev,
@@ -915,13 +956,17 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">
                   Category
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.category}
                   onChange={(e) => updateField("category", e.target.value)}
                   className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                  placeholder="Web App"
-                />
+                >
+                  <option value="">Select category</option>
+                  <option value="Client Project">Client Project</option>
+                  <option value="In-House Tool">In-House Tool</option>
+                  <option value="Company Product">Company Product</option>
+                  <option value="Personal Project">Personal Project</option>
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">
@@ -1748,6 +1793,59 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                 {formData.contributions.length === 0 && (
                   <p className="text-sm text-slate-500 italic text-center py-4">
                     No contributions added yet
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Web Links */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4 text-indigo-400" />
+                  <label className="text-sm font-medium text-slate-300">
+                    Related Links
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  onClick={addWebLink}
+                  className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 text-xs font-medium transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add
+                </button>
+              </div>
+              <div className="space-y-3">
+                {(formData.webLinks || []).map((link, idx) => (
+                  <div key={idx} className="bg-slate-700/30 p-3 rounded-lg border border-slate-600">
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="text"
+                        placeholder="Label (e.g. Live Demo, Documentation)"
+                        value={link.label}
+                        onChange={(e) => updateWebLink(idx, "label", e.target.value)}
+                        className="flex-1 px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeWebLink(idx)}
+                        className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <input
+                      type="url"
+                      placeholder="https://..."
+                      value={link.url}
+                      onChange={(e) => updateWebLink(idx, "url", e.target.value)}
+                      className="w-full px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
+                    />
+                  </div>
+                ))}
+                {(formData.webLinks || []).length === 0 && (
+                  <p className="text-sm text-slate-500 italic text-center py-4">
+                    No links added yet
                   </p>
                 )}
               </div>

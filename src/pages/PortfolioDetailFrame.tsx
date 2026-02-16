@@ -15,6 +15,7 @@ import {
   Play,
   User,
   Loader2,
+  ExternalLink,
 } from 'lucide-react';
 import { isVideo, isEmbedVideo, getEmbedUrl } from '../lib/mediaUtils';
 import { useProject } from '../hooks/useProject';
@@ -313,153 +314,137 @@ const GallerySection = ({
   theme: any;
   onImageClick: (idx: number) => void;
 }) => {
-  const [activeIdx, setActiveIdx] = useState(0);
-  const thumbStripRef = useRef<HTMLDivElement>(null);
-
-  // Keep the active thumbnail scrolled into view
-  useEffect(() => {
-    const strip = thumbStripRef.current;
-    if (!strip) return;
-    const thumb = strip.children[activeIdx] as HTMLElement | undefined;
-    if (thumb) {
-      thumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }
-  }, [activeIdx]);
+  const [paused, setPaused] = useState(false);
 
   if (images.length === 0) return null;
 
-  const prev = () => setActiveIdx((i) => (i - 1 + images.length) % images.length);
-  const next = () => setActiveIdx((i) => (i + 1) % images.length);
-  const current = images[activeIdx];
+  // Split images into two rows for the sliding grid
+  const mid = Math.ceil(images.length / 2);
+  const row1 = images.length <= 2 ? images : images.slice(0, mid);
+  const row2 = images.length <= 2 ? [] : images.slice(mid);
 
+  // For the sliding effect we duplicate items so the loop is seamless
+  const speed = images.length <= 3 ? '40s' : '50s';
+
+  const renderCard = (img: typeof images[0], idx: number, globalIdx: number) => {
+    const isVid = isVideo(img);
+    const isEmbed = isEmbedVideo(img.src);
+    return (
+      <div
+        key={`${globalIdx}-${idx}`}
+        className="flex-shrink-0 group/card relative cursor-pointer rounded-xl overflow-hidden shadow-md border border-slate-200 hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+        style={{ width: images.length === 1 ? '100%' : images.length === 2 ? 340 : 300, height: images.length === 1 ? 280 : 200 }}
+        onClick={() => onImageClick(globalIdx)}
+      >
+        {isVid ? (
+          isEmbed ? (
+            <div className="w-full h-full bg-slate-900 flex items-center justify-center">
+              <Play className="w-10 h-10 text-white/60" />
+            </div>
+          ) : (
+            <video src={img.src} muted loop playsInline className="w-full h-full object-cover" />
+          )
+        ) : (
+          <img src={img.src} alt={img.caption} loading="lazy" className="w-full h-full object-cover" />
+        )}
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+          <p className="text-white text-xs font-medium truncate">{img.caption}</p>
+          <div className="flex items-center gap-1 mt-1 text-white/70">
+            <Maximize2 className="w-3 h-3" />
+            <span className="text-[10px]">Click to view</span>
+          </div>
+        </div>
+        {isVid && !isEmbed && (
+          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
+            <Play className="w-3 h-3 text-white fill-white" />
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Single image — no animation needed
+  if (images.length === 1) {
+    return (
+      <section>
+        <h3 className="text-xl font-bold mb-6" style={{ color: theme.textMain }}>System Visuals</h3>
+        {renderCard(images[0], 0, 0)}
+      </section>
+    );
+  }
+
+  // Two images — simple static row
+  if (images.length === 2) {
+    return (
+      <section>
+        <h3 className="text-xl font-bold mb-6" style={{ color: theme.textMain }}>System Visuals</h3>
+        <div className="grid grid-cols-2 gap-4">
+          {images.map((img, idx) => renderCard(img, idx, idx))}
+        </div>
+      </section>
+    );
+  }
+
+  // 3+ images — animated sliding rows
   return (
     <section>
       <div className="flex items-center justify-between mb-6">
-        <h3 className={`text-xl font-bold`} style={{ color: theme.textMain }}>System Visuals</h3>
-        <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
-          {activeIdx + 1} / {images.length}
-        </span>
+        <h3 className="text-xl font-bold" style={{ color: theme.textMain }}>System Visuals</h3>
+        <button
+          onClick={() => setPaused((p) => !p)}
+          className="text-xs font-medium text-slate-400 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-full transition-colors"
+        >
+          {paused ? 'Resume' : 'Pause'}
+        </button>
       </div>
 
-      {/* Featured Media */}
-      <div className="relative group rounded-2xl overflow-hidden bg-slate-900 shadow-lg border border-slate-200">
-        <div
-          className="aspect-[16/9] cursor-pointer relative"
-          onClick={() => onImageClick(activeIdx)}
-        >
-          {/* Only render active item (not all at once) */}
-          <div className="absolute inset-0 w-full h-full">
-            {isVideo(current) ? (
-              isEmbedVideo(current.src) ? (
-                <iframe
-                  key={activeIdx}
-                  src={getEmbedUrl(current.src) || current.src}
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              ) : (
-                <LazyMedia
-                  key={activeIdx}
-                  src={current.src}
-                  type="video"
-                  className="w-full h-full object-contain"
-                  videoProps={{ controls: true, muted: true, loop: true, playsInline: true, style: { objectFit: "contain" } }}
-                />
-              )
-            ) : (
-              <LazyMedia
-                key={activeIdx}
-                src={current.src}
-                alt={current.caption}
-                type="image"
-                className="w-full h-full object-contain"
-              />
-            )}
+      <style>{`
+        @keyframes gallery-slide-left {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes gallery-slide-right {
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
+        }
+      `}</style>
+
+      <div
+        className="space-y-4 overflow-hidden rounded-2xl"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        {/* Row 1 — slides left */}
+        <div className="overflow-hidden">
+          <div
+            className="flex gap-4 w-max"
+            style={{
+              animation: `gallery-slide-left ${speed} linear infinite`,
+              animationPlayState: paused ? 'paused' : 'running',
+            }}
+          >
+            {row1.map((img, idx) => renderCard(img, idx, idx))}
+            {row1.map((img, idx) => renderCard(img, idx + row1.length, idx))}
           </div>
+        </div>
 
-          {/* Hover overlay (only for non-embed items) */}
-          {!isEmbedVideo(current.src) && (
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
-              <div className="opacity-0 group-hover:opacity-100 translate-y-3 group-hover:translate-y-0 transition-all duration-300 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-white text-xs font-medium border border-white/20 flex items-center gap-2">
-                <Maximize2 className="w-4 h-4" />
-                View full size
-              </div>
+        {/* Row 2 — slides right (opposite direction) */}
+        {row2.length > 0 && (
+          <div className="overflow-hidden">
+            <div
+              className="flex gap-4 w-max"
+              style={{
+                animation: `gallery-slide-right ${speed} linear infinite`,
+                animationPlayState: paused ? 'paused' : 'running',
+              }}
+            >
+              {row2.map((img, idx) => renderCard(img, idx, mid + idx))}
+              {row2.map((img, idx) => renderCard(img, idx + row2.length, mid + idx))}
             </div>
-          )}
-        </div>
-
-        {/* Caption bar */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 pt-10">
-          <p className="text-white text-sm font-medium truncate">{current.caption}</p>
-          {current.details && (
-            <p className="text-white/60 text-xs mt-0.5 line-clamp-1">{current.details}</p>
-          )}
-        </div>
-
-        {/* Nav arrows */}
-        {images.length > 1 && (
-          <>
-            <button
-              onClick={(e) => { e.stopPropagation(); prev(); }}
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/10"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); next(); }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/10"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </>
+          </div>
         )}
       </div>
-
-      {/* Thumbnail strip */}
-      {images.length > 1 && (
-        <div className="mt-3 relative">
-          <div
-            ref={thumbStripRef}
-            className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide scroll-smooth"
-            style={{ scrollbarWidth: 'none' }}
-          >
-            {images.map((img, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveIdx(idx)}
-                className={`relative flex-shrink-0 rounded-lg overflow-hidden transition-all duration-300 border-2 shadow-sm ${
-                  idx === activeIdx
-                    ? 'ring-2 ring-current/20 scale-105'
-                    : 'border-slate-200 opacity-70 hover:opacity-100 hover:border-slate-300'
-                }`}
-                style={{
-                  width: 80,
-                  height: 52,
-                  ...(idx === activeIdx ? { borderColor: theme.textMain, '--tw-ring-color': theme.textMain } as React.CSSProperties : {}),
-                }}
-              >
-                {isVideo(img) ? (
-                  <>
-                    <div className="w-full h-full bg-slate-800" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-5 h-5 rounded-full bg-black/50 flex items-center justify-center">
-                        <Play className="w-2.5 h-2.5 text-white fill-white" />
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <img src={img.src} alt={img.caption} loading="lazy" className="w-full h-full object-cover" />
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* Fade edges when scrollable */}
-          <div className="absolute left-0 top-0 bottom-1 w-6 bg-gradient-to-r from-slate-50 to-transparent pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-1 w-6 bg-gradient-to-l from-slate-50 to-transparent pointer-events-none" />
-        </div>
-      )}
     </section>
   );
 };
@@ -868,6 +853,29 @@ const ProjectDetail = () => {
                       );
                     })}
                   </div>
+
+                  {project.webLinks && project.webLinks.length > 0 && (
+                    <div className="mt-8 pt-6 border-t border-slate-100">
+                      <h3 className={`text-lg font-bold ${theme.textMain} mb-4 flex items-center gap-2`}>
+                        <project.bannerIcon className={`w-5 h-5`} style={{ color: theme.primary }} />
+                        Related Links
+                      </h3>
+                      <div className="space-y-2">
+                        {project.webLinks.map((link, idx) => (
+                          <a
+                            key={idx}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border border-slate-100 hover:border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors group`}
+                          >
+                            <span className="text-sm font-medium text-slate-700 flex-1">{link.label}</span>
+                            <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="mt-8 pt-6 border-t border-slate-100">
                     <h3 className={`text-lg font-bold ${theme.textMain} mb-4 flex items-center gap-2`}>

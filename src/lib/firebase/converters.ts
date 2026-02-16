@@ -59,6 +59,7 @@ export const convertFirestoreProject = (doc: FirestoreProject): Project => {
     marqueeIcons: getIcons(doc.marqueeIconNames),
     challenge: doc.challenge,
     coverMedia: doc.coverMedia || [],
+    webLinks: doc.webLinks || [],
   };
 };
 
@@ -98,6 +99,7 @@ export const convertProjectToFirestore = (
     ),
     challenge: project.challenge,
     coverMedia: project.coverMedia || [],
+    webLinks: project.webLinks || [],
   };
 };
 
