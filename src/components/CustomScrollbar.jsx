@@ -14,8 +14,8 @@ const CustomScrollbar = ({ children, className = '' }) => {
   const rafId = useRef(null);
   const isAnimating = useRef(false);
 
-  // Easing factor: lower = slower/smoother glide (0.06–0.12 is the sweet spot)
-  const EASE = 0.04;
+  // Easing factor: higher = snappier response, lower = smoother glide
+  const EASE = 0.12;
   // Multiplier for wheel delta: >1 = more travel per scroll tick
   const SCROLL_MULTIPLIER = 1.0;
 
