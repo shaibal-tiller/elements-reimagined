@@ -757,7 +757,7 @@ const ProjectDetail = () => {
             <div className="lg:col-span-8 space-y-8">
 
               <section ref={contextSectionRef} className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
-                <h2 className={`text-2xl font-bold ${theme.textMain} mb-6 flex items-center gap-3`}>
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-3" style={{ color: theme.textMain }}>
                   <div className={`w-2 h-8 ${theme.accentBlur} rounded-full`}></div>
                   Project Context
                 </h2>
@@ -767,7 +767,7 @@ const ProjectDetail = () => {
               </section>
 
               <section>
-                <h3 className={`text-xl font-bold ${theme.textMain} mb-6`}>System Modules & Features</h3>
+                <h3 className="text-xl font-bold mb-6" style={{ color: theme.textMain }}>System Modules & Features</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {project.features.map((feature, idx) => (
                     <div key={idx} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 group">
@@ -827,8 +827,8 @@ const ProjectDetail = () => {
                 </div>
 
                 <div className="relative z-10 p-6">
-                  <h3 className={`text-lg font-bold ${theme.textMain} mb-4 flex items-center gap-2`}>
-                    <project.bannerIcon className={`w-5 h-5`} style={{ color: theme.primary }} />
+                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: theme.textMain }}>
+                    <project.bannerIcon className={`w-5 h-5`} style={{ color: theme.textMain }} />
                     Tech Stack
                   </h3>
 
@@ -856,8 +856,8 @@ const ProjectDetail = () => {
 
                   {project.webLinks && project.webLinks.length > 0 && (
                     <div className="mt-8 pt-6 border-t border-slate-100">
-                      <h3 className={`text-lg font-bold ${theme.textMain} mb-4 flex items-center gap-2`}>
-                        <project.bannerIcon className={`w-5 h-5`} style={{ color: theme.primary }} />
+                      <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: theme.textMain }}>
+                        <project.bannerIcon className={`w-5 h-5`} style={{ color: theme.textMain }} />
                         Related Links
                       </h3>
                       <div className="space-y-2">
@@ -878,8 +878,8 @@ const ProjectDetail = () => {
                   )}
 
                   <div className="mt-8 pt-6 border-t border-slate-100">
-                    <h3 className={`text-lg font-bold ${theme.textMain} mb-4 flex items-center gap-2`}>
-                      <project.bannerIcon className={`w-5 h-5`} style={{ color: theme.primary }} />
+                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: theme.textMain }}>
+                      <project.bannerIcon className={`w-5 h-5`} style={{ color: theme.textMain }} />
                       Key Challenge
                     </h3>
                     <div className={`bg-orange-50 border border-orange-100 rounded-xl p-4`}>

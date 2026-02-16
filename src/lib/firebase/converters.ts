@@ -29,9 +29,18 @@ export const generateSlug = (title: string): string => {
 };
 
 /**
+ * Normalize textMain: strip Tailwind "text-[#hex]" wrapper to raw "#hex" for inline styles
+ */
+const normalizeTextMain = (value: string): string => {
+  const match = value.match(/^text-\[([#\w]+)\]$/);
+  return match ? match[1] : value;
+};
+
+/**
  * Convert Firestore project document to client-side project with resolved icons
  */
 export const convertFirestoreProject = (doc: FirestoreProject): Project => {
+  const theme = { ...doc.theme, textMain: normalizeTextMain(doc.theme.textMain) };
   return {
     id: doc.id,
     slug: doc.slug || generateSlug(doc.title),
@@ -41,7 +50,7 @@ export const convertFirestoreProject = (doc: FirestoreProject): Project => {
     year: doc.year,
     company: doc.company,
     bannerIcon: getIcon(doc.bannerIconName),
-    theme: doc.theme,
+    theme,
     headerInfo: doc.headerInfo.map((info) => ({
       label: info.label,
       text: info.text,

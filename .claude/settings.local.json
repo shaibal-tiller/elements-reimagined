@@ -9,7 +9,8 @@
       "WebFetch(domain:utfs.io)",
       "Bash(curl:*)",
       "Bash(curl -sL \"https://utfs.io/f/KkkI9GdEBxIaoIdBN4M9CkFtUcLbNfl3H7w4jWJAgTOM2dem\" -o iunsd-04.png)",
-      "Bash(curl -sL \"https://utfs.io/f/KkkI9GdEBxIa4rQJyUaNGfxT0la9sF6vHJUDkbSKrgiyIoA7\" -o iunsd-06.png)"
+      "Bash(curl -sL \"https://utfs.io/f/KkkI9GdEBxIa4rQJyUaNGfxT0la9sF6vHJUDkbSKrgiyIoA7\" -o iunsd-06.png)",
+      "WebFetch(domain:exemplar-consortium.vercel.app)"
     ]
   }
 }

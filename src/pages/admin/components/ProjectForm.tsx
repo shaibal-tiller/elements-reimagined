@@ -197,6 +197,114 @@ const themePresets = [
     },
     color: "#a855f7",
   },
+  {
+    name: "Lime",
+    theme: {
+      primary: "lime",
+      secondary: "emerald",
+      bgMain: "bg-[#1a2e05]",
+      bgGradient: "from-lime-400 to-emerald-400",
+      accentBlur: "bg-lime-500",
+      textMain: "#84cc16",
+      pillBg: "bg-lime-500/10",
+      pillBorder: "border-lime-500/20",
+      pillText: "text-lime-400",
+      techFrontendColor: "blue",
+      techBackendColor: "green",
+      techDevopsColor: "purple",
+    },
+    color: "#84cc16",
+  },
+  {
+    name: "Teal",
+    theme: {
+      primary: "teal",
+      secondary: "cyan",
+      bgMain: "bg-[#042f2e]",
+      bgGradient: "from-teal-400 to-cyan-400",
+      accentBlur: "bg-teal-500",
+      textMain: "#14b8a6",
+      pillBg: "bg-teal-500/10",
+      pillBorder: "border-teal-500/20",
+      pillText: "text-teal-400",
+      techFrontendColor: "blue",
+      techBackendColor: "green",
+      techDevopsColor: "purple",
+    },
+    color: "#14b8a6",
+  },
+  {
+    name: "Sky",
+    theme: {
+      primary: "sky",
+      secondary: "blue",
+      bgMain: "bg-[#0c4a6e]",
+      bgGradient: "from-sky-400 to-blue-400",
+      accentBlur: "bg-sky-500",
+      textMain: "#0ea5e9",
+      pillBg: "bg-sky-500/10",
+      pillBorder: "border-sky-500/20",
+      pillText: "text-sky-400",
+      techFrontendColor: "blue",
+      techBackendColor: "green",
+      techDevopsColor: "purple",
+    },
+    color: "#0ea5e9",
+  },
+  {
+    name: "Violet",
+    theme: {
+      primary: "violet",
+      secondary: "purple",
+      bgMain: "bg-[#2e1065]",
+      bgGradient: "from-violet-400 to-purple-400",
+      accentBlur: "bg-violet-500",
+      textMain: "#8b5cf6",
+      pillBg: "bg-violet-500/10",
+      pillBorder: "border-violet-500/20",
+      pillText: "text-violet-400",
+      techFrontendColor: "blue",
+      techBackendColor: "green",
+      techDevopsColor: "purple",
+    },
+    color: "#8b5cf6",
+  },
+  {
+    name: "Pink",
+    theme: {
+      primary: "pink",
+      secondary: "rose",
+      bgMain: "bg-[#500724]",
+      bgGradient: "from-pink-400 to-rose-400",
+      accentBlur: "bg-pink-500",
+      textMain: "#ec4899",
+      pillBg: "bg-pink-500/10",
+      pillBorder: "border-pink-500/20",
+      pillText: "text-pink-400",
+      techFrontendColor: "blue",
+      techBackendColor: "green",
+      techDevopsColor: "purple",
+    },
+    color: "#ec4899",
+  },
+  {
+    name: "Orange",
+    theme: {
+      primary: "orange",
+      secondary: "amber",
+      bgMain: "bg-[#431407]",
+      bgGradient: "from-orange-400 to-amber-400",
+      accentBlur: "bg-orange-500",
+      textMain: "#f97316",
+      pillBg: "bg-orange-500/10",
+      pillBorder: "border-orange-500/20",
+      pillText: "text-orange-400",
+      techFrontendColor: "blue",
+      techBackendColor: "green",
+      techDevopsColor: "purple",
+    },
+    color: "#f97316",
+  },
 ];
 
 const emptyProject: FirestoreProject = {
@@ -1356,14 +1464,14 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
               <label className="block text-sm font-medium text-slate-300 mb-3">
                 Quick Presets
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {themePresets.map((preset) => (
                   <button
                     key={preset.name}
                     type="button"
                     onClick={() => applyThemePreset(preset)}
                     className={`
-                      flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-all
+                      flex items-center gap-2 px-2.5 py-2 rounded-lg border transition-all
                       ${formData.theme.primary === preset.theme.primary && formData.theme.secondary === preset.theme.secondary
                         ? "border-indigo-500 bg-indigo-500/10"
                         : "border-slate-600 hover:border-slate-500 bg-slate-700/30"
@@ -1371,10 +1479,10 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                     `}
                   >
                     <div
-                      className="w-4 h-4 rounded-full"
+                      className="w-3.5 h-3.5 rounded-full flex-shrink-0"
                       style={{ backgroundColor: preset.color }}
                     />
-                    <span className="text-sm text-slate-300">{preset.name}</span>
+                    <span className="text-xs text-slate-300 truncate">{preset.name}</span>
                   </button>
                 ))}
               </div>
