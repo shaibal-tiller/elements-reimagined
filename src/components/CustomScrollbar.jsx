@@ -57,6 +57,9 @@ const CustomScrollbar = ({ children, className = '' }) => {
     if (!viewEl) return;
 
     const handleWheel = (e) => {
+      // Skip if event originates from inside a fixed overlay (modal, lightbox, etc.)
+      if (e.target.closest('[data-overlay], [role="dialog"]')) return;
+
       e.preventDefault();
 
       const maxScroll = viewEl.scrollHeight - viewEl.clientHeight;

@@ -866,7 +866,7 @@ export default function ImageEditor({
   ];
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex flex-col">
+    <div data-overlay className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex flex-col">
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-2 bg-slate-900/90 border-b border-slate-700/50">
         <div className="flex items-center gap-2">

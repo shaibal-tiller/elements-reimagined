@@ -2431,6 +2431,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     {/* Image / Video Lightbox (full preview) */}
     {lightboxImage && !editingImage && (
       <div
+        data-overlay
         className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-8"
         onClick={() => setLightboxImage(null)}
       >
@@ -2510,6 +2511,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
       ];
       return (
         <div
+          data-overlay
           className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex flex-col items-center overflow-y-auto"
           onClick={() => setShowFullPreview(false)}
         >
@@ -2556,7 +2558,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
       );
     })()}
 
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div data-overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-slate-900 rounded-2xl shadow-2xl w-full max-w-6xl border border-slate-700 max-h-[95vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-700 flex-shrink-0">

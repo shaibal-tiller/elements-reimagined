@@ -112,7 +112,6 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showDetails, setShowDetails] = useState(false);
   const currentImage = images[currentIndex];
-
   useEffect(() => { setShowDetails(false); }, [currentIndex]);
 
   useEffect(() => {
@@ -127,6 +126,13 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentIndex, showDetails]);
+
+  // Block all scroll/wheel when viewer is open
+  useEffect(() => {
+    const blockScroll = (e) => e.preventDefault();
+    window.addEventListener('wheel', blockScroll, { passive: false });
+    return () => window.removeEventListener('wheel', blockScroll);
+  }, []);
 
   const nextImage = (e) => {
     e?.stopPropagation();
@@ -155,6 +161,7 @@ const ImageViewer = ({ images, initialIndex, onClose }) => {
 
   return (
     <div
+      data-overlay
       className="fixed inset-0 top-16 z-[1000] bg-black/90 backdrop-blur-md flex flex-col animate-fadeIn overflow-hidden"
       onClick={handleBackdropClick}
     >
