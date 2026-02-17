@@ -85,8 +85,9 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
             <BannerIcon className="text-slate-400 transition-colors" />
           </div>
 
-          <div className="z-10">
-            <h3 className="text-2xl font-bold text-white mb-1 transition-colors">
+          <div className="z-10 relative">
+            <div className='bg-black bg-opacity-20 absolute inset-[-23px]'></div>
+            <h3 className="text-2xl font-bold text-white transition-colors">
               {project.title}
             </h3>
             <p className="text-slate-300 text-sm">{project.subtitle}</p>
@@ -95,7 +96,7 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
 
         {/* Content */}
         <div className="p-6 flex-1 flex flex-col">
-          <p className="text-slate-600 mb-6 line-clamp-3 leading-relaxed flex-1">
+          <p className="text-slate-400 mb-6 line-clamp-3 leading-relaxed flex-1">
             {project.overview.split('.')[0]}.
           </p>
 
@@ -106,12 +107,15 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
                 {tech.name}
               </span>
             ))}
+            {project.techStack.frontend.length > 4 ? <span className='text-white text-xs my-auto'>+ {(project.techStack.frontend.length - 4) +
+              (project.techStack.backend.length) + (project.techStack.devops.length)} more . . .</span> : <span className='text-white text-xs my-auto'>+ {
+                (project.techStack.backend.length) + (project.techStack.devops.length)} more . . .</span>}
           </div>
 
           {/* Footer */}
-          <div className="flex items-center font-semibold text-sm group-hover:translate-x-1 transition-transform" style={ts.textMain}>
+          {/* <div className="flex items-center font-semibold text-sm group-hover:translate-x-1 transition-transform" style={ts.textMain}>
             View Case Study <ArrowRight className="w-4 h-4 ml-2" />
-          </div>
+          </div> */}
         </div>
       </div>
     </Link>

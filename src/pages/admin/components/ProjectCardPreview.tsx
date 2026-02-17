@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowRight, Play } from "lucide-react";
+import { Play } from "lucide-react";
 import { FirestoreProject } from "../../../types/firebase";
 import { getIcon } from "../../../lib/iconRegistry";
 import { resolveThemeStyles, resolveTechPillStyles } from "../../../lib/twColors";
@@ -49,7 +49,7 @@ const ProjectCardPreview: React.FC<ProjectCardPreviewProps> = ({
                     className="absolute inset-0 w-full h-full object-cover"
                   />
                 )}
-                <div className="absolute inset-0 bg-black/50" />
+                <div className="absolute inset-0 bg-black/40" />
               </>
             ) : (
               <div
@@ -66,7 +66,8 @@ const ProjectCardPreview: React.FC<ProjectCardPreviewProps> = ({
               </span>
               <BannerIcon className="w-4 h-4 text-slate-400" />
             </div>
-            <div className="z-10">
+            <div className="z-10 relative">
+              <div className="bg-black bg-opacity-20 absolute inset-[-23px]"></div>
               <h4 className={`${isWide ? "text-2xl" : "text-lg"} font-bold text-white mb-0.5 leading-tight transition-all duration-150`}>
                 {project.title || "Project Title"}
               </h4>
@@ -83,9 +84,9 @@ const ProjectCardPreview: React.FC<ProjectCardPreviewProps> = ({
                 ? project.overview.split(".")[0] + "."
                 : "Project overview will appear here..."}
             </p>
-            <div className="flex flex-wrap gap-1 mb-3">
+            <div className="flex flex-wrap gap-2 mb-3">
               {(project.techStack.frontend.length > 0
-                ? project.techStack.frontend.slice(0, isWide ? 5 : 3)
+                ? project.techStack.frontend.slice(0, isWide ? 4 : 3)
                 : [{ name: "React" }, { name: "TypeScript" }, { name: "Tailwind" }]
               ).map((tech) => (
                 <span
@@ -95,12 +96,18 @@ const ProjectCardPreview: React.FC<ProjectCardPreviewProps> = ({
                   {tech.name}
                 </span>
               ))}
-            </div>
-            <div
-              className={`flex items-center font-semibold ${isWide ? "text-sm" : "text-xs"}`}
-              style={{ color: project.theme.textMain || "#1e1b4b" }}
-            >
-              View Case Study <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              {(() => {
+                const shown = isWide ? 4 : 3;
+                const remaining =
+                  Math.max(0, project.techStack.frontend.length - shown) +
+                  project.techStack.backend.length +
+                  project.techStack.devops.length;
+                return remaining > 0 ? (
+                  <span className="text-slate-400 text-[10px] my-auto">
+                    + {remaining} more . . .
+                  </span>
+                ) : null;
+              })()}
             </div>
           </div>
         </div>

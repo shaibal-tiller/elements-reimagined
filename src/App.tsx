@@ -10,8 +10,6 @@ import Resume from "./pages/Resume";
 import { Contact } from "./pages/Contact";
 import { Blog } from "./pages/Blog";
 import CustomScrollbar from "@/components/CustomScrollbar";
-import PortfolioDetail from "./pages/Detail1";
-import PortfolioDetail2 from "./pages/Detail2";
 import ProjectDetail from './pages/PortfolioDetailFrame'
 import Admin from './pages/admin/Admin'
 import { useEffect } from "react";
@@ -66,8 +64,6 @@ const App = () => (
             <Route path="/resume" element={<Resume />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/blog" element={<Blog />} />
-            {/* <Route path="/portfolio/1" element={<PortfolioDetail />} />
-            <Route path="/portfolio/2" element={<PortfolioDetail2 />} /> */}
           </Route>
 
           {/* Admin route without main layout */}

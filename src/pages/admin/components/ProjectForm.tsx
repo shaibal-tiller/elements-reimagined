@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from "react";
 import {
   X,
-  Plus,
-  Trash2,
   Save,
   Loader2,
   ChevronLeft,
@@ -12,47 +10,33 @@ import {
   Layers,
   Image as ImageIcon,
   Zap,
-  Award,
   Code2,
-  AlertTriangle,
-  Upload,
-  CheckCircle,
-  AlertCircle,
   Maximize2,
   Smartphone,
   Tablet,
   Laptop,
   Tv,
   Film,
-  ChevronUp,
-  ChevronDown,
-  Link,
-  ExternalLink,
-  Play,
-  GripVertical,
   Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { FirestoreProject } from "../../../types/firebase";
-import { iconRegistry } from "../../../lib/iconRegistry";
-import { uploadMedia, validateMedia, deleteFilesByKeys } from "../../../services/storageService";
-import { getMediaTypeFromFile, isVideo, isEmbedVideo, MEDIA_ACCEPT_STRING } from "../../../lib/mediaUtils";
+import { deleteFilesByKeys } from "../../../services/storageService";
+import { isVideo } from "../../../lib/mediaUtils";
 import ConfirmModal from "../../../components/ui/confirm-modal";
-import ImageUploader from "./ImageUploader";
 import ProjectCardPreview from "./ProjectCardPreview";
-import IconPicker, { MultiIconPicker } from "./IconPicker";
-const ImageEditor = lazy(() => import("./ImageEditor"));
+import { emptyProject, themePresets } from "../data/themePresets";
 import {
-  TW_COLORS,
-  TW_COLOR_NAMES,
-  TW_SHADES,
-  parseTwColor,
-  buildTwClass,
-  hexFromBgMain,
-  bgMainFromHex,
-  resolveThemeStyles,
-  resolveTechPillStyles,
-} from "../../../lib/twColors";
+  BasicInfoTab,
+  CoverMediaTab,
+  ThemeTab,
+  ContentTab,
+  ImagesTab,
+  FeaturesTab,
+  TechStackTab,
+} from "./project-form";
+
+const ImageEditor = lazy(() => import("./ImageEditor"));
 
 interface ProjectFormProps {
   project?: FirestoreProject | null;
@@ -60,274 +44,6 @@ interface ProjectFormProps {
   onCancel: () => void;
   isLoading: boolean;
 }
-
-const formatFileSize = (bytes: number): string => {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-};
-
-const formatEta = (seconds: number): string => {
-  if (!isFinite(seconds) || seconds < 0) return "";
-  if (seconds < 60) return `~${Math.ceil(seconds)}s`;
-  return `~${Math.floor(seconds / 60)}m ${Math.ceil(seconds % 60)}s`;
-};
-
-const cleanFileName = (name: string): string => {
-  return name
-    .replace(/\.[^/.]+$/, "")
-    .replace(/[-_]+/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-};
-
-const uniqueCaption = (base: string, existing: string[]): string => {
-  if (!existing.includes(base)) return base;
-  let i = 2;
-  while (existing.includes(`${base} (${i})`)) i++;
-  return `${base} (${i})`;
-};
-
-// Predefined theme presets for quick selection
-const themePresets = [
-  {
-    name: "Indigo",
-    theme: {
-      primary: "indigo",
-      secondary: "blue",
-      bgMain: "bg-[#1e1b4b]",
-      bgGradient: "from-indigo-400 to-blue-400",
-      accentBlur: "bg-indigo-500",
-      textMain: "#4f46e5",
-      pillBg: "bg-indigo-500/10",
-      pillBorder: "border-indigo-500/20",
-      pillText: "text-indigo-400",
-      techFrontendColor: "blue",
-      techBackendColor: "green",
-      techDevopsColor: "purple",
-    },
-    color: "#4f46e5",
-  },
-  {
-    name: "Emerald",
-    theme: {
-      primary: "emerald",
-      secondary: "teal",
-      bgMain: "bg-[#064e3b]",
-      bgGradient: "from-emerald-400 to-teal-400",
-      accentBlur: "bg-emerald-500",
-      textMain: "#10b981",
-      pillBg: "bg-emerald-500/10",
-      pillBorder: "border-emerald-500/20",
-      pillText: "text-emerald-400",
-      techFrontendColor: "blue",
-      techBackendColor: "green",
-      techDevopsColor: "purple",
-    },
-    color: "#10b981",
-  },
-  {
-    name: "Amber",
-    theme: {
-      primary: "amber",
-      secondary: "orange",
-      bgMain: "bg-[#78350f]",
-      bgGradient: "from-amber-400 to-orange-400",
-      accentBlur: "bg-amber-500",
-      textMain: "#f59e0b",
-      pillBg: "bg-amber-500/10",
-      pillBorder: "border-amber-500/20",
-      pillText: "text-amber-400",
-      techFrontendColor: "blue",
-      techBackendColor: "green",
-      techDevopsColor: "purple",
-    },
-    color: "#f59e0b",
-  },
-  {
-    name: "Rose",
-    theme: {
-      primary: "rose",
-      secondary: "pink",
-      bgMain: "bg-[#881337]",
-      bgGradient: "from-rose-400 to-pink-400",
-      accentBlur: "bg-rose-500",
-      textMain: "#f43f5e",
-      pillBg: "bg-rose-500/10",
-      pillBorder: "border-rose-500/20",
-      pillText: "text-rose-400",
-      techFrontendColor: "blue",
-      techBackendColor: "green",
-      techDevopsColor: "purple",
-    },
-    color: "#f43f5e",
-  },
-  {
-    name: "Cyan",
-    theme: {
-      primary: "cyan",
-      secondary: "sky",
-      bgMain: "bg-[#164e63]",
-      bgGradient: "from-cyan-400 to-sky-400",
-      accentBlur: "bg-cyan-500",
-      textMain: "#06b6d4",
-      pillBg: "bg-cyan-500/10",
-      pillBorder: "border-cyan-500/20",
-      pillText: "text-cyan-400",
-      techFrontendColor: "blue",
-      techBackendColor: "green",
-      techDevopsColor: "purple",
-    },
-    color: "#06b6d4",
-  },
-  {
-    name: "Purple",
-    theme: {
-      primary: "purple",
-      secondary: "violet",
-      bgMain: "bg-[#581c87]",
-      bgGradient: "from-purple-400 to-violet-400",
-      accentBlur: "bg-purple-500",
-      textMain: "#a855f7",
-      pillBg: "bg-purple-500/10",
-      pillBorder: "border-purple-500/20",
-      pillText: "text-purple-400",
-      techFrontendColor: "blue",
-      techBackendColor: "green",
-      techDevopsColor: "purple",
-    },
-    color: "#a855f7",
-  },
-  {
-    name: "Lime",
-    theme: {
-      primary: "lime",
-      secondary: "emerald",
-      bgMain: "bg-[#1a2e05]",
-      bgGradient: "from-lime-400 to-emerald-400",
-      accentBlur: "bg-lime-500",
-      textMain: "#84cc16",
-      pillBg: "bg-lime-500/10",
-      pillBorder: "border-lime-500/20",
-      pillText: "text-lime-400",
-      techFrontendColor: "blue",
-      techBackendColor: "green",
-      techDevopsColor: "purple",
-    },
-    color: "#84cc16",
-  },
-  {
-    name: "Teal",
-    theme: {
-      primary: "teal",
-      secondary: "cyan",
-      bgMain: "bg-[#042f2e]",
-      bgGradient: "from-teal-400 to-cyan-400",
-      accentBlur: "bg-teal-500",
-      textMain: "#14b8a6",
-      pillBg: "bg-teal-500/10",
-      pillBorder: "border-teal-500/20",
-      pillText: "text-teal-400",
-      techFrontendColor: "blue",
-      techBackendColor: "green",
-      techDevopsColor: "purple",
-    },
-    color: "#14b8a6",
-  },
-  {
-    name: "Sky",
-    theme: {
-      primary: "sky",
-      secondary: "blue",
-      bgMain: "bg-[#0c4a6e]",
-      bgGradient: "from-sky-400 to-blue-400",
-      accentBlur: "bg-sky-500",
-      textMain: "#0ea5e9",
-      pillBg: "bg-sky-500/10",
-      pillBorder: "border-sky-500/20",
-      pillText: "text-sky-400",
-      techFrontendColor: "blue",
-      techBackendColor: "green",
-      techDevopsColor: "purple",
-    },
-    color: "#0ea5e9",
-  },
-  {
-    name: "Violet",
-    theme: {
-      primary: "violet",
-      secondary: "purple",
-      bgMain: "bg-[#2e1065]",
-      bgGradient: "from-violet-400 to-purple-400",
-      accentBlur: "bg-violet-500",
-      textMain: "#8b5cf6",
-      pillBg: "bg-violet-500/10",
-      pillBorder: "border-violet-500/20",
-      pillText: "text-violet-400",
-      techFrontendColor: "blue",
-      techBackendColor: "green",
-      techDevopsColor: "purple",
-    },
-    color: "#8b5cf6",
-  },
-  {
-    name: "Pink",
-    theme: {
-      primary: "pink",
-      secondary: "rose",
-      bgMain: "bg-[#500724]",
-      bgGradient: "from-pink-400 to-rose-400",
-      accentBlur: "bg-pink-500",
-      textMain: "#ec4899",
-      pillBg: "bg-pink-500/10",
-      pillBorder: "border-pink-500/20",
-      pillText: "text-pink-400",
-      techFrontendColor: "blue",
-      techBackendColor: "green",
-      techDevopsColor: "purple",
-    },
-    color: "#ec4899",
-  },
-  {
-    name: "Orange",
-    theme: {
-      primary: "orange",
-      secondary: "amber",
-      bgMain: "bg-[#431407]",
-      bgGradient: "from-orange-400 to-amber-400",
-      accentBlur: "bg-orange-500",
-      textMain: "#f97316",
-      pillBg: "bg-orange-500/10",
-      pillBorder: "border-orange-500/20",
-      pillText: "text-orange-400",
-      techFrontendColor: "blue",
-      techBackendColor: "green",
-      techDevopsColor: "purple",
-    },
-    color: "#f97316",
-  },
-];
-
-const emptyProject: FirestoreProject = {
-  id: "",
-  title: "",
-  subtitle: "",
-  category: "",
-  year: "",
-  company: "",
-  bannerIconName: "Code2",
-  theme: themePresets[0].theme,
-  headerInfo: [],
-  overview: "",
-  features: [],
-  images: [],
-  contributions: [],
-  techStack: { frontend: [], backend: [], devops: [] },
-  marqueeIconNames: [],
-  challenge: { title: "", desc: "" },
-  coverMedia: [],
-  webLinks: [],
-  order: 0,
-};
 
 type TabId = "basic" | "cover" | "theme" | "content" | "images" | "features" | "tech";
 
@@ -370,7 +86,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
 
     const handleMouseMove = (ev: MouseEvent) => {
       if (!isDraggingRef.current) return;
-      const delta = startXRef.current - ev.clientX; // dragging left = wider panel
+      const delta = startXRef.current - ev.clientX;
       const newWidth = Math.min(MAX_PANEL, Math.max(MIN_PANEL, startWidthRef.current + delta));
       setPanelWidth(newWidth);
       setIsCollapsed(false);
@@ -400,14 +116,14 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   const [showFullPreview, setShowFullPreview] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "laptop" | "tv">("laptop");
 
-  // Dirty tracking — snapshot initial form data to compare
+  // Dirty tracking
   const initialDataRef = useRef<string>("");
   const isDirty = useMemo(
     () => initialDataRef.current !== "" && initialDataRef.current !== JSON.stringify(formData),
     [formData]
   );
 
-  // Keys of images deleted during this edit session — cleaned up on save
+  // Keys of images deleted during this edit session
   const deletedKeysRef = useRef<string[]>([]);
 
   // Track uploaded file keys for cleanup on cancel or tab close
@@ -455,12 +171,12 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     }
   }, [project]);
 
+  // --- Form actions ---
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Clear tracked keys on successful save — files are no longer orphaned
     uploadedKeysRef.current = [];
     persistPendingKeys([]);
-    // Delete files that were removed from the form during this session
     if (deletedKeysRef.current.length > 0) {
       deleteFilesByKeys(deletedKeysRef.current);
       deletedKeysRef.current = [];
@@ -469,14 +185,12 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   };
 
   const doCancel = () => {
-    // Delete any uploaded files that weren't saved
     if (uploadedKeysRef.current.length > 0) {
       deleteFilesByKeys(uploadedKeysRef.current);
       uploadedKeysRef.current = [];
       persistPendingKeys([]);
       toast.info("Unsaved uploads cleaned up");
     }
-    // Don't delete removed-image keys — user cancelled, so changes are discarded
     deletedKeysRef.current = [];
     onCancel();
   };
@@ -493,6 +207,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
       doCancel();
     }
   };
+
+  // --- Field updaters ---
 
   const updateField = (field: keyof FirestoreProject, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -511,6 +227,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
       theme: preset.theme,
     }));
   };
+
+  // --- Feature handlers ---
 
   const addFeature = () => {
     setFormData((prev) => ({
@@ -542,6 +260,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     }));
   };
 
+  // --- Image handlers ---
+
   const addImage = () => {
     setFormData((prev) => ({
       ...prev,
@@ -556,7 +276,6 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
       description: `Remove "${image?.caption || `Item ${index + 1}`}"? The file will be deleted when you save.`,
       variant: "danger",
       onConfirm: () => {
-        // Track the UploadThing key for deletion on save
         const key = uploadedKeysRef.current.find((k) => image?.src?.includes(k));
         if (key) {
           deletedKeysRef.current.push(key);
@@ -590,137 +309,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     });
   };
 
-  // Bulk image upload state
-  const [bulkUploading, setBulkUploading] = useState(false);
-  const [bulkProgress, setBulkProgress] = useState<{ file: string; fileSize: number; bytesUploaded: number; progress: number; startedAt: number; status: "uploading" | "done" | "error" }[]>([]);
-  const [isDraggingBulk, setIsDraggingBulk] = useState(false);
+  // Lightbox + editor state
   const [lightboxImage, setLightboxImage] = useState<{ src: string; index: number } | null>(null);
   const [editingImage, setEditingImage] = useState(false);
-  const [dragIdx, setDragIdx] = useState<number | null>(null);
-  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
-  const bulkFileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleBulkFiles = async (files: FileList | File[]) => {
-    const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/") || f.type.startsWith("video/"));
-    if (fileArray.length === 0) return;
-
-    // Validate all files first
-    const validFiles: File[] = [];
-    const progressItems: typeof bulkProgress = [];
-
-    const now = Date.now();
-    fileArray.forEach((file) => {
-      const validation = validateMedia(file);
-      progressItems.push({
-        file: file.name,
-        fileSize: file.size,
-        bytesUploaded: 0,
-        progress: 0,
-        startedAt: now,
-        status: validation.valid ? "uploading" : "error",
-      });
-      if (validation.valid) validFiles.push(file);
-    });
-
-    setBulkUploading(true);
-    setBulkProgress(progressItems);
-
-    const skippedCount = fileArray.length - validFiles.length;
-    if (skippedCount > 0) {
-      toast.warning(`${skippedCount} file${skippedCount > 1 ? "s" : ""} skipped (invalid type or size)`);
-    }
-
-    if (validFiles.length === 0) {
-      setTimeout(() => { setBulkUploading(false); setBulkProgress([]); }, 2000);
-      return;
-    }
-
-    // Upload files sequentially so each shows real progress
-    let successCount = 0;
-    for (const file of validFiles) {
-      // Reset startedAt for each file when it actually begins uploading
-      setBulkProgress((prev) =>
-        prev.map((p) =>
-          p.file === file.name ? { ...p, startedAt: Date.now() } : p
-        )
-      );
-
-      try {
-        const result = await uploadMedia(
-          file,
-          `projects/${formData.id}`,
-          ({ progress }) => {
-            setBulkProgress((prev) =>
-              prev.map((p) =>
-                p.file === file.name ? { ...p, progress: Math.round(progress), bytesUploaded: (progress / 100) * file.size } : p
-              )
-            );
-          }
-        );
-
-        // Mark this file as done
-        setBulkProgress((prev) =>
-          prev.map((p) =>
-            p.file === file.name ? { ...p, progress: 100, bytesUploaded: file.size, status: "done" as const } : p
-          )
-        );
-
-        // Track key for cleanup if form is cancelled
-        uploadedKeysRef.current.push(result.path);
-        persistPendingKeys(uploadedKeysRef.current);
-
-        // Add uploaded media to form immediately with pre-filled caption
-        const mediaType = getMediaTypeFromFile(file);
-        setFormData((prev) => {
-          const existingCaptions = prev.images.map((img) => img.caption);
-          const caption = uniqueCaption(cleanFileName(file.name), existingCaptions);
-          return {
-            ...prev,
-            images: [...prev.images, { src: result.url, caption, details: "", type: mediaType }],
-          };
-        });
-
-        successCount++;
-      } catch {
-        setBulkProgress((prev) =>
-          prev.map((p) =>
-            p.file === file.name ? { ...p, status: "error" as const } : p
-          )
-        );
-      }
-    }
-
-    if (successCount > 0) {
-      toast.success(`${successCount} file${successCount > 1 ? "s" : ""} uploaded`);
-    }
-    if (successCount < validFiles.length) {
-      toast.error(`${validFiles.length - successCount} upload${validFiles.length - successCount > 1 ? "s" : ""} failed`);
-    }
-
-    setTimeout(() => {
-      setBulkUploading(false);
-      setBulkProgress([]);
-    }, 1500);
-  };
-
-  const handleBulkDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDraggingBulk(false);
-    handleBulkFiles(e.dataTransfer.files);
-  }, [formData.id]);
-
-  const handleBulkDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDraggingBulk(true);
-  }, []);
-
-  const handleBulkDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDraggingBulk(false);
-  }, []);
+  // --- Contribution handlers ---
 
   const addContribution = () => {
     setFormData((prev) => ({
@@ -752,6 +345,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     }));
   };
 
+  // --- WebLink handlers ---
+
   const addWebLink = () => {
     setFormData((prev) => ({
       ...prev,
@@ -782,6 +377,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     }));
   };
 
+  // --- Header info handlers ---
+
   const addHeaderInfo = () => {
     setFormData((prev) => ({
       ...prev,
@@ -811,6 +408,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
       ),
     }));
   };
+
+  // --- Tech stack handlers ---
 
   const addTechItem = (category: "frontend" | "backend" | "devops") => {
     setFormData((prev) => ({
@@ -844,13 +443,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     }));
   };
 
-  // --- Cover media helpers ---
-  const addCoverMedia = () => {
-    setFormData((prev) => ({
-      ...prev,
-      coverMedia: [...(prev.coverMedia || []), { src: "", caption: "", details: "" }],
-    }));
-  };
+  // --- Cover media handlers ---
 
   const removeCoverMedia = (index: number) => {
     const item = (formData.coverMedia || [])[index];
@@ -892,1518 +485,86 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     });
   };
 
-  // Cover bulk upload state
-  const [coverBulkUploading, setCoverBulkUploading] = useState(false);
-  const [coverBulkProgress, setCoverBulkProgress] = useState<{ file: string; fileSize: number; bytesUploaded: number; progress: number; startedAt: number; status: "uploading" | "done" | "error" }[]>([]);
-  const [isDraggingCover, setIsDraggingCover] = useState(false);
-  const coverFileInputRef = useRef<HTMLInputElement>(null);
-  const [coverUrlInput, setCoverUrlInput] = useState("");
-
-  const handleCoverBulkFiles = async (files: FileList | File[]) => {
-    const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/") || f.type.startsWith("video/"));
-    if (fileArray.length === 0) return;
-
-    const validFiles: File[] = [];
-    const progressItems: typeof coverBulkProgress = [];
-
-    const now = Date.now();
-    fileArray.forEach((file) => {
-      const validation = validateMedia(file);
-      progressItems.push({
-        file: file.name,
-        fileSize: file.size,
-        bytesUploaded: 0,
-        progress: 0,
-        startedAt: now,
-        status: validation.valid ? "uploading" : "error",
-      });
-      if (validation.valid) validFiles.push(file);
-    });
-
-    setCoverBulkUploading(true);
-    setCoverBulkProgress(progressItems);
-
-    const skippedCount = fileArray.length - validFiles.length;
-    if (skippedCount > 0) {
-      toast.warning(`${skippedCount} file${skippedCount > 1 ? "s" : ""} skipped (invalid type or size)`);
-    }
-
-    if (validFiles.length === 0) {
-      setTimeout(() => { setCoverBulkUploading(false); setCoverBulkProgress([]); }, 2000);
-      return;
-    }
-
-    let successCount = 0;
-    for (const file of validFiles) {
-      setCoverBulkProgress((prev) =>
-        prev.map((p) =>
-          p.file === file.name ? { ...p, startedAt: Date.now() } : p
-        )
-      );
-
-      try {
-        const result = await uploadMedia(
-          file,
-          `projects/${formData.id}/cover`,
-          ({ progress }) => {
-            setCoverBulkProgress((prev) =>
-              prev.map((p) =>
-                p.file === file.name ? { ...p, progress: Math.round(progress), bytesUploaded: (progress / 100) * file.size } : p
-              )
-            );
-          }
-        );
-
-        setCoverBulkProgress((prev) =>
-          prev.map((p) =>
-            p.file === file.name ? { ...p, progress: 100, bytesUploaded: file.size, status: "done" as const } : p
-          )
-        );
-
-        uploadedKeysRef.current.push(result.path);
-        persistPendingKeys(uploadedKeysRef.current);
-
-        const mediaType = getMediaTypeFromFile(file);
-        setFormData((prev) => {
-          const existingCaptions = (prev.coverMedia || []).map((img) => img.caption);
-          const caption = uniqueCaption(cleanFileName(file.name), existingCaptions);
-          return {
-            ...prev,
-            coverMedia: [...(prev.coverMedia || []), { src: result.url, caption, details: "", type: mediaType }],
-          };
-        });
-
-        successCount++;
-      } catch {
-        setCoverBulkProgress((prev) =>
-          prev.map((p) =>
-            p.file === file.name ? { ...p, status: "error" as const } : p
-          )
-        );
-      }
-    }
-
-    if (successCount > 0) toast.success(`${successCount} cover file${successCount > 1 ? "s" : ""} uploaded`);
-    if (successCount < validFiles.length) toast.error(`${validFiles.length - successCount} upload${validFiles.length - successCount > 1 ? "s" : ""} failed`);
-
-    setTimeout(() => { setCoverBulkUploading(false); setCoverBulkProgress([]); }, 1500);
-  };
-
-  const handleCoverDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDraggingCover(false);
-    handleCoverBulkFiles(e.dataTransfer.files);
-  }, [formData.id]);
-
-  const handleCoverDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDraggingCover(true);
-  }, []);
-
-  const handleCoverDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDraggingCover(false);
-  }, []);
-
-  const addCoverUrl = () => {
-    const url = coverUrlInput.trim();
-    if (!url) return;
-    const type: "image" | "video" = /youtube\.com|youtu\.be|drive\.google\.com|\.mp4|\.webm|\.ogg/i.test(url) ? "video" : "image";
-    setFormData((prev) => ({
-      ...prev,
-      coverMedia: [...(prev.coverMedia || []), { src: url, caption: "", details: "", type }],
-    }));
-    setCoverUrlInput("");
-    toast.success("Cover URL added");
-  };
+  // --- Tab content ---
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "basic":
         return (
-          <div className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Project ID <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.id}
-                  onChange={(e) => updateField("id", e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                  required
-                  placeholder="my-project"
-                />
-                <p className="text-xs text-slate-500 mt-1">URL-friendly identifier</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Display Order
-                </label>
-                <input
-                  type="number"
-                  value={formData.order || 0}
-                  onChange={(e) => updateField("order", parseInt(e.target.value))}
-                  className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                />
-                <p className="text-xs text-slate-500 mt-1">Lower numbers appear first</p>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                Title <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => updateField("title", e.target.value)}
-                className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                required
-                placeholder="Project Title"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                Subtitle
-              </label>
-              <input
-                type="text"
-                value={formData.subtitle}
-                onChange={(e) => updateField("subtitle", e.target.value)}
-                className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                placeholder="Brief description shown on card"
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Category
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => updateField("category", e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                >
-                  <option value="">Select category</option>
-                  <option value="Client Project">Client Project</option>
-                  <option value="In-House Tool">In-House Tool</option>
-                  <option value="Company Product">Company Product</option>
-                  <option value="Personal Project">Personal Project</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Year
-                </label>
-                <input
-                  type="text"
-                  value={formData.year}
-                  onChange={(e) => updateField("year", e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                  placeholder="2024"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Company
-                </label>
-                <input
-                  type="text"
-                  value={formData.company}
-                  onChange={(e) => updateField("company", e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                  placeholder="Company Name"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                Banner Icon
-              </label>
-              <IconPicker
-                value={formData.bannerIconName}
-                onChange={(name) => updateField("bannerIconName", name)}
-              />
-            </div>
-
-            {/* Header Info */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <label className="block text-sm font-medium text-slate-300">
-                  Header Info
-                </label>
-                <button
-                  type="button"
-                  onClick={addHeaderInfo}
-                  className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 text-xs font-medium transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Add
-                </button>
-              </div>
-              <div className="space-y-2">
-                {formData.headerInfo.map((info, idx) => (
-                  <div key={idx} className="flex gap-2 items-center">
-                    <input
-                      type="text"
-                      placeholder="Label"
-                      value={info.label}
-                      onChange={(e) => updateHeaderInfo(idx, "label", e.target.value)}
-                      className="w-24 px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Value"
-                      value={info.text}
-                      onChange={(e) => updateHeaderInfo(idx, "text", e.target.value)}
-                      className="flex-1 px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
-                    />
-                    <IconPicker
-                      compact
-                      value={info.iconName}
-                      onChange={(name) => updateHeaderInfo(idx, "iconName", name)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeHeaderInfo(idx)}
-                      className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-                {formData.headerInfo.length === 0 && (
-                  <p className="text-sm text-slate-500 italic">No header info added yet</p>
-                )}
-              </div>
-            </div>
-          </div>
+          <BasicInfoTab
+            formData={formData}
+            updateField={updateField}
+            addHeaderInfo={addHeaderInfo}
+            removeHeaderInfo={removeHeaderInfo}
+            updateHeaderInfo={updateHeaderInfo}
+          />
         );
-
       case "cover":
         return (
-          <div className="space-y-5">
-            <p className="text-xs text-slate-500">
-              Cover media appears as the hero background on the project detail page. Multiple items cycle as a 2.5s slideshow with crossfade.
-            </p>
-
-            {/* Drop zone */}
-            <div
-              onClick={() => coverFileInputRef.current?.click()}
-              onDragOver={handleCoverDragOver}
-              onDragLeave={handleCoverDragLeave}
-              onDrop={handleCoverDrop}
-              className={`
-                relative border-2 border-dashed rounded-xl p-6 cursor-pointer transition-all
-                ${isDraggingCover
-                  ? "border-indigo-400 bg-indigo-500/10"
-                  : "border-slate-600 hover:border-slate-500 hover:bg-slate-700/30"
-                }
-                ${coverBulkUploading ? "pointer-events-none" : ""}
-              `}
-            >
-              <div className="flex flex-col items-center text-center">
-                {coverBulkUploading ? (
-                  (() => {
-                    const total = coverBulkProgress.reduce((s, p) => s + p.fileSize, 0);
-                    const uploaded = coverBulkProgress.reduce((s, p) => s + p.bytesUploaded, 0);
-                    const pct = total > 0 ? Math.round((uploaded / total) * 100) : 0;
-                    return (
-                      <div
-                        className="p-[3px] rounded-full mb-3"
-                        style={{ background: `conic-gradient(#818cf8 ${pct * 3.6}deg, rgba(51,65,85,0.4) ${pct * 3.6}deg)` }}
-                      >
-                        <div className="p-3 rounded-full bg-slate-800">
-                          <Upload className="w-6 h-6 text-indigo-400 animate-bounce" />
-                        </div>
-                      </div>
-                    );
-                  })()
-                ) : (
-                  <div className={`p-3 rounded-full mb-3 transition-colors ${isDraggingCover ? "bg-indigo-500/20" : "bg-slate-700"}`}>
-                    <Upload className={`w-6 h-6 ${isDraggingCover ? "text-indigo-400" : "text-slate-400"}`} />
-                  </div>
-                )}
-                <p className="text-sm text-slate-300 font-medium">
-                  {coverBulkUploading
-                    ? (() => {
-                        const totalBytes = coverBulkProgress.reduce((s, p) => s + p.fileSize, 0);
-                        const uploadedBytes = coverBulkProgress.reduce((s, p) => s + p.bytesUploaded, 0);
-                        const active = coverBulkProgress.find((p) => p.status === "uploading");
-                        const activeElapsed = active ? (Date.now() - active.startedAt) / 1000 : 0;
-                        const speed = active && activeElapsed > 0 ? active.bytesUploaded / activeElapsed : 0;
-                        return `Uploading... ${formatFileSize(uploadedBytes)} / ${formatFileSize(totalBytes)}${speed > 0 ? ` — ${formatFileSize(speed)}/s` : ""}`;
-                      })()
-                    : isDraggingCover
-                      ? "Drop files here"
-                      : "Drag & drop cover images or videos, or click to browse"
-                  }
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Images up to 8MB, Videos (MP4, WebM) up to 64MB
-                </p>
-              </div>
-
-              {coverBulkProgress.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  {coverBulkProgress.map((item, idx) => {
-                    const elapsed = (Date.now() - item.startedAt) / 1000;
-                    const speed = elapsed > 0 && item.status === "uploading" ? item.bytesUploaded / elapsed : 0;
-                    const eta = speed > 0 ? (item.fileSize - item.bytesUploaded) / speed : 0;
-                    return (
-                      <div key={idx} className="flex items-center gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs text-slate-400 truncate">{item.file}</span>
-                            <span className="text-xs text-slate-500 flex-shrink-0 ml-2 flex items-center gap-2">
-                              {item.status === "done" ? (
-                                <CheckCircle className="w-3.5 h-3.5 text-green-400" />
-                              ) : item.status === "error" ? (
-                                <AlertCircle className="w-3.5 h-3.5 text-red-400" />
-                              ) : (
-                                <>
-                                  <span>{formatFileSize(item.bytesUploaded)} / {formatFileSize(item.fileSize)}</span>
-                                  {speed > 0 && <span>{formatFileSize(speed)}/s</span>}
-                                  {eta > 0 && <span>{formatEta(eta)}</span>}
-                                  <span>{item.progress}%</span>
-                                </>
-                              )}
-                            </span>
-                          </div>
-                          <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full transition-all duration-300 rounded-full ${
-                                item.status === "error" ? "bg-red-500" : item.status === "done" ? "bg-green-500" : "bg-indigo-500"
-                              }`}
-                              style={{ width: `${item.status === "error" ? 100 : item.progress}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <input
-              ref={coverFileInputRef}
-              type="file"
-              accept={MEDIA_ACCEPT_STRING}
-              multiple
-              onChange={(e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                  handleCoverBulkFiles(e.target.files);
-                  e.target.value = "";
-                }
-              }}
-              className="hidden"
-            />
-
-            {/* URL input */}
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                <input
-                  type="text"
-                  placeholder="Paste image/video URL (YouTube, GDrive, direct link)"
-                  value={coverUrlInput}
-                  onChange={(e) => setCoverUrlInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCoverUrl())}
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={addCoverUrl}
-                disabled={!coverUrlInput.trim()}
-                className="px-4 py-2.5 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Add URL
-              </button>
-            </div>
-
-            {/* Cover media list */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-300">
-                  Cover Media ({(formData.coverMedia || []).length})
-                </label>
-              </div>
-
-              {(formData.coverMedia || []).map((item, idx) => (
-                <div
-                  key={idx}
-                  className="bg-slate-700/30 rounded-xl border border-slate-600 overflow-hidden"
-                >
-                  <div className="flex">
-                    {/* Thumbnail */}
-                    <div className="w-32 flex-shrink-0 relative">
-                      {item.src ? (
-                        <div className="relative h-full min-h-[80px]">
-                          {isVideo(item) ? (
-                            <>
-                              <video
-                                src={isEmbedVideo(item.src) ? undefined : item.src}
-                                muted
-                                playsInline
-                                preload="metadata"
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                                <Play className="w-6 h-6 text-white fill-white" />
-                              </div>
-                            </>
-                          ) : (
-                            <img
-                              src={item.src}
-                              alt={item.caption || `Cover ${idx + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          )}
-                        </div>
-                      ) : (
-                        <div className="h-full min-h-[80px] flex items-center justify-center bg-slate-800 text-slate-600 text-xs">
-                          No media
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Details + actions */}
-                    <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
-                      <div className="flex justify-between items-start gap-2">
-                        <span className="text-xs font-medium text-slate-400">
-                          {isVideo(item) ? "Video" : "Image"} {idx + 1}
-                        </span>
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => moveCoverMedia(idx, "up")}
-                            disabled={idx === 0}
-                            className="p-1 hover:bg-slate-600 text-slate-400 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                            title="Move up"
-                          >
-                            <ChevronUp className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => moveCoverMedia(idx, "down")}
-                            disabled={idx === (formData.coverMedia || []).length - 1}
-                            className="p-1 hover:bg-slate-600 text-slate-400 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                            title="Move down"
-                          >
-                            <ChevronDown className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeCoverMedia(idx)}
-                            className="p-1 hover:bg-red-500/20 text-red-400 rounded transition-colors"
-                            title="Remove"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="Caption (optional)"
-                        value={item.caption}
-                        onChange={(e) => updateCoverMedia(idx, "caption", e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm mt-1"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {(formData.coverMedia || []).length === 0 && !coverBulkUploading && (
-                <div className="text-center py-8 text-slate-500">
-                  <Film className="w-10 h-10 mx-auto mb-2 opacity-40" />
-                  <p className="text-sm">No cover media yet — upload images or videos above</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <CoverMediaTab
+            formData={formData}
+            setFormData={setFormData}
+            updateCoverMedia={updateCoverMedia}
+            removeCoverMedia={removeCoverMedia}
+            moveCoverMedia={moveCoverMedia}
+            uploadedKeysRef={uploadedKeysRef}
+            persistPendingKeys={persistPendingKeys}
+          />
         );
-
-      case "theme": {
-        const gradientParsed = {
-          from: parseTwColor(formData.theme.bgGradient.split(" ")[0] || "from-indigo-400"),
-          to: parseTwColor(formData.theme.bgGradient.split(" ")[1] || "to-blue-400"),
-        };
-        const accentParsed = parseTwColor(formData.theme.accentBlur);
-        const pillBgParsed = parseTwColor(formData.theme.pillBg);
-        const pillBorderParsed = parseTwColor(formData.theme.pillBorder);
-        const pillTextParsed = parseTwColor(formData.theme.pillText);
-
-        // Shared accent color (most accent fields use the same color name)
-        const sharedAccentColor = accentParsed.color || "indigo";
-
-        const updateAccentColor = (color: string) => {
-          const aShade = accentParsed.shade || "500";
-          const pbShade = pillBgParsed.shade || "500";
-          const pbOpacity = pillBgParsed.opacity || "10";
-          const pbrShade = pillBorderParsed.shade || "500";
-          const pbrOpacity = pillBorderParsed.opacity || "20";
-          const ptShade = pillTextParsed.shade || "400";
-          updateTheme("accentBlur", buildTwClass("bg-", color, aShade));
-          updateTheme("pillBg", buildTwClass("bg-", color, pbShade, pbOpacity));
-          updateTheme("pillBorder", buildTwClass("border-", color, pbrShade, pbrOpacity));
-          updateTheme("pillText", buildTwClass("text-", color, ptShade));
-        };
-
+      case "theme":
         return (
-          <div className="space-y-6">
-            {/* Quick Presets */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">
-                Quick Presets
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {themePresets.map((preset) => (
-                  <button
-                    key={preset.name}
-                    type="button"
-                    onClick={() => applyThemePreset(preset)}
-                    className={`
-                      flex items-center gap-2 px-2.5 py-2 rounded-lg border transition-all
-                      ${formData.theme.primary === preset.theme.primary && formData.theme.secondary === preset.theme.secondary
-                        ? "border-indigo-500 bg-indigo-500/10"
-                        : "border-slate-600 hover:border-slate-500 bg-slate-700/30"
-                      }
-                    `}
-                  >
-                    <div
-                      className="w-3.5 h-3.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: preset.color }}
-                    />
-                    <span className="text-xs text-slate-300 truncate">{preset.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Color Identity */}
-            <div className="p-4 bg-slate-700/20 rounded-xl border border-slate-600/50">
-              <label className="block text-sm font-medium text-slate-300 mb-3">Color Identity</label>
-              {(["primary", "secondary"] as const).map((field) => (
-                <div key={field} className="mb-3 last:mb-0">
-                  <label className="block text-xs font-medium text-slate-400 mb-2 capitalize">{field}</label>
-                  <div className="flex flex-wrap gap-2">
-                    {TW_COLOR_NAMES.map((name) => (
-                      <button
-                        key={name}
-                        type="button"
-                        onClick={() => updateTheme(field, name)}
-                        title={name}
-                        className={`w-6 h-6 rounded-full border-2 transition-all ${
-                          formData.theme[field] === name
-                            ? "border-white scale-110 ring-2 ring-white/30"
-                            : "border-transparent hover:border-slate-400"
-                        }`}
-                        style={{ backgroundColor: TW_COLORS[name]?.[500] || "#888" }}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-[10px] text-slate-500 font-mono mt-1 block">{formData.theme[field]}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Backgrounds */}
-            <div className="p-4 bg-slate-700/20 rounded-xl border border-slate-600/50">
-              <label className="block text-sm font-medium text-slate-300 mb-3">Backgrounds</label>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-2">Banner Background</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={hexFromBgMain(formData.theme.bgMain)}
-                      onChange={(e) => updateTheme("bgMain", bgMainFromHex(e.target.value))}
-                      className="w-8 h-8 rounded-lg cursor-pointer border border-slate-600 bg-transparent"
-                    />
-                    <span className="text-xs text-slate-400 font-mono">{hexFromBgMain(formData.theme.bgMain)}</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-2">Accent Text Color</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={formData.theme.textMain}
-                      onChange={(e) => updateTheme("textMain", e.target.value)}
-                      className="w-8 h-8 rounded-lg cursor-pointer border border-slate-600 bg-transparent"
-                    />
-                    <span className="text-xs text-slate-400 font-mono">{formData.theme.textMain}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Gradient */}
-            <div className="p-4 bg-slate-700/20 rounded-xl border border-slate-600/50">
-              <label className="block text-sm font-medium text-slate-300 mb-3">Gradient</label>
-              <div className="grid grid-cols-2 gap-4 mb-3">
-                {(["from", "to"] as const).map((dir) => {
-                  const parsed = gradientParsed[dir];
-                  const prefix = dir === "from" ? "from-" : "to-";
-                  return (
-                    <div key={dir}>
-                      <label className="block text-xs font-medium text-slate-400 mb-2 capitalize">{dir}</label>
-                      <div className="flex gap-2">
-                        <select
-                          value={parsed.color}
-                          onChange={(e) => {
-                            const other = dir === "from" ? formData.theme.bgGradient.split(" ")[1] : formData.theme.bgGradient.split(" ")[0];
-                            const built = buildTwClass(prefix, e.target.value, parsed.shade || "400");
-                            updateTheme("bgGradient", dir === "from" ? `${built} ${other}` : `${other} ${built}`);
-                          }}
-                          className="flex-1 px-2 py-1.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-xs"
-                        >
-                          {TW_COLOR_NAMES.map((n) => (
-                            <option key={n} value={n}>{n}</option>
-                          ))}
-                        </select>
-                        <select
-                          value={parsed.shade || "400"}
-                          onChange={(e) => {
-                            const other = dir === "from" ? formData.theme.bgGradient.split(" ")[1] : formData.theme.bgGradient.split(" ")[0];
-                            const built = buildTwClass(prefix, parsed.color, e.target.value);
-                            updateTheme("bgGradient", dir === "from" ? `${built} ${other}` : `${other} ${built}`);
-                          }}
-                          className="w-16 px-2 py-1.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-xs"
-                        >
-                          {TW_SHADES.map((s) => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              {/* Gradient preview bar */}
-              <div
-                className="h-6 rounded-lg"
-                style={{
-                  background: `linear-gradient(to right, ${TW_COLORS[gradientParsed.from.color]?.[Number(gradientParsed.from.shade) || 400] || "#818cf8"}, ${TW_COLORS[gradientParsed.to.color]?.[Number(gradientParsed.to.shade) || 400] || "#60a5fa"})`,
-                }}
-              />
-              <span className="text-[10px] text-slate-500 font-mono mt-1 block">{formData.theme.bgGradient}</span>
-            </div>
-
-            {/* Accent & Pills */}
-            <div className="p-4 bg-slate-700/20 rounded-xl border border-slate-600/50">
-              <label className="block text-sm font-medium text-slate-300 mb-3">Accent &amp; Pills</label>
-
-              {/* Shared color selector */}
-              <div className="mb-4">
-                <label className="block text-xs font-medium text-slate-400 mb-2">Shared Accent Color</label>
-                <div className="flex flex-wrap gap-2">
-                  {TW_COLOR_NAMES.map((name) => (
-                    <button
-                      key={name}
-                      type="button"
-                      onClick={() => updateAccentColor(name)}
-                      title={name}
-                      className={`w-6 h-6 rounded-full border-2 transition-all ${
-                        sharedAccentColor === name
-                          ? "border-white scale-110 ring-2 ring-white/30"
-                          : "border-transparent hover:border-slate-400"
-                      }`}
-                      style={{ backgroundColor: TW_COLORS[name]?.[500] || "#888" }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Individual controls */}
-              <div className="space-y-3">
-                {/* Accent Blur */}
-                <div className="flex items-center gap-3">
-                  <label className="text-xs font-medium text-slate-400 w-20 flex-shrink-0">Accent Blur</label>
-                  <div className="flex gap-1">
-                    {TW_SHADES.map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => updateTheme("accentBlur", buildTwClass("bg-", accentParsed.color || sharedAccentColor, s))}
-                        className={`px-2 py-1 text-[10px] rounded transition-all ${
-                          String(accentParsed.shade) === String(s)
-                            ? "bg-white/20 text-white font-bold"
-                            : "text-slate-400 hover:text-white hover:bg-slate-700"
-                        }`}
-                      >{s}</button>
-                    ))}
-                  </div>
-                  <span className="text-[10px] text-slate-500 font-mono ml-auto">{formData.theme.accentBlur}</span>
-                </div>
-
-                {/* Pill Background */}
-                <div className="flex items-center gap-3">
-                  <label className="text-xs font-medium text-slate-400 w-20 flex-shrink-0">Pill BG</label>
-                  <div className="flex gap-1">
-                    {TW_SHADES.map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => updateTheme("pillBg", buildTwClass("bg-", pillBgParsed.color || sharedAccentColor, s, pillBgParsed.opacity || "10"))}
-                        className={`px-2 py-1 text-[10px] rounded transition-all ${
-                          String(pillBgParsed.shade) === String(s)
-                            ? "bg-white/20 text-white font-bold"
-                            : "text-slate-400 hover:text-white hover:bg-slate-700"
-                        }`}
-                      >{s}</button>
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-2 ml-2">
-                    <input
-                      type="range"
-                      min="5"
-                      max="50"
-                      step="5"
-                      value={Number(pillBgParsed.opacity) || 10}
-                      onChange={(e) => updateTheme("pillBg", buildTwClass("bg-", pillBgParsed.color || sharedAccentColor, pillBgParsed.shade || "500", e.target.value))}
-                      className="w-20 accent-indigo-500"
-                    />
-                    <span className="text-[10px] text-slate-500 w-6">{pillBgParsed.opacity || "10"}%</span>
-                  </div>
-                  <span className="text-[10px] text-slate-500 font-mono ml-auto">{formData.theme.pillBg}</span>
-                </div>
-
-                {/* Pill Border */}
-                <div className="flex items-center gap-3">
-                  <label className="text-xs font-medium text-slate-400 w-20 flex-shrink-0">Pill Border</label>
-                  <div className="flex gap-1">
-                    {TW_SHADES.map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => updateTheme("pillBorder", buildTwClass("border-", pillBorderParsed.color || sharedAccentColor, s, pillBorderParsed.opacity || "20"))}
-                        className={`px-2 py-1 text-[10px] rounded transition-all ${
-                          String(pillBorderParsed.shade) === String(s)
-                            ? "bg-white/20 text-white font-bold"
-                            : "text-slate-400 hover:text-white hover:bg-slate-700"
-                        }`}
-                      >{s}</button>
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-2 ml-2">
-                    <input
-                      type="range"
-                      min="5"
-                      max="50"
-                      step="5"
-                      value={Number(pillBorderParsed.opacity) || 20}
-                      onChange={(e) => updateTheme("pillBorder", buildTwClass("border-", pillBorderParsed.color || sharedAccentColor, pillBorderParsed.shade || "500", e.target.value))}
-                      className="w-20 accent-indigo-500"
-                    />
-                    <span className="text-[10px] text-slate-500 w-6">{pillBorderParsed.opacity || "20"}%</span>
-                  </div>
-                  <span className="text-[10px] text-slate-500 font-mono ml-auto">{formData.theme.pillBorder}</span>
-                </div>
-
-                {/* Pill Text */}
-                <div className="flex items-center gap-3">
-                  <label className="text-xs font-medium text-slate-400 w-20 flex-shrink-0">Pill Text</label>
-                  <div className="flex gap-1">
-                    {TW_SHADES.map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => updateTheme("pillText", buildTwClass("text-", pillTextParsed.color || sharedAccentColor, s))}
-                        className={`px-2 py-1 text-[10px] rounded transition-all ${
-                          String(pillTextParsed.shade) === String(s)
-                            ? "bg-white/20 text-white font-bold"
-                            : "text-slate-400 hover:text-white hover:bg-slate-700"
-                        }`}
-                      >{s}</button>
-                    ))}
-                  </div>
-                  <span className="text-[10px] text-slate-500 font-mono ml-auto">{formData.theme.pillText}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Tech Stack Colors */}
-            <div className="p-4 bg-slate-700/20 rounded-xl border border-slate-600/50">
-              <label className="block text-sm font-medium text-slate-300 mb-3">Tech Stack Colors</label>
-              <p className="text-[10px] text-slate-500 mb-3">Per-category pill hue override. Leave empty to use the shared accent color.</p>
-              {([
-                { field: "techFrontendColor" as const, label: "Frontend" },
-                { field: "techBackendColor" as const, label: "Backend" },
-                { field: "techDevopsColor" as const, label: "DevOps" },
-              ]).map(({ field, label }) => (
-                <div key={field} className="mb-3 last:mb-0">
-                  <label className="block text-xs font-medium text-slate-400 mb-2">{label}</label>
-                  <div className="flex flex-wrap gap-2">
-                    {/* "None" option — clears the override */}
-                    <button
-                      type="button"
-                      onClick={() => updateTheme(field, "")}
-                      title="None (use default)"
-                      className={`w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center text-[8px] font-bold ${
-                        !formData.theme[field]
-                          ? "border-white scale-110 ring-2 ring-white/30 text-white"
-                          : "border-transparent hover:border-slate-400 text-slate-500"
-                      }`}
-                      style={{ backgroundColor: "#334155" }}
-                    >
-                      —
-                    </button>
-                    {TW_COLOR_NAMES.map((name) => (
-                      <button
-                        key={name}
-                        type="button"
-                        onClick={() => updateTheme(field, name)}
-                        title={name}
-                        className={`w-6 h-6 rounded-full border-2 transition-all ${
-                          formData.theme[field] === name
-                            ? "border-white scale-110 ring-2 ring-white/30"
-                            : "border-transparent hover:border-slate-400"
-                        }`}
-                        style={{ backgroundColor: TW_COLORS[name]?.[500] || "#888" }}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-[10px] text-slate-500 font-mono mt-1 block">{formData.theme[field] || "(default)"}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Theme Preview */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-3">
-                Theme Preview
-              </label>
-              {(() => {
-                const styles = resolveThemeStyles(formData.theme);
-                return (
-                  <div className="p-4 rounded-xl" style={styles.bgMain}>
-                    <div className="flex items-center gap-3 mb-3">
-                      <span
-                        className="border px-3 py-1 rounded-full text-xs font-bold uppercase"
-                        style={{ ...styles.pillBg, ...styles.pillText, ...styles.pillBorder }}
-                      >
-                        Category
-                      </span>
-                    </div>
-                    <h4 className="text-white text-lg font-bold mb-1">Sample Title</h4>
-                    <p className="text-slate-300 text-sm">Subtitle text here</p>
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
+          <ThemeTab
+            formData={formData}
+            updateTheme={updateTheme}
+            applyThemePreset={applyThemePreset}
+          />
         );
-      }
-
       case "content":
         return (
-          <div className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                Overview
-              </label>
-              <textarea
-                value={formData.overview}
-                onChange={(e) => updateField("overview", e.target.value)}
-                rows={6}
-                className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none"
-                placeholder="Detailed description of the project..."
-              />
-              <p className="text-xs text-slate-500 mt-1">
-                {formData.overview.length} characters
-              </p>
-            </div>
-
-            {/* Challenge */}
-            <div className="p-4 bg-slate-700/30 rounded-xl border border-slate-600">
-              <div className="flex items-center gap-2 mb-3">
-                <AlertTriangle className="w-4 h-4 text-amber-400" />
-                <label className="text-sm font-medium text-slate-300">
-                  Challenge Section
-                </label>
-              </div>
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Challenge title"
-                  value={formData.challenge.title}
-                  onChange={(e) =>
-                    updateField("challenge", { ...formData.challenge, title: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                />
-                <textarea
-                  placeholder="Describe the challenge and how you solved it..."
-                  value={formData.challenge.desc}
-                  onChange={(e) =>
-                    updateField("challenge", { ...formData.challenge, desc: e.target.value })
-                  }
-                  rows={3}
-                  className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none"
-                />
-              </div>
-            </div>
-
-            {/* Contributions */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Award className="w-4 h-4 text-indigo-400" />
-                  <label className="text-sm font-medium text-slate-300">
-                    Contributions
-                  </label>
-                </div>
-                <button
-                  type="button"
-                  onClick={addContribution}
-                  className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 text-xs font-medium transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Add
-                </button>
-              </div>
-              <div className="space-y-3">
-                {formData.contributions.map((contrib, idx) => (
-                  <div key={idx} className="bg-slate-700/30 p-3 rounded-lg border border-slate-600">
-                    <div className="flex gap-2 mb-2">
-                      <input
-                        type="text"
-                        placeholder="Title"
-                        value={contrib.title}
-                        onChange={(e) => updateContribution(idx, "title", e.target.value)}
-                        className="flex-1 px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeContribution(idx)}
-                        className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <textarea
-                      placeholder="Description"
-                      value={contrib.desc}
-                      onChange={(e) => updateContribution(idx, "desc", e.target.value)}
-                      rows={2}
-                      className="w-full px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm resize-none"
-                    />
-                  </div>
-                ))}
-                {formData.contributions.length === 0 && (
-                  <p className="text-sm text-slate-500 italic text-center py-4">
-                    No contributions added yet
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Web Links */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <ExternalLink className="w-4 h-4 text-indigo-400" />
-                  <label className="text-sm font-medium text-slate-300">
-                    Related Links
-                  </label>
-                </div>
-                <button
-                  type="button"
-                  onClick={addWebLink}
-                  className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 text-xs font-medium transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Add
-                </button>
-              </div>
-              <div className="space-y-3">
-                {(formData.webLinks || []).map((link, idx) => (
-                  <div key={idx} className="bg-slate-700/30 p-3 rounded-lg border border-slate-600">
-                    <div className="flex gap-2 mb-2">
-                      <IconPicker
-                        compact
-                        value={link.iconName || "ExternalLink"}
-                        onChange={(name) => updateWebLink(idx, "iconName", name)}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Label (e.g. Live Demo, Documentation)"
-                        value={link.label}
-                        onChange={(e) => updateWebLink(idx, "label", e.target.value)}
-                        className="flex-1 px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeWebLink(idx)}
-                        className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <input
-                      type="url"
-                      placeholder="https://..."
-                      value={link.url}
-                      onChange={(e) => updateWebLink(idx, "url", e.target.value)}
-                      className="w-full px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
-                    />
-                  </div>
-                ))}
-                {(formData.webLinks || []).length === 0 && (
-                  <p className="text-sm text-slate-500 italic text-center py-4">
-                    No links added yet
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+          <ContentTab
+            formData={formData}
+            updateField={updateField}
+            addContribution={addContribution}
+            removeContribution={removeContribution}
+            updateContribution={updateContribution}
+            addWebLink={addWebLink}
+            removeWebLink={removeWebLink}
+            updateWebLink={updateWebLink}
+          />
         );
-
       case "images":
         return (
-          <div className="space-y-5">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-slate-300">
-                Project Images ({formData.images.length})
-              </label>
-              <button
-                type="button"
-                onClick={addImage}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 text-sm font-medium transition-colors"
-              >
-                <Plus className="w-4 h-4" /> Add Single
-              </button>
-            </div>
-
-            {/* Bulk Upload Drop Zone */}
-            <div
-              onClick={() => bulkFileInputRef.current?.click()}
-              onDragOver={handleBulkDragOver}
-              onDragLeave={handleBulkDragLeave}
-              onDrop={handleBulkDrop}
-              className={`
-                relative border-2 border-dashed rounded-xl p-6 cursor-pointer transition-all
-                ${isDraggingBulk
-                  ? "border-indigo-400 bg-indigo-500/10"
-                  : "border-slate-600 hover:border-slate-500 hover:bg-slate-700/30"
-                }
-                ${bulkUploading ? "pointer-events-none" : ""}
-              `}
-            >
-              <div className="flex flex-col items-center text-center">
-                {bulkUploading ? (
-                  (() => {
-                    const total = bulkProgress.reduce((s, p) => s + p.fileSize, 0);
-                    const uploaded = bulkProgress.reduce((s, p) => s + p.bytesUploaded, 0);
-                    const pct = total > 0 ? Math.round((uploaded / total) * 100) : 0;
-                    return (
-                      <div
-                        className="p-[3px] rounded-full mb-3"
-                        style={{ background: `conic-gradient(#818cf8 ${pct * 3.6}deg, rgba(51,65,85,0.4) ${pct * 3.6}deg)` }}
-                      >
-                        <div className="p-3 rounded-full bg-slate-800">
-                          <Upload className="w-6 h-6 text-indigo-400 animate-bounce" />
-                        </div>
-                      </div>
-                    );
-                  })()
-                ) : (
-                  <div className={`p-3 rounded-full mb-3 transition-colors ${isDraggingBulk ? "bg-indigo-500/20" : "bg-slate-700"}`}>
-                    <Upload className={`w-6 h-6 ${isDraggingBulk ? "text-indigo-400" : "text-slate-400"}`} />
-                  </div>
-                )}
-                <p className="text-sm text-slate-300 font-medium">
-                  {bulkUploading
-                    ? (() => {
-                        const totalBytes = bulkProgress.reduce((s, p) => s + p.fileSize, 0);
-                        const uploadedBytes = bulkProgress.reduce((s, p) => s + p.bytesUploaded, 0);
-                        const active = bulkProgress.find((p) => p.status === "uploading");
-                        const activeElapsed = active ? (Date.now() - active.startedAt) / 1000 : 0;
-                        const speed = active && activeElapsed > 0 ? active.bytesUploaded / activeElapsed : 0;
-                        return `Uploading... ${formatFileSize(uploadedBytes)} / ${formatFileSize(totalBytes)}${speed > 0 ? ` — ${formatFileSize(speed)}/s` : ""}`;
-                      })()
-                    : isDraggingBulk
-                      ? "Drop files here"
-                      : "Drag & drop images or videos, or click to browse"
-                  }
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Images up to 8MB, Videos (MP4, WebM) up to 64MB
-                </p>
-              </div>
-
-              {/* Bulk Upload Progress */}
-              {bulkProgress.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  {bulkProgress.map((item, idx) => {
-                    const elapsed = (Date.now() - item.startedAt) / 1000;
-                    const speed = elapsed > 0 && item.status === "uploading" ? item.bytesUploaded / elapsed : 0;
-                    const eta = speed > 0 ? (item.fileSize - item.bytesUploaded) / speed : 0;
-                    return (
-                      <div key={idx} className="flex items-center gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs text-slate-400 truncate">{item.file}</span>
-                            <span className="text-xs text-slate-500 flex-shrink-0 ml-2 flex items-center gap-2">
-                              {item.status === "done" ? (
-                                <CheckCircle className="w-3.5 h-3.5 text-green-400" />
-                              ) : item.status === "error" ? (
-                                <AlertCircle className="w-3.5 h-3.5 text-red-400" />
-                              ) : (
-                                <>
-                                  <span>{formatFileSize(item.bytesUploaded)} / {formatFileSize(item.fileSize)}</span>
-                                  {speed > 0 && <span>{formatFileSize(speed)}/s</span>}
-                                  {eta > 0 && <span>{formatEta(eta)}</span>}
-                                  <span>{item.progress}%</span>
-                                </>
-                              )}
-                            </span>
-                          </div>
-                          <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full transition-all duration-300 rounded-full ${
-                                item.status === "error" ? "bg-red-500" : item.status === "done" ? "bg-green-500" : "bg-indigo-500"
-                              }`}
-                              style={{ width: `${item.status === "error" ? 100 : item.progress}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <input
-              ref={bulkFileInputRef}
-              type="file"
-              accept={MEDIA_ACCEPT_STRING}
-              multiple
-              onChange={(e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                  handleBulkFiles(e.target.files);
-                  e.target.value = "";
-                }
-              }}
-              className="hidden"
-            />
-
-            {/* Image List */}
-            <div className="space-y-1">
-              {formData.images.map((image, idx) => (
-                <div
-                  key={idx}
-                  draggable
-                  onDragStart={() => setDragIdx(idx)}
-                  onDragOver={(e) => { e.preventDefault(); setDragOverIdx(idx); }}
-                  onDragLeave={() => setDragOverIdx(null)}
-                  onDrop={(e) => { e.preventDefault(); if (dragIdx !== null) reorderImages(dragIdx, idx); setDragIdx(null); setDragOverIdx(null); }}
-                  onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
-                  className={`bg-slate-700/30 rounded-xl border overflow-hidden transition-all ${
-                    dragOverIdx === idx && dragIdx !== idx
-                      ? "border-indigo-400 bg-indigo-500/5"
-                      : dragIdx === idx
-                        ? "border-slate-500 opacity-50"
-                        : "border-slate-600"
-                  }`}
-                >
-                  <div className="flex">
-                    {/* Drag Handle */}
-                    <div className="flex items-center px-1.5 cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 transition-colors">
-                      <GripVertical className="w-4 h-4" />
-                    </div>
-
-                    {/* Media Preview / Upload */}
-                    <div className="w-44 flex-shrink-0">
-                      {image.src ? (
-                        <div className="relative h-full min-h-[120px] group/thumb">
-                          {isVideo(image) ? (
-                            <video
-                              src={image.src}
-                              muted
-                              playsInline
-                              preload="metadata"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <img
-                              src={image.src}
-                              alt={image.caption || `Image ${idx + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          )}
-                          <div className="absolute inset-0 bg-black/0 group-hover/thumb:bg-black/30 transition-colors" />
-                          <button
-                            type="button"
-                            onClick={() => setLightboxImage({ src: image.src, index: idx })}
-                            className="absolute top-2 left-2 p-1 bg-slate-900/80 hover:bg-slate-800 text-white rounded transition-all opacity-0 group-hover/thumb:opacity-100"
-                            title="View full size"
-                          >
-                            <Maximize2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => updateImage(idx, "src", "")}
-                            className="absolute top-2 right-2 p-1 bg-red-500/90 hover:bg-red-600 text-white rounded transition-colors opacity-0 group-hover/thumb:opacity-100"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <ImageUploader
-                          folder={`projects/${formData.id}`}
-                          onImageUploaded={(url) => updateImage(idx, "src", url)}
-                          label=""
-                          className="h-full min-h-[120px] p-2"
-                        />
-                      )}
-                    </div>
-
-                    {/* Image Details */}
-                    <div className="flex-1 p-3 space-y-2">
-                      <div className="flex justify-between items-start">
-                        <span className="text-xs font-medium text-slate-400">
-                          {isVideo(image) ? "Video" : "Image"} {idx + 1}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => removeImage(idx)}
-                          className="p-1.5 hover:bg-red-500/20 text-red-400 rounded transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="File name / caption"
-                        value={image.caption}
-                        onChange={(e) => updateImage(idx, "caption", e.target.value)}
-                        className="w-full px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                      />
-                      <textarea
-                        placeholder="Details about this image..."
-                        value={image.details}
-                        onChange={(e) => updateImage(idx, "details", e.target.value)}
-                        rows={2}
-                        className="w-full px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm resize-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {formData.images.length === 0 && !bulkUploading && (
-                <div className="text-center py-8 text-slate-500">
-                  <p className="text-sm">No images yet — use the drop zone above to add multiple images at once</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <ImagesTab
+            formData={formData}
+            setFormData={setFormData}
+            addImage={addImage}
+            removeImage={removeImage}
+            updateImage={updateImage}
+            reorderImages={reorderImages}
+            setLightboxImage={setLightboxImage}
+            uploadedKeysRef={uploadedKeysRef}
+            persistPendingKeys={persistPendingKeys}
+          />
         );
-
       case "features":
         return (
-          <div className="space-y-5">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-slate-300">
-                Features ({formData.features.length})
-              </label>
-              <button
-                type="button"
-                onClick={addFeature}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 text-sm font-medium transition-colors"
-              >
-                <Plus className="w-4 h-4" /> Add Feature
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {formData.features.map((feature, idx) => (
-                <div
-                  key={idx}
-                  className="bg-slate-700/30 p-4 rounded-xl border border-slate-600"
-                >
-                  <div className="flex gap-3 mb-3">
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        placeholder="Feature title"
-                        value={feature.title}
-                        onChange={(e) => updateFeature(idx, "title", e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <IconPicker
-                        compact
-                        value={feature.iconName}
-                        onChange={(name) => updateFeature(idx, "iconName", name)}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeFeature(idx)}
-                        className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                  <textarea
-                    placeholder="Feature description..."
-                    value={feature.desc}
-                    onChange={(e) => updateFeature(idx, "desc", e.target.value)}
-                    rows={2}
-                    className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm resize-none"
-                  />
-                </div>
-              ))}
-
-              {formData.features.length === 0 && (
-                <div className="text-center py-12 bg-slate-700/20 rounded-xl border-2 border-dashed border-slate-600">
-                  <Zap className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                  <p className="text-slate-400 mb-2">No features added yet</p>
-                  <button
-                    type="button"
-                    onClick={addFeature}
-                    className="text-indigo-400 hover:text-indigo-300 text-sm font-medium"
-                  >
-                    Add your first feature
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+          <FeaturesTab
+            formData={formData}
+            addFeature={addFeature}
+            removeFeature={removeFeature}
+            updateFeature={updateFeature}
+          />
         );
-
       case "tech":
         return (
-          <div className="space-y-5">
-            <div className="space-y-4">
-              {([
-                { key: "frontend" as const, label: "Frontend Technologies", placeholder: "React" },
-                { key: "backend" as const, label: "Backend Technologies", placeholder: "Node.js" },
-                { key: "devops" as const, label: "DevOps / Tools", placeholder: "Docker" },
-              ]).map(({ key, label, placeholder }) => (
-                <div key={key}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-sm font-medium text-slate-300">
-                      {label}
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => addTechItem(key)}
-                      className="flex items-center gap-1 px-2 py-0.5 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 text-xs font-medium transition-colors"
-                    >
-                      <Plus className="w-3 h-3" /> Add
-                    </button>
-                  </div>
-                  <div className="space-y-2">
-                    {formData.techStack[key].map((tech, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <IconPicker
-                          compact
-                          value={tech.iconName || "Code2"}
-                          onChange={(name) => updateTechItem(key, idx, "iconName", name)}
-                        />
-                        <input
-                          type="text"
-                          placeholder={placeholder}
-                          value={tech.name}
-                          onChange={(e) => updateTechItem(key, idx, "name", e.target.value)}
-                          className="flex-1 px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeTechItem(key, idx)}
-                          className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                    {formData.techStack[key].length === 0 && (
-                      <p className="text-xs text-slate-500 italic text-center py-2">No items yet</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Marquee Icons */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                Marquee Icons
-              </label>
-              <MultiIconPicker
-                value={formData.marqueeIconNames}
-                onChange={(names) => updateField("marqueeIconNames", names)}
-              />
-              <p className="text-xs text-slate-500 mt-1">
-                Icons for the scrolling marquee
-              </p>
-            </div>
-
-            {/* Tech Preview */}
-            {(formData.techStack.frontend.length > 0 ||
-              formData.techStack.backend.length > 0 ||
-              formData.techStack.devops.length > 0) && (
-              <div className="p-4 bg-slate-700/30 rounded-xl border border-slate-600">
-                <label className="block text-sm font-medium text-slate-400 mb-3">
-                  Preview
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {formData.techStack.frontend.map((tech) => {
-                    const s = resolveTechPillStyles(formData.theme, formData.theme.techFrontendColor);
-                    return (
-                      <span
-                        key={`fe-${tech.name}`}
-                        className="px-2.5 py-1 text-xs rounded-md font-medium border"
-                        style={s}
-                      >
-                        {tech.name}
-                      </span>
-                    );
-                  })}
-                  {formData.techStack.backend.map((tech) => {
-                    const s = resolveTechPillStyles(formData.theme, formData.theme.techBackendColor);
-                    return (
-                      <span
-                        key={`be-${tech.name}`}
-                        className="px-2.5 py-1 text-xs rounded-md font-medium border"
-                        style={s}
-                      >
-                        {tech.name}
-                      </span>
-                    );
-                  })}
-                  {formData.techStack.devops.map((tech) => {
-                    const s = resolveTechPillStyles(formData.theme, formData.theme.techDevopsColor);
-                    return (
-                      <span
-                        key={`do-${tech.name}`}
-                        className="px-2.5 py-1 text-xs rounded-md font-medium border"
-                        style={s}
-                      >
-                        {tech.name}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
+          <TechStackTab
+            formData={formData}
+            updateField={updateField}
+            addTechItem={addTechItem}
+            removeTechItem={removeTechItem}
+            updateTechItem={updateTechItem}
+          />
         );
-
       default:
         return null;
     }
