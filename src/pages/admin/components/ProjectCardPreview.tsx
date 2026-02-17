@@ -86,13 +86,13 @@ const ProjectCardPreview: React.FC<ProjectCardPreviewProps> = ({
             <div className="flex flex-wrap gap-1 mb-3">
               {(project.techStack.frontend.length > 0
                 ? project.techStack.frontend.slice(0, isWide ? 5 : 3)
-                : ["React", "TypeScript", "Tailwind"]
+                : [{ name: "React" }, { name: "TypeScript" }, { name: "Tailwind" }]
               ).map((tech) => (
                 <span
-                  key={tech}
+                  key={tech.name}
                   className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded font-medium border border-slate-200"
                 >
-                  {tech}
+                  {tech.name}
                 </span>
               ))}
             </div>
@@ -204,11 +204,11 @@ const ProjectCardPreview: React.FC<ProjectCardPreviewProps> = ({
                   <div className="flex flex-wrap gap-1 mt-1">
                     {project.techStack[category].map((tech) => (
                       <span
-                        key={tech}
+                        key={tech.name}
                         className="px-1.5 py-0.5 text-[10px] rounded border"
                         style={pillStyle}
                       >
-                        {tech}
+                        {tech.name}
                       </span>
                     ))}
                   </div>

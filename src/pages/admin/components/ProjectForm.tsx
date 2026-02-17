@@ -39,6 +39,7 @@ import { getMediaTypeFromFile, isVideo, isEmbedVideo, MEDIA_ACCEPT_STRING } from
 import ConfirmModal from "../../../components/ui/confirm-modal";
 import ImageUploader from "./ImageUploader";
 import ProjectCardPreview from "./ProjectCardPreview";
+import IconPicker, { MultiIconPicker } from "./IconPicker";
 const ImageEditor = lazy(() => import("./ImageEditor"));
 import {
   TW_COLORS,
@@ -58,8 +59,6 @@ interface ProjectFormProps {
   onCancel: () => void;
   isLoading: boolean;
 }
-
-const iconNames = Object.keys(iconRegistry);
 
 const formatFileSize = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;
@@ -755,7 +754,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   const addWebLink = () => {
     setFormData((prev) => ({
       ...prev,
-      webLinks: [...(prev.webLinks || []), { label: "", url: "" }],
+      webLinks: [...(prev.webLinks || []), { label: "", url: "", iconName: "ExternalLink" }],
     }));
   };
 
@@ -812,12 +811,34 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     }));
   };
 
-  const updateTechStack = (category: "frontend" | "backend" | "devops", value: string) => {
+  const addTechItem = (category: "frontend" | "backend" | "devops") => {
     setFormData((prev) => ({
       ...prev,
       techStack: {
         ...prev.techStack,
-        [category]: value.split(",").map((s) => s.trim()).filter(Boolean),
+        [category]: [...prev.techStack[category], { name: "" }],
+      },
+    }));
+  };
+
+  const removeTechItem = (category: "frontend" | "backend" | "devops", index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      techStack: {
+        ...prev.techStack,
+        [category]: prev.techStack[category].filter((_, i) => i !== index),
+      },
+    }));
+  };
+
+  const updateTechItem = (category: "frontend" | "backend" | "devops", index: number, field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      techStack: {
+        ...prev.techStack,
+        [category]: prev.techStack[category].map((item, i) =>
+          i === index ? { ...item, [field]: value } : item
+        ),
       },
     }));
   };
@@ -1106,24 +1127,10 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
               <label className="block text-sm font-medium text-slate-300 mb-1.5">
                 Banner Icon
               </label>
-              <div className="flex gap-3">
-                <select
-                  value={formData.bannerIconName}
-                  onChange={(e) => updateField("bannerIconName", e.target.value)}
-                  className="flex-1 px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                >
-                  {iconNames.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-                <div className="w-12 h-12 bg-slate-700 rounded-lg flex items-center justify-center border border-slate-600">
-                  {React.createElement(iconRegistry[formData.bannerIconName] || Code2, {
-                    className: "w-6 h-6 text-slate-300",
-                  })}
-                </div>
-              </div>
+              <IconPicker
+                value={formData.bannerIconName}
+                onChange={(name) => updateField("bannerIconName", name)}
+              />
             </div>
 
             {/* Header Info */}
@@ -1157,17 +1164,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                       onChange={(e) => updateHeaderInfo(idx, "text", e.target.value)}
                       className="flex-1 px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
                     />
-                    <select
+                    <IconPicker
+                      compact
                       value={info.iconName}
-                      onChange={(e) => updateHeaderInfo(idx, "iconName", e.target.value)}
-                      className="w-28 px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
-                    >
-                      {iconNames.map((name) => (
-                        <option key={name} value={name}>
-                          {name}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(name) => updateHeaderInfo(idx, "iconName", name)}
+                    />
                     <button
                       type="button"
                       onClick={() => removeHeaderInfo(idx)}
@@ -1927,6 +1928,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                 {(formData.webLinks || []).map((link, idx) => (
                   <div key={idx} className="bg-slate-700/30 p-3 rounded-lg border border-slate-600">
                     <div className="flex gap-2 mb-2">
+                      <IconPicker
+                        compact
+                        value={link.iconName || "ExternalLink"}
+                        onChange={(name) => updateWebLink(idx, "iconName", name)}
+                      />
                       <input
                         type="text"
                         placeholder="Label (e.g. Live Demo, Documentation)"
@@ -2237,22 +2243,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                       />
                     </div>
                     <div className="flex gap-2">
-                      <select
+                      <IconPicker
+                        compact
                         value={feature.iconName}
-                        onChange={(e) => updateFeature(idx, "iconName", e.target.value)}
-                        className="w-28 px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
-                      >
-                        {iconNames.map((name) => (
-                          <option key={name} value={name}>
-                            {name}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center border border-slate-600">
-                        {React.createElement(iconRegistry[feature.iconName] || Code2, {
-                          className: "w-5 h-5 text-slate-300",
-                        })}
-                      </div>
+                        onChange={(name) => updateFeature(idx, "iconName", name)}
+                      />
                       <button
                         type="button"
                         onClick={() => removeFeature(idx)}
@@ -2293,45 +2288,54 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
         return (
           <div className="space-y-5">
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Frontend Technologies
-                </label>
-                <input
-                  type="text"
-                  value={formData.techStack.frontend.join(", ")}
-                  onChange={(e) => updateTechStack("frontend", e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                  placeholder="React, TypeScript, Tailwind CSS"
-                />
-                <p className="text-xs text-slate-500 mt-1">Separate with commas</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                  Backend Technologies
-                </label>
-                <input
-                  type="text"
-                  value={formData.techStack.backend.join(", ")}
-                  onChange={(e) => updateTechStack("backend", e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                  placeholder="Node.js, Express, PostgreSQL"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">
-                  DevOps / Tools
-                </label>
-                <input
-                  type="text"
-                  value={formData.techStack.devops.join(", ")}
-                  onChange={(e) => updateTechStack("devops", e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                  placeholder="Docker, AWS, GitHub Actions"
-                />
-              </div>
+              {([
+                { key: "frontend" as const, label: "Frontend Technologies", placeholder: "React" },
+                { key: "backend" as const, label: "Backend Technologies", placeholder: "Node.js" },
+                { key: "devops" as const, label: "DevOps / Tools", placeholder: "Docker" },
+              ]).map(({ key, label, placeholder }) => (
+                <div key={key}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-sm font-medium text-slate-300">
+                      {label}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => addTechItem(key)}
+                      className="flex items-center gap-1 px-2 py-0.5 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 text-xs font-medium transition-colors"
+                    >
+                      <Plus className="w-3 h-3" /> Add
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {formData.techStack[key].map((tech, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <IconPicker
+                          compact
+                          value={tech.iconName || "Code2"}
+                          onChange={(name) => updateTechItem(key, idx, "iconName", name)}
+                        />
+                        <input
+                          type="text"
+                          placeholder={placeholder}
+                          value={tech.name}
+                          onChange={(e) => updateTechItem(key, idx, "name", e.target.value)}
+                          className="flex-1 px-2.5 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeTechItem(key, idx)}
+                          className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    {formData.techStack[key].length === 0 && (
+                      <p className="text-xs text-slate-500 italic text-center py-2">No items yet</p>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Marquee Icons */}
@@ -2339,20 +2343,12 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
               <label className="block text-sm font-medium text-slate-300 mb-1.5">
                 Marquee Icons
               </label>
-              <input
-                type="text"
-                value={formData.marqueeIconNames.join(", ")}
-                onChange={(e) =>
-                  updateField(
-                    "marqueeIconNames",
-                    e.target.value.split(",").map((s) => s.trim()).filter(Boolean)
-                  )
-                }
-                className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                placeholder="Code2, Database, Cloud"
+              <MultiIconPicker
+                value={formData.marqueeIconNames}
+                onChange={(names) => updateField("marqueeIconNames", names)}
               />
               <p className="text-xs text-slate-500 mt-1">
-                Icon names for the scrolling marquee (comma-separated)
+                Icons for the scrolling marquee
               </p>
             </div>
 
@@ -2369,11 +2365,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                     const s = resolveTechPillStyles(formData.theme, formData.theme.techFrontendColor);
                     return (
                       <span
-                        key={`fe-${tech}`}
+                        key={`fe-${tech.name}`}
                         className="px-2.5 py-1 text-xs rounded-md font-medium border"
                         style={s}
                       >
-                        {tech}
+                        {tech.name}
                       </span>
                     );
                   })}
@@ -2381,11 +2377,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                     const s = resolveTechPillStyles(formData.theme, formData.theme.techBackendColor);
                     return (
                       <span
-                        key={`be-${tech}`}
+                        key={`be-${tech.name}`}
                         className="px-2.5 py-1 text-xs rounded-md font-medium border"
                         style={s}
                       >
-                        {tech}
+                        {tech.name}
                       </span>
                     );
                   })}
@@ -2393,11 +2389,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                     const s = resolveTechPillStyles(formData.theme, formData.theme.techDevopsColor);
                     return (
                       <span
-                        key={`do-${tech}`}
+                        key={`do-${tech.name}`}
                         className="px-2.5 py-1 text-xs rounded-md font-medium border"
                         style={s}
                       >
-                        {tech}
+                        {tech.name}
                       </span>
                     );
                   })}

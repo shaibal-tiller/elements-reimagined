@@ -963,6 +963,7 @@ export default function ImageEditor({
                 <img
                   ref={cropImgRef}
                   src={src}
+                  crossOrigin="anonymous"
                   alt="Crop preview"
                   className="max-w-full max-h-[calc(100vh-160px)] object-contain select-none"
                   draggable={false}
@@ -1154,6 +1155,7 @@ export default function ImageEditor({
                 <img
                   ref={imgRef}
                   src={activeSrc}
+                  crossOrigin="anonymous"
                   alt="Edit preview"
                   className="max-w-full max-h-[calc(100vh-120px)] object-contain select-none"
                   draggable={false}

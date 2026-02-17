@@ -64,7 +64,17 @@ export const convertFirestoreProject = (doc: FirestoreProject): Project => {
     })),
     images: doc.images,
     contributions: doc.contributions,
-    techStack: doc.techStack,
+    techStack: {
+      frontend: (doc.techStack.frontend as any[]).map(item =>
+        typeof item === 'string' ? { name: item } : item
+      ),
+      backend: (doc.techStack.backend as any[]).map(item =>
+        typeof item === 'string' ? { name: item } : item
+      ),
+      devops: (doc.techStack.devops as any[]).map(item =>
+        typeof item === 'string' ? { name: item } : item
+      ),
+    },
     marqueeIcons: getIcons(doc.marqueeIconNames),
     challenge: doc.challenge,
     coverMedia: doc.coverMedia || [],

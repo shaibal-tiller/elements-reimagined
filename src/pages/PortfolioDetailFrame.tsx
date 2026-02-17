@@ -21,6 +21,7 @@ import { isVideo, isEmbedVideo, getEmbedUrl } from '../lib/mediaUtils';
 import { useProject } from '../hooks/useProject';
 import { ProjectDetailSkeleton } from '../components/skeletons';
 import { resolveTechPillStyles } from '../lib/twColors';
+import { getIcon } from '../lib/iconRegistry';
 import { useSidebar } from '../contexts/SidebarContext';
 
 // --- LAZY MEDIA COMPONENT ---
@@ -850,11 +851,15 @@ const ProjectDetail = () => {
                         <div key={key}>
                           <p className="text-xs font-semibold text-slate-400 uppercase mb-3">{label}</p>
                           <div className="flex flex-wrap gap-2">
-                            {project.techStack[key].map((tech) => (
-                              <span key={tech} className="px-3 py-1 rounded-lg text-xs font-medium border transition-colors cursor-default backdrop-blur-sm" style={pillStyle}>
-                                {tech}
-                              </span>
-                            ))}
+                            {project.techStack[key].map((tech) => {
+                              const TechIcon = tech.iconName ? getIcon(tech.iconName) : null;
+                              return (
+                                <span key={tech.name} className="px-3 py-1 rounded-lg text-xs font-medium border transition-colors cursor-default backdrop-blur-sm inline-flex items-center gap-1.5" style={pillStyle}>
+                                  {TechIcon && <TechIcon className="w-3 h-3" />}
+                                  {tech.name}
+                                </span>
+                              );
+                            })}
                           </div>
                         </div>
                       );
@@ -868,7 +873,9 @@ const ProjectDetail = () => {
                         Related Links
                       </h3>
                       <div className="space-y-2">
-                        {project.webLinks.map((link, idx) => (
+                        {project.webLinks.map((link, idx) => {
+                          const LinkIcon = link.iconName ? getIcon(link.iconName) : null;
+                          return (
                           <a
                             key={idx}
                             href={link.url}
@@ -877,6 +884,9 @@ const ProjectDetail = () => {
                             className="block rounded-lg border border-slate-100 hover:border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all group overflow-hidden"
                           >
                             <div className="flex items-center gap-2 px-3 py-2.5">
+                              <span className="w-3.5 h-3.5 shrink-0 flex items-center justify-center">
+                                {LinkIcon && <LinkIcon className="w-3.5 h-3.5 text-slate-400" />}
+                              </span>
                               <span className="text-sm font-medium text-slate-700 flex-1">{link.label}</span>
                               <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-colors" />
                             </div>
@@ -884,7 +894,8 @@ const ProjectDetail = () => {
                               <div className="px-3 pb-2 text-xs text-slate-400 truncate">{link.url}</div>
                             </div>
                           </a>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

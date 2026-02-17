@@ -42,10 +42,15 @@ export interface FirestoreHeaderInfo {
   iconName: string;
 }
 
+export interface TechItem {
+  name: string;
+  iconName?: string;
+}
+
 export interface FirestoreTechStack {
-  frontend: string[];
-  backend: string[];
-  devops: string[];
+  frontend: TechItem[];
+  backend: TechItem[];
+  devops: TechItem[];
 }
 
 export interface FirestoreProject {
@@ -70,7 +75,7 @@ export interface FirestoreProject {
     desc: string;
   };
   coverMedia?: FirestoreProjectImage[];
-  webLinks?: { label: string; url: string }[];
+  webLinks?: { label: string; url: string; iconName?: string }[];
   order?: number; // For sorting
 }
 
@@ -161,9 +166,9 @@ export interface HeaderInfo {
 }
 
 export interface TechStack {
-  frontend: string[];
-  backend: string[];
-  devops: string[];
+  frontend: TechItem[];
+  backend: TechItem[];
+  devops: TechItem[];
 }
 
 export interface Project {
@@ -188,7 +193,7 @@ export interface Project {
     desc: string;
   };
   coverMedia?: ProjectImage[];
-  webLinks?: { label: string; url: string }[];
+  webLinks?: { label: string; url: string; iconName?: string }[];
 }
 
 export interface Service {

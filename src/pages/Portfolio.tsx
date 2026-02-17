@@ -48,8 +48,8 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
           {/* Tech Stack Pills */}
           <div className="flex flex-wrap gap-2 mb-6">
             {project.techStack.frontend.slice(0, 4).map(tech => (
-              <span key={tech} className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-md font-medium border border-slate-200">
-                {tech}
+              <span key={tech.name} className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-md font-medium border border-slate-200">
+                {tech.name}
               </span>
             ))}
           </div>
