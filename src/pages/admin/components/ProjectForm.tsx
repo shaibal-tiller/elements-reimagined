@@ -5,6 +5,7 @@ import {
   Trash2,
   Save,
   Loader2,
+  ChevronLeft,
   ChevronRight,
   Palette,
   Info,
@@ -2430,15 +2431,64 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
         data-overlay
         className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-8"
         onClick={() => setLightboxImage(null)}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowLeft" && lightboxImage.index > 0) {
+            const prev = formData.images[lightboxImage.index - 1];
+            if (prev?.src) setLightboxImage({ src: prev.src, index: lightboxImage.index - 1 });
+          } else if (e.key === "ArrowRight" && lightboxImage.index < formData.images.length - 1) {
+            const next = formData.images[lightboxImage.index + 1];
+            if (next?.src) setLightboxImage({ src: next.src, index: lightboxImage.index + 1 });
+          } else if (e.key === "Escape") {
+            setLightboxImage(null);
+          }
+        }}
+        tabIndex={0}
+        ref={(el) => el?.focus()}
       >
         <button
           type="button"
           onClick={() => setLightboxImage(null)}
-          className="absolute top-4 right-4 p-2 bg-slate-800/80 hover:bg-slate-700 text-white rounded-lg transition-colors"
+          className="absolute top-4 right-4 p-2 bg-slate-800/80 hover:bg-slate-700 text-white rounded-lg transition-colors z-10"
         >
           <X className="w-5 h-5" />
         </button>
-        {lightboxImage.src.match(/\.(mp4|webm|ogg)/i) ? (
+
+        {/* Previous button */}
+        {lightboxImage.index > 0 && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              const prev = formData.images[lightboxImage.index - 1];
+              if (prev?.src) setLightboxImage({ src: prev.src, index: lightboxImage.index - 1 });
+            }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-slate-800/80 hover:bg-slate-700 text-white rounded-full transition-colors z-10"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+        )}
+
+        {/* Next button */}
+        {lightboxImage.index < formData.images.length - 1 && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              const next = formData.images[lightboxImage.index + 1];
+              if (next?.src) setLightboxImage({ src: next.src, index: lightboxImage.index + 1 });
+            }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-slate-800/80 hover:bg-slate-700 text-white rounded-full transition-colors z-10"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        )}
+
+        {/* Image counter */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-slate-800/80 rounded-full text-xs text-slate-300 z-10">
+          {lightboxImage.index + 1} / {formData.images.length}
+        </div>
+
+        {isVideo(formData.images[lightboxImage.index] || { src: lightboxImage.src, caption: "", details: "" }) ? (
           <video
             src={lightboxImage.src}
             controls
@@ -2460,7 +2510,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                 e.stopPropagation();
                 setEditingImage(true);
               }}
-              className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium shadow-lg transition-colors"
+              className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium shadow-lg transition-colors z-10"
             >
               <Pencil className="w-4 h-4" />
               Edit Image
@@ -2471,7 +2521,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     )}
 
     {/* Image Editor (opens from lightbox "Edit" button) */}
-    {lightboxImage && editingImage && !lightboxImage.src.match(/\.(mp4|webm|ogg)/i) && (
+    {lightboxImage && editingImage && !isVideo(formData.images[lightboxImage.index] || { src: lightboxImage.src, caption: "", details: "" }) && (
       <Suspense fallback={null}>
         <ImageEditor
           src={lightboxImage.src}
@@ -2481,7 +2531,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
             uploadedKeysRef.current.push(newPath);
             persistPendingKeys(uploadedKeysRef.current);
             setEditingImage(false);
-            setLightboxImage(null);
+            setLightboxImage({ src: newUrl, index: lightboxImage.index });
           }}
           onClose={() => {
             setEditingImage(false);

@@ -54,7 +54,7 @@
       },
       {
         "index": 7,
-        "src": "https://utfs.io/f/KkkI9GdEBxIacm5lHynj2EhlsoPdJHnQau1U479NKveITRxr",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaKVe0CrdEBxIaDg31XdSWLMnl5sOpzhiG9FZV",
         "caption": "KML File Upload Interface",
         "details": "Project location upload page with drag-and-drop KML file attachment area. Allows users to upload geographic boundary files (.kml format) for spatial analysis, with Back and Submit action buttons for the workflow.",
         "type": "image"
@@ -68,14 +68,14 @@
       },
       {
         "index": 9,
-        "src": "https://utfs.io/f/KkkI9GdEBxIat664hk3UbBoYJxyGIjiC73m4q9cTHDgZzQaE",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaJ9T4jeLV4DANTrPlRvQnZy19KfwIqzMk3eO5",
         "caption": "Change Password Modal",
         "details": "Security dialog overlaying the Profile Details page with fields for Current Password, New Password, and Confirm New Password. Enables authenticated users to update their credentials within the PLIS system.",
         "type": "image"
       },
       {
         "index": 10,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaGQFp8umT5pe0akhlrF1zHnuc7xbW9d2DoJmj",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaALyETCg7z0aYoVtugkvplImP4x7CS6d1NKsX",
         "caption": "User Profile Details",
         "details": "Clean profile page displaying the logged-in user's information including ID, Username (Training 01), Email, User Type (Agency User), Agency Name (Agency for Training), and Ministry Name, with the government emblem and option to change profile photo.",
         "type": "image"
@@ -102,77 +102,77 @@
     "images": [
       {
         "index": 0,
-        "src": "https://utfs.io/f/KkkI9GdEBxIa9wtPpQjA1ulfxUNQmtWPErY2qkvIoX7nidpO",
+        "src": "https://utfs.io/f/KkkI9GdEBxIa8MVzyb4TClZdD4rVyI2otzFbxqUf8w0s3McO",
         "caption": "City Profile Map Data Upload",
         "details": "Admin interface for inserting city profile map data with dropdowns for City (Ajmiriganj), Year (2018), and Map Data Type (FSM & SWM Infrastructure Map Data). Includes a drag-and-drop Excel file upload area for bulk data import into the geospatial database.",
         "type": "image"
       },
       {
         "index": 1,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaA4kDn97z0aYoVtugkvplImP4x7CS6d1NKsXj",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaHbIOpxrEOj2wZAdsnJ6quveXYotPSbWfQ3ax",
         "caption": "IMIS Dashboard",
         "details": "IMIS (Integrated Management Information System) data dashboard showing published datasets from multiple cities including Khulna, Innova, and Lakshmipur with upload dates, uploader emails, publication status, and View action buttons for each entry.",
         "type": "image"
       },
       {
         "index": 2,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaR3TRV4iSnKBLtVAIaZvoCjxDFO37X5pJRulh",
+        "src": "https://utfs.io/f/KkkI9GdEBxIa5FMGddN0a4UGBS8fi9oRwdFQDvmZYqsCXg21",
         "caption": "Survey Questionnaire Builder",
         "details": "Modal dialog for creating survey questions within the questionnaire builder. Allows setting Question text, Response Type dropdown, Icon selection, Required flag, and Remarks field—enabling dynamic survey form creation for sanitation data collection.",
         "type": "image"
       },
       {
         "index": 3,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaecu0pQa21WuXPES7ynAGdeJc4Yi0QItZKN8M",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaB1yoRr9Bju3eH7pYPySFmvkZ8Uc6ftAbRWOT",
         "caption": "Survey Template Selection",
         "details": "Create Survey Questionnaire page with three tabs: Select Template, Create New, and File Import. Shows available templates—50 City Survey 2025, 23 Town Survey, and 61 Districts—with a 'Proceed with Selected Template' button for quick questionnaire setup.",
         "type": "image"
       },
       {
         "index": 4,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaoIdBN4M9CkFtUcLbNfl3H7w4jWJAgTOM2dem",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaqGsy2NwL2Jd1zUomfZiSjlPuAFreQBWDk96h",
         "caption": "Questionnaire File Import",
         "details": "File Import tab of the Create Survey Questionnaire module with a drag-and-drop area for Excel file upload. Enables bulk import of pre-formatted questionnaire structures for rapid deployment across multiple survey campaigns.",
         "type": "image"
       },
       {
         "index": 5,
-        "src": "https://utfs.io/f/KkkI9GdEBxIa38pVJ8ca4psOWbTc9BQP6kCARI05XiJxnFKl",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaqhNN5swL2Jd1zUomfZiSjlPuAFreQBWDk96h",
         "caption": "Survey City Assignment Manager",
         "details": "Manage Survey page with a modal showing city assignments for the '50 City Survey'. Lists municipalities (Sonaimuri, Debidwar, Daudkandi, Chauddagram) with City Type, submission Status, and Remove actions. Background shows the full survey list with assignment and submission tracking.",
         "type": "image"
       },
       {
         "index": 6,
-        "src": "https://utfs.io/f/KkkI9GdEBxIa4rQJyUaNGfxT0la9sF6vHJUDkbSKrgiyIoA7",
+        "src": "https://utfs.io/f/KkkI9GdEBxIa2l6MpjIvDCLFjOsrycmZG43Swdzbf9NoqXuR",
         "caption": "Survey Management Dashboard",
         "details": "Central survey management view listing all surveys—50 City Survey, 23 Town Survey, and Survey-2020—with columns for Assigned Cities, Submitted Cities, Assignment/End Dates, and action buttons for View Mapped Questionnaire, City List, and Data Submission management.",
         "type": "image"
       },
       {
         "index": 7,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaC4RWJ9q04N7tsWyaicq32HDrCuRh8GwdbIUO",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaeZ4CjxQa21WuXPES7ynAGdeJc4Yi0QItZKN8",
         "caption": "Survey Questionnaire List",
         "details": "Questionnaire management table showing three completed questionnaires (50 City Survey 2025, 23 Town Survey, 61 Districts) with creation dates, completion status, and action buttons: Use Template, View Questionnaire, Mapped Survey, and Delete Questionnaire.",
         "type": "image"
       },
       {
         "index": 8,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaIlqSwGj5uhV3EqFo8jxvdGDKNPXarZQne01z",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaMn5ifzBKLydfHmhx1BGIbukqJAsSn63gRoaj",
         "caption": "View Survey Questionnaire",
         "details": "Detailed questionnaire viewer for '50 City Survey 2025' displaying structured questions including Coordinate of the Area (GEO_POINT type), interview participation consent (Dropdown), and Type of Settlement with slum/non-slum options—showing the full question structure and response types.",
         "type": "image"
       },
       {
         "index": 9,
-        "src": "https://utfs.io/f/KkkI9GdEBxIa6zz06pkveP0d7BHGTnf8iZrOwWF1VygUpDKa",
+        "src": "https://utfs.io/f/KkkI9GdEBxIa2j4gz0IvDCLFjOsrycmZG43Swdzbf9NoqXuR",
         "caption": "Create New Survey Form",
         "details": "Survey creation form with fields for Survey Title, Questionnaire selection, Survey Project, City/Cities multi-selector, and Start/End Date pickers. Features the Bengali language toggle and the full navigation sidebar with all platform modules visible.",
         "type": "image"
       },
       {
         "index": 10,
-        "src": "https://utfs.io/f/KkkI9GdEBxIatWF47g3UbBoYJxyGIjiC73m4q9cTHDgZzQaE",
+        "src": "https://utfs.io/f/KkkI9GdEBxIa4ponGfaNGfxT0la9sF6vHJUDkbSKrgiyIoA7",
         "caption": "KII Management Module",
         "details": "Key Informant Interview (KII) management dashboard listing interview campaigns with Assigned Cities, Submitted Cities, Assignment/End Dates, and action buttons for View Mapped Questionnaire, City List, and Data Submission—supporting qualitative data collection workflows.",
         "type": "image"
@@ -186,28 +186,28 @@
       },
       {
         "index": 12,
-        "src": "https://utfs.io/f/KkkI9GdEBxIajyJmZeOj5HfRvQAbgdFJ3WqkDXeEwmUCt0os",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaoJTdhM9CkFtUcLbNfl3H7w4jWJAgTOM2dems",
         "caption": "Add User Registration Form",
         "details": "User registration form with fields for First Name, Last Name, Email, Role selection dropdown, Department, Designation, Password, and Confirm Password—enabling role-based user provisioning for the National Sanitation Dashboard.",
         "type": "image"
       },
       {
         "index": 13,
-        "src": "https://utfs.io/f/KkkI9GdEBxIa5FB3q1M0a4UGBS8fi9oRwdFQDvmZYqsCXg21",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaygPdUB0VcbsOGSXkNZMTg156YaeUnw7mEf2J",
         "caption": "User Role Assignment Modal",
         "details": "User management panel with a role assignment modal for 'Sadman Rahman' showing user details (Email, Role: Project Director, Department: MIS, Designation: Programmer) with a Role selector and Assign/Reject buttons. Background shows the full user list with Active/Inactive status indicators.",
         "type": "image"
       },
       {
         "index": 14,
-        "src": "https://utfs.io/f/KkkI9GdEBxIatbGdyN3UbBoYJxyGIjiC73m4q9cTHDgZzQaE",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaOjPNDUuPVplsJNEtdneq526fhGQUcuKBOWID",
         "caption": "User Management Panel",
         "details": "Users administration page with summary cards (Total Users: 10, Departments: 1, Active: 5, Inactive: 5) and a detailed table showing Name, Role, Department, Designation, and Action buttons (Activate, Manage User, Deactivate) with status indicators and filter options.",
         "type": "image"
       },
       {
         "index": 15,
-        "src": "https://utfs.io/f/KkkI9GdEBxIapGM4tl6UXFehJjGCoYvEHTWdAms7fbIQg4Ma",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaKzQehidEBxIaDg31XdSWLMnl5sOpzhiG9FZV",
         "caption": "Admin Modules Hub",
         "details": "Central modules page displaying seven management areas: User Management, Project Management, KII Management, Survey Management, Survey Questionnaire, KII Questionnaire, IMIS Data Management, and City Profile Data Management—each with descriptive icons and subtitles.",
         "type": "image"
@@ -221,7 +221,7 @@
       },
       {
         "index": 17,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaLDqhFOYJ4soMEcWCx7y1Xe9ZvUPkHtlGwgqS",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaW65w9a8hIwDypcQqBNGa1UfMA8L7ek0Ex6Xv",
         "caption": "City Profile Comparison Dashboard",
         "details": "Side-by-side city comparison view for Cumilla and Bogura showing Overview tab with SDG indicators for sanitation—Safely managed, Basic, Limited, Unimproved, Open defecation percentages—along with geographic data (Wards, Area, Population) displayed in donut charts.",
         "type": "image"
@@ -235,35 +235,35 @@
       },
       {
         "index": 19,
-        "src": "https://utfs.io/f/KkkI9GdEBxIauAgGrByKYqkZ9nfvHFerMAj8Gy32iRdb51pg",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaoc1AvKM9CkFtUcLbNfl3H7w4jWJAgTOM2dem",
         "caption": "FSTP Details & Selection",
         "details": "Fecal Sludge Treatment Plant (FSTP) detail page for Sakhipur with a dropdown listing all treatment plants nationwide. Shows Basic Information (Province, Area, Asset Owner: Government of Bangladesh, Project: Water Aid) and Technical Information including capacity, cost, and operational data.",
         "type": "image"
       },
       {
         "index": 20,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaXV7mAURA4m1arPoWd8R92DbpHhcuiKnOx7GY",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaRIEYHuiSnKBLtVAIaZvoCjxDFO37X5pJRulh",
         "caption": "Indicators Chart & Map View",
         "details": "National indicators visualization with expandable sections for Citywide Inclusive Sanitation (CWIS), Solid Waste Management (SWM), and SDG 6.2. The Chart tab displays a ranked bar chart of waste segregation percentages across all cities, color-coded by performance levels.",
         "type": "image"
       },
       {
         "index": 21,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaUj2cMEgv2a89ZhiDzXIBtEeYSngGW36lCy7T",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaruR8P1fh4x0fdFjRwz6lSqUbkVaX89c2mvMJ",
         "caption": "National Indicators Map",
         "details": "Geographic map view of sanitation indicators across Bangladesh showing district-level data points on an interactive map. Left panel provides indicator selection for CWIS, SWM metrics, and SDG 6.2 with a heat-map legend for performance visualization.",
         "type": "image"
       },
       {
         "index": 22,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaPCsK6mXf32h6ov7zdTUmlw8sEQOrDYWHjuSg",
+        "src": "https://utfs.io/f/KkkI9GdEBxIatLWo9d3UbBoYJxyGIjiC73m4q9cTHDgZzQaE",
         "caption": "IMIS Cities CWIS Dashboard",
         "details": "City-level CWIS (Citywide Inclusive Sanitation) dashboard for Dhaka (2024) displaying 12 key performance indicators in a grid layout—including FS disposal rates, treatment capacity (247), FSTP compliance, LC population access, and universal design metrics with numerical values.",
         "type": "image"
       },
       {
         "index": 23,
-        "src": "https://utfs.io/f/KkkI9GdEBxIa3rrWZNca4psOWbTc9BQP6kCARI05XiJxnFKl",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaa0enE8G3kDKVBTr5HZ412gAQycYsl7uhMOSJ",
         "caption": "Home Page (Bengali)",
         "details": "National Sanitation Dashboard landing page in Bengali (ন্যাশনাল স্যানিটেশন ড্যাশবোর্ড) with an illustrated banner depicting the sanitation value chain—from household containment through collection, transport, and treatment. Shows the bilingual toggle and navigation to City Profile and City Comparison modules.",
         "type": "image"
@@ -271,36 +271,36 @@
       {
         "index": 24,
         "src": "https://utfs.io/f/KkkI9GdEBxIaRt0VtuFiSnKBLtVAIaZvoCjxDFO37X5pJRul",
-        "caption": "Est corporis minus c",
-        "details": "In libero laudantium",
+        "caption": "Platform Overview Demo",
+        "details": "Video walkthrough demonstrating the National Sanitation Dashboard platform, showcasing the main navigation, city profile selection, and key data visualization features including sanitation indicators and geographic mapping capabilities.",
         "type": "video"
       },
       {
         "index": 25,
         "src": "https://utfs.io/f/KkkI9GdEBxIa1QjOoFPIsPc23eqACVEuwoS9hj54XyJOKnx7",
-        "caption": "Doloremque possimus",
-        "details": "Voluptate laboris ra",
+        "caption": "Survey Data Collection Flow",
+        "details": "Video demonstration of the survey management workflow, showing how survey questionnaires are created, assigned to cities, and submitted through the platform's data collection pipeline for nationwide sanitation monitoring.",
         "type": "video"
       },
       {
         "index": 26,
         "src": "https://utfs.io/f/KkkI9GdEBxIaXSkDkh8RA4m1arPoWd8R92DbpHhcuiKnOx7G",
-        "caption": "Nulla assumenda ipsa",
-        "details": "Sed culpa aut ipsum ",
+        "caption": "City Comparison Analytics",
+        "details": "Video showcase of the city comparison and analytics features, including side-by-side SDG indicator comparisons, sanitation metric visualizations, and interactive chart filtering across multiple municipal areas.",
         "type": "video"
       },
       {
         "index": 27,
         "src": "https://utfs.io/f/KkkI9GdEBxIa78kgxMJHyd2N7Ss5ZIDoiQxP9UWm4qjRf3cp",
-        "caption": "Ipsa nostrum ad qui",
-        "details": "Exercitation facere ",
+        "caption": "Admin Panel Walkthrough",
+        "details": "Video tour of the administrative modules including User Management, Project Management, Survey Management, IMIS Data Management, and City Profile Data Management—demonstrating the platform's role-based access and data governance capabilities.",
         "type": "video"
       },
       {
         "index": 28,
         "src": "https://utfs.io/f/KkkI9GdEBxIaAnhRSV7z0aYoVtugkvplImP4x7CS6d1NKsXj",
-        "caption": "Est tempore eaque q",
-        "details": "Architecto et quasi ",
+        "caption": "GIS Infrastructure Mapping",
+        "details": "Video demonstration of the GIS mapping features showing interactive infrastructure maps with sanitation facility markers, treatment plant locations, and geographic data overlays for FSM & SWM infrastructure across Bangladesh.",
         "type": "video"
       }
     ]
@@ -318,7 +318,7 @@
       },
       {
         "index": 1,
-        "src": "https://utfs.io/f/KkkI9GdEBxIadEEO50ANYdxmlIfitU8Ry2K4CQHoTsjbuqW3",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaCo7eSLAq04N7tsWyaicq32HDrCuRh8GwdbIU",
         "caption": "Landing Page & Application Portal",
         "details": "INCLUDE Call for Ideas landing page on Good Grants platform with bilingual support (English/Bengali), social sharing buttons, step-by-step application guide (Register, Start Application, Submit), and the 'Start Application' call-to-action linking to the IdeaForm submission portal.",
         "type": "image"
@@ -332,14 +332,14 @@
       },
       {
         "index": 3,
-        "src": "https://utfs.io/f/KkkI9GdEBxIapIwJAV6UXFehJjGCoYvEHTWdAms7fbIQg4Ma",
+        "src": "https://utfs.io/f/KkkI9GdEBxIa2FMmeYIvDCLFjOsrycmZG43Swdzbf9NoqXuR",
         "caption": "Applicant Dashboard Overview",
         "details": "Authenticated applicant dashboard showing Important Grants Information with submission dates, support contact details, editing guidelines, and the Call for Ideas - INCLUDE application card with 'Start Application' button. The bottom section displays 'My Applications' listing with status tracking.",
         "type": "image"
       },
       {
         "index": 4,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaIsddWl5uhV3EqFo8jxvdGDKNPXarZQne01z2",
+        "src": "https://utfs.io/f/KkkI9GdEBxIarVxN4Qfh4x0fdFjRwz6lSqUbkVaX89c2mvMJ",
         "caption": "My Applications & Submission Tracker",
         "details": "Applicant's submission management view showing the active application rounds, Important Grants Information panel with deadline warnings and editing permissions, and the My Applications table with Active/Current filter tabs and search functionality for tracking submission status.",
         "type": "image"
@@ -394,115 +394,228 @@
     "images": [
       {
         "index": 0,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaLNjHPzYJ4soMEcWCx7y1Xe9ZvUPkHtlGwgqS",
-        "caption": "Screenshot 2026 02 16 At 3.20.32 PM",
-        "details": "",
+        "src": "https://utfs.io/f/KkkI9GdEBxIamKV8uM1jCsG2K56WrfPpZivQJcFwb70I9HVR",
+        "caption": "User Management and Roles",
+        "details": "The User Management page displays a Members table listing system users with columns for User name, Email, Role, Status, and Actions. Four users are shown including Super Admin, System Administrator, Finance Manager, and Project Manager, each with assigned roles and status badges. A dropdown action menu is visible with options for Change Password, Edit, and Delete, along with an 'Add Member' button at the top.",
         "type": "image"
       },
       {
         "index": 1,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaOdJsWkDuPVplsJNEtdneq526fhGQUcuKBOWI",
-        "caption": "Screenshot 2026 02 16 At 3.20.11 PM",
-        "details": "",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaMjeUvXFBKLydfHmhx1BGIbukqJAsSn63gRoa",
+        "caption": "Client Intelligence Analytics",
+        "details": "The Client Intelligence page shows analytics for a selected client, featuring a Departmental Engagement Share donut chart highlighting Engineering engagement, an Associated Projects panel listing project details with status and value, and a Revenue & Collections Waterfall bar chart comparing billed versus received amounts across multiple projects with green and pink stacked bars.",
         "type": "image"
       },
       {
         "index": 2,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaVDDKchLUzbTXIiEuAn20cyh9gt4BYFoH7CGW",
-        "caption": "Screenshot 2026 02 16 At 3.19.56 PM",
-        "details": "",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaMLCK0uBKLydfHmhx1BGIbukqJAsSn63gRoaj",
+        "caption": "Client Registry & Directory",
+        "details": "The Client Registry page displays a Budget Share donut chart and a Clearance Trend by Client bar chart at the top, followed by a Client Directory table listing companies with columns for Primary Contact, Direct Projects count, Financial Figures, and status indicators. An 'Add Client' button and Column Settings control are available.",
         "type": "image"
       },
       {
         "index": 3,
-        "src": "https://utfs.io/f/KkkI9GdEBxIa9hZvXjA1ulfxUNQmtWPErY2qkvIoX7nidpOh",
-        "caption": "Screenshot 2026 02 16 At 3.19.41 PM",
-        "details": "",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaPG2jWOXf32h6ov7zdTUmlw8sEQOrDYWHjuSg",
+        "caption": "Billing & Collections Overview",
+        "details": "The Billing & Collections page presents four summary KPI cards showing Total Budget, Today Received, Total Pending, and Total Bills. Filter dropdowns for All Projects, Statuses, Departments, and Years sit above a detailed milestone-level billing table with columns for milestone name, amounts, completion percentage, and BDT received/remaining for items like Advance Payment, Requirements & Design, and Development Phases.",
         "type": "image"
       },
       {
         "index": 4,
-        "src": "https://utfs.io/f/KkkI9GdEBxIa8qabdT4TClZdD4rVyI2otzFbxqUf8w0s3McO",
-        "caption": "Screenshot 2026 02 16 At 3.19.27 PM",
-        "details": "",
+        "src": "https://utfs.io/f/KkkI9GdEBxIaBPWVCn9Bju3eH7pYPySFmvkZ8Uc6ftAbRWOT",
+        "caption": "Record Payment Update Modal",
+        "details": "A modal dialog titled 'Update Received' overlays the interface, showing payment recording for a project milestone. It displays Total Project Value, Bill Allocation, Tentative Date, and Remaining to Collect fields. An Amount Input with percentage toggle, 'Pay Full Remaining' checkbox, Payment Date picker, and 'Record Payment' action button are visible.",
         "type": "image"
       },
       {
         "index": 5,
         "src": "https://utfs.io/f/KkkI9GdEBxIamqbGKZ1jCsG2K56WrfPpZivQJcFwb70I9HVR",
-        "caption": "Screenshot 2026 02 16 At 3.19.16 PM",
-        "details": "",
+        "caption": "Project Documents Upload",
+        "details": "A modal dialog titled 'Project Documents' displays over the Project Analytics page. The modal shows a 'No documents uploaded yet' message and an Upload Documents section with a drag-and-drop zone instructing users to upload PDF files with file size limits per file and total.",
         "type": "image"
       },
       {
         "index": 6,
-        "src": "https://utfs.io/f/KkkI9GdEBxIatvW4ZK3UbBoYJxyGIjiC73m4q9cTHDgZzQaE",
-        "caption": "Screenshot 2026 02 16 At 3.18.58 PM",
-        "details": "",
+        "src": "https://utfs.io/f/KkkI9GdEBxIa2bynRnIvDCLFjOsrycmZG43Swdzbf9NoqXuR",
+        "caption": "Project Analytics Detail View",
+        "details": "The Project Analytics page shows a project's total value with category label. Two circular progress indicators display billed and remaining percentages. A Project Guarantee (PG) section shows deposited, claimed, and clearance amounts with PG expiry date. Below is a Milestones table listing items with columns for allocation percentages, amounts, received, remaining, target dates, and payment recording actions.",
         "type": "image"
       },
       {
         "index": 7,
         "src": "https://utfs.io/f/KkkI9GdEBxIaJEHySFLV4DANTrPlRvQnZy19KfwIqzMk3eO5",
-        "caption": "Screenshot 2026 02 16 At 3.18.36 PM",
-        "details": "",
+        "caption": "Project Authorization Form",
+        "details": "A Project Authorization modal form displays fields for Project Identity, Total Valuation, Client Entity, Domain/Category, Division, Agreement and End Dates. A Financial Milestones section shows milestone rows with description, value percentage, target date, and amount fields. A 'Perfect Allocation' indicator confirms 100% allocation, followed by Project Guarantee, Document Attachments, and 'Authorize Project Creation' button.",
         "type": "image"
       },
       {
         "index": 8,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaBBe7e79Bju3eH7pYPySFmvkZ8Uc6ftAbRWOT",
-        "caption": "Screenshot 2026 02 16 At 3.18.20 PM",
-        "details": "",
+        "src": "https://utfs.io/f/KkkI9GdEBxIa6cMIOTkveP0d7BHGTnf8iZrOwWF1VygUpDKa",
+        "caption": "Project Management Hub",
+        "details": "The Project Management page shows four top-level KPI cards for Total Budget, Total Received, Total Pending, and Active Projects. A PG Overview section displays deposited, cleared, and pending guarantee amounts. Filter dropdowns for Departments, Categories, Status, and Years sit above a project listing table showing entries with client, date, budget, and status columns.",
         "type": "image"
       },
       {
         "index": 9,
         "src": "https://utfs.io/f/KkkI9GdEBxIaMuMtZXBKLydfHmhx1BGIbukqJAsSn63gRoaj",
-        "caption": "Screenshot 2026 02 16 At 3.18.12 PM",
-        "details": "",
+        "caption": "Dashboard with Project Filters",
+        "details": "The Dashboard page displays filtered financial KPIs—Total Budget, Total Received, Total Remaining, and Active Projects count. The PG Overview shows guarantee values. Below is a togglable Charts/Projects view on the Projects tab, listing projects with client names, dates, and budget figures in a clean tabular layout.",
         "type": "image"
       },
       {
         "index": 10,
         "src": "https://utfs.io/f/KkkI9GdEBxIa9tZEr3jA1ulfxUNQmtWPErY2qkvIoX7nidpO",
-        "caption": "Screenshot 2026 02 16 At 3.18.04 PM",
-        "details": "",
+        "caption": "Analytics, Deadlines & Calendar",
+        "details": "The lower Dashboard section shows a Project Distribution donut chart segmented by project with a color-coded legend, a 'Last Received' panel highlighting the most recent payment. Below are Upcoming Deadlines cards listing projects with amounts and days-left countdowns, and a Project Calendar with date cells containing event markers and project milestone entries.",
         "type": "image"
       },
       {
         "index": 11,
         "src": "https://utfs.io/f/KkkI9GdEBxIaYHvhkk4ebV4MXisRyN81EanhOTWuecmoKk6Q",
-        "caption": "Screenshot 2026 02 16 At 3.17.37 PM",
-        "details": "",
+        "caption": "Financial Dashboard Charts",
+        "details": "The main Dashboard view shows KPI summary cards for Total Budget, Total Received, Total Remaining, and Active Projects with a fiscal year filter dropdown. The PG Overview displays guarantee amounts. Below are two charts: a Monthly Revenue area chart tracking revenue over months, and a horizontal Budget vs Received bar chart comparing budgeted versus received amounts per project.",
         "type": "image"
       },
       {
         "index": 12,
         "src": "https://utfs.io/f/KkkI9GdEBxIaMTb1HZBKLydfHmhx1BGIbukqJAsSn63gRoaj",
-        "caption": "Screenshot 2026 02 16 At 3.17.11 PM",
-        "details": "",
+        "caption": "Session Lock Screen",
+        "details": "A full-screen Session Locked overlay with a soft gradient background in light green and white tones. A centered lock icon inside a circular badge is shown above 'Session Locked' text with the instruction 'Click anywhere to unlock and resume', providing an idle-timeout security feature that protects the application when the user is away.",
         "type": "image"
       },
       {
         "index": 13,
         "src": "https://utfs.io/f/KkkI9GdEBxIajlSxX9Oj5HfRvQAbgdFJ3WqkDXeEwmUCt0os",
-        "caption": "Screenshot 2026 02 16 At 3.17.02 PM",
-        "details": "",
+        "caption": "Dashboard Financial Overview",
+        "details": "The Dashboard displays primary financial KPI cards showing Total Budget, Total Received, Total Pending, and Active Projects with no filters applied. The PG Overview shows deposited, cleared, and pending guarantee amounts. Below are a Monthly Revenue area chart with revenue trends and a horizontal Budget vs Received bar chart comparing actual vs remaining across all projects.",
         "type": "image"
       },
       {
         "index": 14,
         "src": "https://utfs.io/f/KkkI9GdEBxIaRtcqfQeiSnKBLtVAIaZvoCjxDFO37X5pJRul",
-        "caption": "Screenshot 2026 02 16 At 3.16.48 PM",
-        "details": "",
+        "caption": "Login Authentication Page",
+        "details": "The Tiller Billing Compass login page features the Tiller logo and 'Project & Billing Tracker' tagline, a 'Welcome back' heading with Email Address and Password input fields, a prominent 'Sign In' button, and a footer note about secure access. The background features a subtle wave pattern with faint bar chart graphics.",
         "type": "image"
       }
     ]
   },
   "9": {
     "title": "Developer Portfolio",
-    "imageCount": 0,
-    "images": []
+    "imageCount": 16,
+    "images": [
+      {
+        "index": 0,
+        "src": "https://utfs.io/f/KkkI9GdEBxIauAdXnR8KYqkZ9nfvHFerMAj8Gy32iRdb51pg",
+        "caption": "Screenshot 2026 02 17 At 1.11.15 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 1,
+        "src": "https://utfs.io/f/KkkI9GdEBxIaPNTuhlXf32h6ov7zdTUmlw8sEQOrDYWHjuSg",
+        "caption": "Screenshot 2026 02 17 At 1.11.03 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 2,
+        "src": "https://utfs.io/f/KkkI9GdEBxIanK317SswAIjmRYBd4GpxMOFU3u981kKtTDE0",
+        "caption": "Screenshot 2026 02 17 At 1.10.46 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 3,
+        "src": "https://utfs.io/f/KkkI9GdEBxIadlNxxGANYdxmlIfitU8Ry2K4CQHoTsjbuqW3",
+        "caption": "Screenshot 2026 02 17 At 1.09.07 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 4,
+        "src": "https://utfs.io/f/KkkI9GdEBxIam3Uasj1jCsG2K56WrfPpZivQJcFwb70I9HVR",
+        "caption": "Screenshot 2026 02 17 At 1.08.56 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 5,
+        "src": "https://utfs.io/f/KkkI9GdEBxIauANQz54KYqkZ9nfvHFerMAj8Gy32iRdb51pg",
+        "caption": "Screenshot 2026 02 17 At 1.08.41 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 6,
+        "src": "https://utfs.io/f/KkkI9GdEBxIadXS8OhANYdxmlIfitU8Ry2K4CQHoTsjbuqW3",
+        "caption": "Screenshot 2026 02 17 At 1.08.34 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 7,
+        "src": "https://utfs.io/f/KkkI9GdEBxIaSWMSvOtnQMJcv3Tt6j904pWFauH1PKAVgXBy",
+        "caption": "Screenshot 2026 02 17 At 1.07.39 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 8,
+        "src": "https://utfs.io/f/KkkI9GdEBxIauufsjtKYqkZ9nfvHFerMAj8Gy32iRdb51pgJ",
+        "caption": "Screenshot 2026 02 17 At 1.07.27 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 9,
+        "src": "https://utfs.io/f/KkkI9GdEBxIaCDIWt5q04N7tsWyaicq32HDrCuRh8GwdbIUO",
+        "caption": "Screenshot 2026 02 17 At 1.06.58 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 10,
+        "src": "https://utfs.io/f/KkkI9GdEBxIa9WThBLjA1ulfxUNQmtWPErY2qkvIoX7nidpO",
+        "caption": "Screenshot 2026 02 17 At 1.06.38 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 11,
+        "src": "https://utfs.io/f/KkkI9GdEBxIaANnYVb7z0aYoVtugkvplImP4x7CS6d1NKsXj",
+        "caption": "Screenshot 2026 02 17 At 1.06.23 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 12,
+        "src": "https://utfs.io/f/KkkI9GdEBxIaGKt8VAmT5pe0akhlrF1zHnuc7xbW9d2DoJmj",
+        "caption": "Screenshot 2026 02 17 At 1.06.02 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 13,
+        "src": "https://utfs.io/f/KkkI9GdEBxIasocWKiZBUF7Am15C2EZwofvLRzJrxYVNX8IG",
+        "caption": "Screenshot 2026 02 17 At 1.05.44 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 14,
+        "src": "https://utfs.io/f/KkkI9GdEBxIaUvPBBp9gv2a89ZhiDzXIBtEeYSngGW36lCy7",
+        "caption": "Screenshot 2026 02 17 At 1.05.29 PM",
+        "details": "",
+        "type": "image"
+      },
+      {
+        "index": 15,
+        "src": "https://utfs.io/f/KkkI9GdEBxIaBLKfiO9Bju3eH7pYPySFmvkZ8Uc6ftAbRWOT",
+        "caption": "Screenshot 2026 02 17 At 1.12.24 PM",
+        "details": "",
+        "type": "image"
+      }
+    ]
   },
   "10": {
     "title": "Exemplar Consortium Ltd.",
@@ -511,57 +624,57 @@
       {
         "index": 0,
         "src": "https://utfs.io/f/KkkI9GdEBxIaKQ0FWZdEBxIaDg31XdSWLMnl5sOpzhiG9FZV",
-        "caption": "Screenshot 2026 02 16 At 5.53.45 PM",
-        "details": "",
+        "caption": "Contact Page With Form",
+        "details": "The Contact page features a 'Have A Project in Mind?' heading under a 'GET IN TOUCH' label, with contact info cards on the left (Email Us, Find Us at Shibbari More Khulna, and Call Us) and a multi-field contact form on the right with Name, Email, Phone, Country, and Message fields plus a 'Submit Now' button.",
         "type": "image"
       },
       {
         "index": 1,
         "src": "https://utfs.io/f/KkkI9GdEBxIafnZlLgNYqhdWTD8NIKwQUn3giFsvkCMcoSr9",
-        "caption": "Screenshot 2026 02 16 At 5.53.36 PM",
-        "details": "",
+        "caption": "Project Gallery With Filters",
+        "details": "The Gallery page displays a blue gradient hero banner with the title 'Gallery' and subtitle. Below, a 'Project Gallery' section shows filterable category tabs (All, Interior, Commercial, Residence) with a grid of architectural project thumbnail images including interior spaces, commercial buildings, and residential properties.",
         "type": "image"
       },
       {
         "index": 2,
         "src": "https://utfs.io/f/KkkI9GdEBxIa2L4xnbIvDCLFjOsrycmZG43Swdzbf9NoqXuR",
-        "caption": "Screenshot 2026 02 16 At 5.53.28 PM",
-        "details": "",
+        "caption": "Team Members Profile Page",
+        "details": "The Team page introduces Exemplar Consortium Ltd. as the first of its kind in the greater Khulna Region. It showcases two team members: Zahir Haider (Suden) as Chairman & Chief Architect with photo, bio, and skill tags (Residential Design, Commercial Design, Interior Design), and Pritam Das as Managing Director with expertise in Marketing, Branding, Management Consultancy, and Business Analytics.",
         "type": "image"
       },
       {
         "index": 3,
         "src": "https://utfs.io/f/KkkI9GdEBxIaIluBi6w5uhV3EqFo8jxvdGDKNPXarZQne01z",
-        "caption": "Screenshot 2026 02 16 At 5.53.15 PM",
-        "details": "",
+        "caption": "Portfolio Project Detail Modal",
+        "details": "A modal overlay displays the 'Mr. Monir Residence' project detail page, showing a large hero image of a modern multi-story residential building. Below are project metadata (Client, Location: Khulna Bangladesh, Year: 2023), a description of the architectural and interior design project, and a Project Gallery section with additional building view thumbnails.",
         "type": "image"
       },
       {
         "index": 4,
         "src": "https://utfs.io/f/KkkI9GdEBxIary85XXUfh4x0fdFjRwz6lSqUbkVaX89c2mvM",
-        "caption": "Screenshot 2026 02 16 At 5.53.07 PM",
-        "details": "",
+        "caption": "Portfolio Page Project Cards",
+        "details": "The Portfolio page features a blue gradient hero with 'Our Portfolio' title. Below, a 'Portfolio Gallery' section with filter tabs (All, Interior, Commercial, Residence) displays project cards including Phoenix Fashion, Home Interior of Dr S Ahsan Ahmed, and Moonera Medical Clinic, each with a thumbnail image and description.",
         "type": "image"
       },
       {
         "index": 5,
         "src": "https://utfs.io/f/KkkI9GdEBxIa8UoAPp4TClZdD4rVyI2otzFbxqUf8w0s3McO",
-        "caption": "Screenshot 2026 02 16 At 5.52.43 PM",
-        "details": "",
+        "caption": "Homepage Hero & Recent Works",
+        "details": "The homepage displays a hero section with the tagline 'Delivering Excellence in Architecture & Consulting' over a gradient background with abstract shapes. Below, a 'Recent Works' section shows four project cards: Phoenix Fashion, Dr S Ahsan Ahmed Home, Moonera Medical Clinic, and Mr. Monir Residence, each with thumbnail images and category labels.",
         "type": "image"
       },
       {
         "index": 6,
         "src": "https://utfs.io/f/KkkI9GdEBxIa3D9tIJca4psOWbTc9BQP6kCARI05XiJxnFKl",
-        "caption": "Screenshot 2026 02 16 At 5.52.32 PM",
-        "details": "",
+        "caption": "Services Overview Grid Layout",
+        "details": "The services section presents six service cards in a two-row, three-column grid under 'Services Tailored to Your Needs.' Each card has a blue icon and description: Architectural Solutions, GIS Mapping, Interior & Exterior Design, Survey & Data Collection, Market Research, and Construction Works.",
         "type": "image"
       },
       {
         "index": 7,
-        "src": "https://utfs.io/f/KkkI9GdEBxIaLQx53eVYJ4soMEcWCx7y1Xe9ZvUPkHtlGwgq",
-        "caption": "Screenshot 2026 02 16 At 5.52.26 PM",
-        "details": "",
+        "src": "https://utfs.io/f/KkkI9GdEBxIawBBYvrPoy8gRijzE9rOGFJH4mAv2skYxWQbM",
+        "caption": "About Hero With Team Photo",
+        "details": "The About/landing page hero features a bold blue gradient background with 'Exemplar Consortium Ltd.' heading and a tagline describing it as a dynamic consulting firm in Khulna for project management, architecture, engineering, and research. Two CTA buttons ('Our Works' and 'Contact Us') are displayed alongside hero images showing a conference room and group team photo.",
         "type": "image"
       }
     ]

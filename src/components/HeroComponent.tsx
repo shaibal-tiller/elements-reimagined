@@ -13,10 +13,11 @@ const HeroComponent = () => {
     return (
         <div>
             <p className="section-title text-primary mb-4 animate-fadeUp">
-                Hi my new friend!
+                Software Engineer &bull; Full Stack Developer
             </p>
             <h1 className="heading-xl text-foreground mb-8 animate-fadeUp" >
-                Discover my <span className="block">art space!</span>
+                Building ideas into{" "}
+                <span className="block">digital reality.</span>
             </h1>
 
             {/* CTA Buttons */}

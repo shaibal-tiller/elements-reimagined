@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, FolderKanban } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
@@ -6,6 +6,7 @@ import { Project } from '../types/firebase';
 import { ProjectCardSkeleton } from '../components/skeletons';
 import ErrorView from '../components/ErrorView';
 import { resolveThemeStyles } from '../lib/twColors';
+import { isVideo } from '../lib/mediaUtils';
 
 const SECTIONS = [
   { label: 'Client Works', categories: ['Client Project'] },
@@ -13,16 +14,69 @@ const SECTIONS = [
   { label: 'Personal Projects', categories: ['Personal Project'] },
 ];
 
+const SLIDE_INTERVAL = 7000;
+
 const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
   const BannerIcon = project.bannerIcon;
   const ts = resolveThemeStyles(project.theme);
+
+  // Determine cover slides: dedicated coverMedia, or fallback to project images
+  const hasDedicatedCover = (project.coverMedia || []).some(m => m.src);
+  const coverImages = useMemo(() => {
+    if (hasDedicatedCover) {
+      return (project.coverMedia || []).filter(m => m.src && !isVideo(m));
+    }
+    return (project.images || []).filter(m => m.src && !isVideo(m));
+  }, [project.coverMedia, project.images, hasDedicatedCover]);
+
+  // slideIndex: -1 = themed banner (first), 0+ = image slides
+  const hasSlides = coverImages.length > 0;
+  const [slideIndex, setSlideIndex] = useState(-1);
+
+  const nextSlide = useCallback(() => {
+    if (!hasSlides) return;
+    setSlideIndex(prev => {
+      const next = prev + 1;
+      // Cycle: -1 → 0 → 1 → ... → N-1 → -1
+      return next >= coverImages.length ? -1 : next;
+    });
+  }, [hasSlides, coverImages.length]);
+
+  useEffect(() => {
+    if (!hasSlides) return;
+    const timer = setInterval(nextSlide, SLIDE_INTERVAL);
+    return () => clearInterval(timer);
+  }, [hasSlides, nextSlide]);
 
   return (
     <Link to={`/portfolio/${project.slug}`} className="group block">
       <div className="card-white p-0 h-full overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border border-slate-100 flex flex-col">
         {/* Header / Banner */}
         <div className="h-48 relative overflow-hidden p-6 flex flex-col justify-between" style={ts.bgMain}>
-          <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-[60px] opacity-20 -translate-y-1/2 translate-x-1/4" style={ts.accentBlur}></div>
+          {/* Themed banner background (slide -1) */}
+          <div
+            className="absolute inset-0 transition-opacity duration-700 ease-in-out"
+            style={{ opacity: slideIndex === -1 ? 1 : 0 }}
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-[60px] opacity-20 -translate-y-1/2 translate-x-1/4" style={ts.accentBlur}></div>
+          </div>
+
+          {/* Image slides */}
+          {coverImages.map((img, idx) => (
+            <div
+              key={idx}
+              className="absolute inset-0 transition-opacity duration-700 ease-in-out"
+              style={{ opacity: slideIndex === idx ? 1 : 0 }}
+            >
+              <img
+                src={img.src}
+                alt=""
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-black/40" />
+            </div>
+          ))}
 
           <div className="flex justify-between items-start z-10">
             <span className="border px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-sm" style={{ ...ts.pillBg, ...ts.pillBorder, ...ts.pillText }}>
