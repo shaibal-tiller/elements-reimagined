@@ -103,7 +103,7 @@ const GallerySection = ({
       `}</style>
 
       <div
-        className="space-y-4 overflow-hidden rounded-2xl"
+        className="space-y-4 overflow-hidden rounded-2xl shadow-md md:shadow-none border border-slate-200 md:border-0 p-2 md:p-0"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >

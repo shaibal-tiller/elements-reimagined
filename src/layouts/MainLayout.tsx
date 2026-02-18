@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import ProfileCard from '@/components/ProfileCard';
 import heroBg from "@/assets/bg-image.jpg";
-import { Outlet, useLocation } from 'react-router-dom';
-import { Play } from 'lucide-react';
+import avatarImg from "@/assets/avatar.jpg";
+import { Outlet, useLocation, Link } from 'react-router-dom';
+import { Play, Mail } from 'lucide-react';
 import HeroComponent from '@/components/HeroComponent';
 import SidebarContext from '@/contexts/SidebarContext';
 
@@ -33,6 +34,7 @@ const MainLayout: React.FC = () => {
     const stickyTop = '100px';
 
     const collapsed = sidebarCollapsed && isDetailPage;
+    const isHomePage = location.pathname === '/';
 
     return (
         <SidebarContext.Provider value={{ collapsed: sidebarCollapsed, setCollapsed: setSidebarCollapsed }}>
@@ -57,22 +59,60 @@ const MainLayout: React.FC = () => {
                         />
                     </section>
 
-                    {/* Mobile Layout: Profile card then content, stacked */}
+                    {/* Mobile Layout */}
                     <div className="md:hidden w-[96%] mx-auto relative z-20">
-                        <div className="flex justify-center mb-4">
-                            <ProfileCard />
-                        </div>
-                        {/* Hero text with background image on mobile */}
-                        <section className="relative rounded-2xl overflow-hidden mb-4">
-                            <div
-                                className="absolute inset-0 bg-cover bg-center"
-                                style={{ backgroundImage: `url(${heroBg})` }}
-                            />
-                            <div className="absolute inset-0 bg-[#02162C]/70" />
-                            <div className="relative z-10 px-5 py-8">
-                                <HeroComponent />
+                        {isHomePage ? (
+                            <>
+                                {/* Home: full profile card + hero with bg */}
+                                <div className="flex justify-center mb-4">
+                                    <ProfileCard />
+                                </div>
+                                <section className="relative rounded-2xl overflow-hidden mb-4">
+                                    <div
+                                        className="absolute inset-0 bg-cover bg-center"
+                                        style={{ backgroundImage: `url(${heroBg})` }}
+                                    />
+                                    <div className="absolute inset-0 bg-[#02162C]/70" />
+                                    <div className="relative z-10 px-5 py-8">
+                                        <HeroComponent />
+                                    </div>
+                                </section>
+                            </>
+                        ) : (
+                            /* Other pages: compact profile strip */
+                            <div className="relative rounded-2xl overflow-hidden mb-4">
+                                <div
+                                    className="absolute inset-0 bg-cover bg-center"
+                                    style={{ backgroundImage: `url(${heroBg})` }}
+                                />
+                                <div className="absolute inset-0 bg-[#02162C]/80" />
+                                <div className="relative z-10 flex items-center gap-3 px-4 py-3">
+                                    <Link to="/" className="flex-shrink-0">
+                                        <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-slate-600/50">
+                                            <img src={avatarImg} alt="Sharif Shaibal" className="w-full h-full object-cover" />
+                                        </div>
+                                    </Link>
+                                    <div className="flex-1 min-w-0">
+                                        <Link to="/" className="text-sm font-bold text-white leading-tight hover:text-primary transition-colors">
+                                            Sharif Shaibal
+                                        </Link>
+                                        <p className="text-[10px] text-slate-400 uppercase tracking-wider truncate">
+                                            Software Engineer &bull; Full Stack Developer
+                                        </p>
+                                    </div>
+                                    <a
+                                        href="https://wa.me/8801521330598"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex-shrink-0 py-1.5 px-4 bg-lime-500 active:bg-lime-400
+                                                 text-slate-900 font-bold rounded-full text-[11px] flex items-center gap-1.5"
+                                    >
+                                        Contact
+                                        <Mail className="w-3 h-3" />
+                                    </a>
+                                </div>
                             </div>
-                        </section>
+                        )}
                         <section className="space-y-4 min-w-0">
                             <Outlet />
                         </section>

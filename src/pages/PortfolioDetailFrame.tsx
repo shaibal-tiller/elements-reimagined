@@ -8,6 +8,7 @@ import {
   FolderX,
   User,
   ExternalLink,
+  ChevronDown,
 } from 'lucide-react';
 import { isVideo, isEmbedVideo, getEmbedUrl } from '../lib/mediaUtils';
 import { useProject } from '../hooks/useProject';
@@ -27,6 +28,9 @@ const ProjectDetail = () => {
   const { data: project, isLoading, error, refetch } = useProject(slug);
   const [showFloatingBack, setShowFloatingBack] = useState(false);
   const [profileExpanded, setProfileExpanded] = useState(false);
+  const [contextExpanded, setContextExpanded] = useState(false);
+  const [featuresExpanded, setFeaturesExpanded] = useState(false);
+  const [contributionsExpanded, setContributionsExpanded] = useState(false);
 
   // The app uses react-custom-scrollbars-2 — the scrollable element
   // is its inner "view" div, tagged with data-scroll-container.
@@ -148,7 +152,7 @@ const ProjectDetail = () => {
   // Error State
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center mt-[100px]">
+      <div className="min-h-screen flex items-center justify-center mt-0 md:mt-[100px]">
         <div className="text-center px-4">
           <div className="bg-red-500/10 p-4 rounded-full mb-6 inline-block">
             <AlertTriangle className="w-12 h-12 text-red-400" />
@@ -181,7 +185,7 @@ const ProjectDetail = () => {
   // Not Found State
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center mt-[100px]">
+      <div className="min-h-screen flex items-center justify-center mt-0 md:mt-[100px]">
         <div className="text-center px-4">
           <div className="bg-slate-700/50 p-4 rounded-full mb-6 inline-block">
             <FolderX className="w-12 h-12 text-slate-400" />
@@ -215,7 +219,7 @@ const ProjectDetail = () => {
         />
       )}
 
-      <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20 animate-fadeUp mt-[100px]">
+      <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20 animate-fadeUp mt-0 md:mt-[100px]">
 
         {/* Hero Header */}
         <div
@@ -314,35 +318,60 @@ const ProjectDetail = () => {
           </div>
         </div>
 
-        <main className="container mx-auto px-6 -mt-10 relative z-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <main className="container mx-auto px-3 md:px-6 -mt-10 relative z-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
 
             {/* Left Column: Main Content */}
-            <div className="lg:col-span-8 space-y-8">
+            <div className="lg:col-span-8 space-y-4 md:space-y-8">
 
-              <section ref={contextSectionRef} className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
-                <h2 className="text-2xl font-bold mb-6 flex items-center gap-3" style={{ color: theme.textMain }}>
-                  <div className={`w-2 h-8 ${theme.accentBlur} rounded-full`}></div>
+              <section ref={contextSectionRef} className="bg-white rounded-2xl p-4 md:p-8 shadow-sm border border-slate-100">
+                <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 flex items-center gap-2 md:gap-3" style={{ color: theme.textMain }}>
+                  <div className={`w-2 h-6 md:h-8 ${theme.accentBlur} rounded-full`}></div>
                   Project Context
                 </h2>
-                <div className="prose prose-slate max-w-none text-slate-600 leading-relaxed whitespace-pre-line">
+                <div className={`prose prose-slate max-w-none text-slate-600 text-sm md:text-base leading-relaxed whitespace-pre-line ${!contextExpanded ? 'max-h-28 overflow-hidden md:max-h-none' : ''}`} style={!contextExpanded ? { WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)', maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)' } : undefined}>
                   {project.overview}
                 </div>
+                <button
+                  onClick={() => setContextExpanded(!contextExpanded)}
+                  className="md:hidden flex items-center gap-1 text-xs font-semibold mt-3 transition-colors"
+                  style={{ color: theme.textMain }}
+                >
+                  {contextExpanded ? 'Show less' : 'See more'}
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${contextExpanded ? 'rotate-180' : ''}`} />
+                </button>
               </section>
 
               <section>
                 <h3 className="text-xl font-bold mb-6" style={{ color: theme.textMain }}>System Modules & Features</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   {project.features.map((feature, idx) => (
-                    <div key={idx} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 group">
-                      <div className={`w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center text-slate-600 mb-4 group-hover:${theme.accentBlur} group-hover:text-white transition-colors`}>
-                        <feature.icon className="w-5 h-5" />
+                    <div key={idx} className={`bg-white p-4 md:p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 group ${!featuresExpanded && idx >= 2 ? 'hidden md:block' : ''}`}>
+                      <div className="flex items-center gap-3 md:block">
+                        <div
+                          className="w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-lg flex items-center justify-center transition-colors md:mb-4"
+                          style={{ backgroundColor: 'rgb(248 250 252)' }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = theme.primary; e.currentTarget.style.color = '#fff'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgb(248 250 252)'; e.currentTarget.style.color = 'rgb(71 85 105)'; }}
+                        >
+                          <feature.icon className="w-5 h-5" style={{ color: 'inherit' }} />
+                        </div>
+                        <h3 className="font-bold text-slate-900 text-sm md:text-base md:mb-2">{feature.title}</h3>
                       </div>
-                      <h3 className="font-bold text-slate-900 mb-2">{feature.title}</h3>
-                      <p className="text-sm text-slate-500 leading-relaxed">{feature.desc}</p>
+                      <p className="text-sm text-slate-500 leading-relaxed mt-2 md:mt-0">{feature.desc}</p>
                     </div>
                   ))}
                 </div>
+                {project.features.length > 2 && (
+                  <button
+                    onClick={() => setFeaturesExpanded(!featuresExpanded)}
+                    className="md:hidden flex items-center gap-1 text-xs font-semibold mt-3 transition-colors"
+                    style={{ color: theme.textMain }}
+                  >
+                    {featuresExpanded ? 'Show less' : `See all ${project.features.length} features`}
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${featuresExpanded ? 'rotate-180' : ''}`} />
+                  </button>
+                )}
               </section>
 
               <GallerySection
@@ -351,27 +380,36 @@ const ProjectDetail = () => {
                 onImageClick={(idx) => setSelectedImageIndex(idx)}
               />
 
-              <section className={`bg-gradient-to-br ${theme.bgMain} text-white rounded-2xl p-8 relative overflow-hidden`}>
+              <section className={`bg-gradient-to-br ${theme.bgMain} text-white rounded-2xl p-4 md:p-8 relative overflow-hidden`}>
                 <div className={`absolute top-0 right-0 w-64 h-64 ${theme.accentBlur} opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2`}></div>
-                <h2 className="text-2xl font-bold mb-8 flex items-center gap-3 relative z-10">
-                  <div className={`w-2 h-8 ${theme.accentBlur} rounded-full`}></div>
+                <h2 className="text-xl md:text-2xl font-bold mb-5 md:mb-8 flex items-center gap-2 md:gap-3 relative z-10">
+                  <div className={`w-2 h-6 md:h-8 ${theme.accentBlur} rounded-full`}></div>
                   My Key Contributions
                 </h2>
-                <div className="space-y-6 relative z-10">
+                <div className="space-y-4 md:space-y-6 relative z-10">
                   {project.contributions.map((item, idx) => (
-                    <div key={idx} className="flex gap-4">
-                      <div className="mt-1">
-                        <div className={`w-6 h-6 rounded-full ${theme.pillBg} flex items-center justify-center`}>
-                          <CheckCircle2 className={`w-4 h-4 ${theme.pillText}`} />
+                    <div key={idx} className={`flex gap-2.5 md:gap-4 ${!contributionsExpanded && idx >= 2 ? 'hidden md:flex' : ''}`}>
+                      <div className="mt-0.5 shrink-0">
+                        <div className={`w-5 h-5 md:w-6 md:h-6 rounded-full ${theme.pillBg} flex items-center justify-center`}>
+                          <CheckCircle2 className={`w-3 h-3 md:w-4 md:h-4 ${theme.pillText}`} />
                         </div>
                       </div>
-                      <div>
-                        <h4 className="font-bold text-lg text-white mb-2">{item.title}</h4>
-                        <p className="text-slate-300 text-sm leading-relaxed">{item.desc}</p>
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-base md:text-lg text-white mb-1 md:mb-2">{item.title}</h4>
+                        <p className="text-slate-300 text-xs md:text-sm leading-relaxed">{item.desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
+                {project.contributions.length > 2 && (
+                  <button
+                    onClick={() => setContributionsExpanded(!contributionsExpanded)}
+                    className="md:hidden flex items-center gap-1 text-xs font-semibold mt-3 relative z-10 text-white/80 hover:text-white transition-colors"
+                  >
+                    {contributionsExpanded ? 'Show less' : `See all ${project.contributions.length} contributions`}
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${contributionsExpanded ? 'rotate-180' : ''}`} />
+                  </button>
+                )}
               </section>
 
             </div>
