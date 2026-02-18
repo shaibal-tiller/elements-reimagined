@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import Divider from "./divider";
 
@@ -32,31 +32,46 @@ const testimonials = [
 const TestimonialsSection = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<"left" | "right">("right");
+  const touchStartX = useRef<number | null>(null);
 
-  const nextTestimonial = () => {
+  const nextTestimonial = useCallback(() => {
     setDirection("right");
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-  };
+  }, []);
 
-  const prevTestimonial = () => {
+  const prevTestimonial = useCallback(() => {
     setDirection("left");
     setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-  };
+  }, []);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) nextTestimonial();
+      else prevTestimonial();
+    }
+    touchStartX.current = null;
+  }, [nextTestimonial, prevTestimonial]);
 
   const current = testimonials[currentIndex];
 
   return (
     <section id="testimonials" className="pt-12 bg-[#02162C]">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-3 md:px-6">
         {/* Section Header */}
-        <div className="mb-12 flex items-center justify-between gap-10">
-          <h2 className="text-2xl font-bold text-foreground w-[20%]">Testimonials</h2>
+        <div className="mb-8 md:mb-12 flex items-center justify-between gap-4">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground whitespace-nowrap shrink-0">Testimonials</h2>
           <Divider />
         </div>
 
         {/* Testimonial */}
         <div className="max-w-4xl mx-auto">
-          <div className="relative overflow-hidden">
+          <div className="relative overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
             <div
               key={currentIndex}
               className={`testimonial-card relative transition-all duration-500 ease-out
@@ -66,9 +81,9 @@ const TestimonialsSection = () => {
                 }
               `}
             >
-              <Quote className="w-12 h-12 text-primary mb-6" />
+              <Quote className="w-8 h-8 md:w-12 md:h-12 text-primary mb-4 md:mb-6" />
 
-              <p className="text-lg md:text-xl text-foreground leading-relaxed mb-8">
+              <p className="text-sm md:text-xl text-foreground leading-relaxed mb-6 md:mb-8">
                 {current.content}
               </p>
 

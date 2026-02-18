@@ -36,15 +36,15 @@ const MainLayout: React.FC = () => {
 
     return (
         <SidebarContext.Provider value={{ collapsed: sidebarCollapsed, setCollapsed: setSidebarCollapsed }}>
-            <div className="bg-[#02162C] pb-16 font-sans">
+            <div className="bg-[#02162C] pb-2 md:pb-6 font-sans">
                 {/* Fixed Header */}
                 <div className="shadow-lg fixed top-0 left-0 right-0 bg-[#02162C] p-3 pb-0 z-[99]">
                     <Navbar />
                 </div>
 
                 <div className="pt-[90px]">
-                    {/* Parallax/Hero Section */}
-                    <section className="w-[90%] mx-auto h-[30vh] md:h-[55vh] rounded-2xl overflow-hidden shadow-2xl relative">
+                    {/* Parallax/Hero Section - hidden on mobile, shown on desktop */}
+                    <section className="hidden md:block w-[90%] mx-auto h-[55vh] rounded-2xl overflow-hidden shadow-2xl relative">
                         <div
                             className="absolute inset-0 bg-cover bg-center transition-transform duration-100"
                             style={{
@@ -58,12 +58,22 @@ const MainLayout: React.FC = () => {
                     </section>
 
                     {/* Mobile Layout: Profile card then content, stacked */}
-                    <div className="md:hidden w-[90%] mx-auto relative z-20 -mt-16">
-                        <div className="flex justify-center mb-6">
+                    <div className="md:hidden w-[96%] mx-auto relative z-20">
+                        <div className="flex justify-center mb-4">
                             <ProfileCard />
                         </div>
-                        <section className="space-y-6 min-w-0">
-                            <HeroComponent />
+                        {/* Hero text with background image on mobile */}
+                        <section className="relative rounded-2xl overflow-hidden mb-4">
+                            <div
+                                className="absolute inset-0 bg-cover bg-center"
+                                style={{ backgroundImage: `url(${heroBg})` }}
+                            />
+                            <div className="absolute inset-0 bg-[#02162C]/70" />
+                            <div className="relative z-10 px-5 py-8">
+                                <HeroComponent />
+                            </div>
+                        </section>
+                        <section className="space-y-4 min-w-0">
                             <Outlet />
                         </section>
                     </div>

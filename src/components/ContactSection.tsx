@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Send, MapPin, Mail, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Divider from "./divider";
 
 const contactInfo = [
   { icon: MapPin, label: "Address", value: "Mirpur, Dhaka, Bangladesh" },
@@ -27,13 +28,15 @@ const ContactSection = () => {
 
   return (
     <section id="contact" className="pt-12 bg-[#02162C]">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-3 md:px-6">
         {/* Section Header */}
-        <div className="flex items-center justify-between mb-12">
-          <h2 className="text-2xl font-bold text-foreground">Write me a message</h2>
+        <div className="flex items-center justify-between gap-4 mb-8 md:mb-12">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground whitespace-nowrap shrink-0">Write me a message</h2>
+          <Divider />
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto bg-[#00283A] rounded-3xl">
+
+        <div className="grid lg:grid-cols-2 gap-6 md:gap-12 max-w-6xl mx-auto bg-[#00283A] rounded-3xl">
           {/* Contact Form */}
           <div className="card-dark p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -93,11 +96,11 @@ const ContactSection = () => {
           </div>
 
           {/* Contact Info */}
-          <div className="flex flex-col justify-center space-y-8">
+          <div className="flex flex-col justify-center space-y-8 px-5 pb-6 lg:px-0 lg:pb-0">
             <div>
-              <h3 className="text-xl font-bold text-foreground mb-4">Let's work together</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                I'm always excited to take on new projects and collaborate with amazing people. 
+              <h3 className="text-lg md:text-xl font-bold text-foreground mb-4">Let's work together</h3>
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                I'm always excited to take on new projects and collaborate with amazing people.
                 Whether you have a question or just want to say hi, feel free to reach out!
               </p>
             </div>

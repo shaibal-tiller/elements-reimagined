@@ -158,7 +158,7 @@
   }
 
   .heading-xl {
-    @apply text-5xl md:text-6xl lg:text-7xl font-bold leading-tight;
+    @apply text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight;
   }
 
   .stat-number {
@@ -186,7 +186,7 @@
   }
 
   .testimonial-card {
-    @apply bg-[#00283A]  p-8 rounded-2xl border border-border;
+    @apply bg-[#00283A] p-5 md:p-8 rounded-2xl border border-border;
   }
 
   .nav-link {
@@ -343,9 +343,9 @@
 }
 
 .animate-slide-in-right {
-  animation: slide-in-right 0.5s ease-out;
+  animation: slide-in-right 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .animate-slide-in-left {
-  animation: slide-in-left 0.5s ease-out;
+  animation: slide-in-left 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
 }

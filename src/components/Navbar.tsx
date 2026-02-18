@@ -64,6 +64,14 @@ const Navbar = () => {
   }, [location.pathname]);
 
   return (
+    <>
+    {/* Backdrop overlay when mobile menu is open */}
+    {isOpen && (
+      <div
+        className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        onClick={() => setIsOpen(false)}
+      />
+    )}
     <nav
       style={{ boxShadow: "rgba(0, 0, 0, 0.6) 0px 2px 4px 0px" }}
       className="sticky top-0 left-0 right-0 z-50 bg-[#00283a] backdrop-blur-lg rounded-lg"
@@ -261,6 +269,7 @@ const Navbar = () => {
         )}
       </div>
     </nav>
+    </>
   );
 };
 
