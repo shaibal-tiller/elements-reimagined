@@ -126,6 +126,11 @@
 }
 
 @layer components {
+  .context-fade {
+    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  }
+
   .text-gradient-lime {
     @apply bg-clip-text text-transparent;
     background-image:var(--gradient-lime);

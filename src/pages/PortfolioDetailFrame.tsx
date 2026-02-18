@@ -219,7 +219,7 @@ const ProjectDetail = () => {
         />
       )}
 
-      <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20 animate-fadeUp mt-0 md:mt-[100px]">
+      <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-6 md:pb-12 animate-fadeUp mt-0 md:mt-[100px]">
 
         {/* Hero Header */}
         <div
@@ -329,7 +329,7 @@ const ProjectDetail = () => {
                   <div className={`w-2 h-6 md:h-8 ${theme.accentBlur} rounded-full`}></div>
                   Project Context
                 </h2>
-                <div className={`prose prose-slate max-w-none text-slate-600 text-sm md:text-base leading-relaxed whitespace-pre-line ${!contextExpanded ? 'max-h-28 overflow-hidden md:max-h-none' : ''}`} style={!contextExpanded ? { WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)', maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)' } : undefined}>
+                <div className={`prose prose-slate max-w-none text-slate-600 text-sm md:text-base leading-relaxed whitespace-pre-line ${!contextExpanded ? 'max-h-28 overflow-hidden context-fade md:max-h-none md:!overflow-visible md:[mask-image:none] md:[-webkit-mask-image:none]' : ''}`}>
                   {project.overview}
                 </div>
                 <button
@@ -347,18 +347,18 @@ const ProjectDetail = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   {project.features.map((feature, idx) => (
                     <div key={idx} className={`bg-white p-4 md:p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 group ${!featuresExpanded && idx >= 2 ? 'hidden md:block' : ''}`}>
-                      <div className="flex items-center gap-3 md:block">
+                      <div className="flex items-center gap-3">
                         <div
-                          className="w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-lg flex items-center justify-center transition-colors md:mb-4"
+                          className="w-9 h-9 md:w-10 md:h-10 shrink-0 rounded-lg flex items-center justify-center transition-colors"
                           style={{ backgroundColor: 'rgb(248 250 252)' }}
                           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = theme.primary; e.currentTarget.style.color = '#fff'; }}
                           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgb(248 250 252)'; e.currentTarget.style.color = 'rgb(71 85 105)'; }}
                         >
                           <feature.icon className="w-5 h-5" style={{ color: 'inherit' }} />
                         </div>
-                        <h3 className="font-bold text-slate-900 text-sm md:text-base md:mb-2">{feature.title}</h3>
+                        <h3 className="font-bold text-slate-900 text-sm md:text-base">{feature.title}</h3>
                       </div>
-                      <p className="text-sm text-slate-500 leading-relaxed mt-2 md:mt-0">{feature.desc}</p>
+                      <p className="text-sm text-slate-500 leading-relaxed mt-2">{feature.desc}</p>
                     </div>
                   ))}
                 </div>
